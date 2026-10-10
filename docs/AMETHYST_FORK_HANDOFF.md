@@ -22,6 +22,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
   - mod1 + `-`/`=`: shrink/expand main. mod2 + `-`/`=`: decrease/increase main count.
   - mod1 + `.` / mod2 + `,`: cycle layout forward/backward.
   - mod1 + t: toggle float. mod1 + i: layout HUD. mod2 + r: re-evaluate windows.
+  - **Modifier rule (Hans):** ⌃⌥ (mod1) = everyday commands; ⌃⌥⌘ (mod2) = transformations; Super (⇧⌃⌥⌘, mod4) = apps and very unusual WM. Swap counts as everyday use but lives on mod2 today; swap and warp never share a modifier.
   - **Super (mod4 = ⇧⌃⌥⌘), as of 2026-10-10:** 0 = cycle padding mode (hw-Amethyst, native since phase 1; it used to be the old Raycast script's key); J = emojis, S / O / E / K = app launchers (Safari, Obsidian, CotEditor, Kaku), owned by Raycast, not hw-Amethyst. **Y is reserved for the hw-Amethyst command palette.** Everything else on Super is free.
   - Why h/l cw/ccw aren't enough: Hans can't remember the open order, so ~75% of the time he uses Alt-Tab/⌘Tab, and app hotkeys stand in for "go to the window over there". Without warp he swaps "until it's kind of OK, but never what I want" (phases 4–5).
 - **Settings that matter for the specs:**
@@ -401,31 +402,25 @@ floating: [
   "com.apple.finder",
   {id: "*", window-titles: ["^(Open|Save)$"]}]   # fallback for apps not on the secondary list
 
-# Phases 4–5 — suggested scheme: h/j/k/l = direction, modifier = verb
-mod3:                      # new modifier set for warp
-  - option
-  - control
-  - shift
-
+# Phases 4–5 — h/j/k/l = direction, modifier = verb (Hans's modifier rule, §1)
 focus-ccw: false           # previous/next retired: an Alt-Tab app covers it
 focus-cw: false
 swap-ccw: false
 swap-cw: false
 
-focus-west:  {mod: mod1, key: h}
+focus-west:  {mod: mod1, key: h}   # ⌃⌥ = everyday
 focus-south: {mod: mod1, key: j}
 focus-north: {mod: mod1, key: k}
 focus-east:  {mod: mod1, key: l}
 
-swap-west:   {mod: mod2, key: h}
+swap-west:   {mod: mod2, key: h}   # ⌃⌥⌘ = transformations
 swap-south:  {mod: mod2, key: j}
 swap-north:  {mod: mod2, key: k}
 swap-east:   {mod: mod2, key: l}
 
-warp-west:   {mod: mod3, key: h}
-warp-south:  {mod: mod3, key: j}
-warp-north:  {mod: mod3, key: k}
-warp-east:   {mod: mod3, key: l}
+# Phase 5: warp-west/south/north/east ship unbound. Hans tries warp (palette or a temporary key),
+# then decides: warp takes over ⌃⌥⌘ + h/j/k/l and swap moves out, or swap stays and warp gets its
+# own place. Swap and warp never share a modifier. (The earlier mod3 = ⌥⌃⇧ suggestion is dropped.)
 ```
 
 `focus-main` / `swap-main` (mod1/mod2 + m) and everything else stay as they are. Setting a command to `false` disables it (`UserConfiguration.constructCommand` ~L442).
