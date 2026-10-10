@@ -34,3 +34,5 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - [ ] Phase 6: rotate / mirror (§5.6)
 
 **Current phase:** 2
+
+**After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst (on top of the phase 2 command URL). Until then, the scripts in `~/raycast-scripts` stay as they are: `toggle-amethyst-padding.sh` (dropdown) is the interim fork-safe version; `cycle-amethyst-padding.sh` is the old upstream version, disabled in Raycast, and must not be re-enabled (it kills hw-Amethyst and launches upstream).
