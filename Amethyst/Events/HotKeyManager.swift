@@ -22,8 +22,31 @@ private let AMKeyCodeInvalid: AMKeyCode = 0xFF
 
 typealias HotKeyHandler = () -> Void
 
+/// `amethyst://command/<command-key>` runs any command, bound to a key or not, from outside the app (scripts, launchers).
+enum CommandURL {
+    static let scheme = "amethyst"
+
+    /// The command key of a command URL, or `nil` for any other URL.
+    static func commandKey(from url: URL) -> String? {
+        guard url.scheme?.lowercased() == scheme, url.host?.lowercased() == "command" else {
+            return nil
+        }
+
+        // `path` is percent-decoded, so names with spaces (e.g. padding modes) can be passed encoded.
+        let components = url.path.split(separator: "/")
+        guard components.count == 1 else {
+            return nil
+        }
+
+        return String(components[0])
+    }
+}
+
 class HotKeyManager<Application: ApplicationType>: NSObject {
     private let userConfiguration: UserConfiguration
+
+    /// Every command set up in `setUpWithWindowManager`, bound to a key or not, by command key.
+    private(set) var commandHandlers: [String: HotKeyHandler] = [:]
 
     private(set) lazy var stringToKeyCodes: [String: [AMKeyCode]] = {
         return self.constructKeyCodeMap()
@@ -375,7 +398,18 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
     }
 
     private func constructCommandWithCommandKey(_ commandKey: String, handler: @escaping HotKeyHandler) {
+        commandHandlers[commandKey] = userConfiguration.commandHandler(running: handler)
         userConfiguration.constructCommand(for: self, commandKey: commandKey, handler: handler)
+    }
+
+    /// Runs a command the same way its hotkey would. Returns `false` if there is no command with that key.
+    @discardableResult func runCommand(_ commandKey: String) -> Bool {
+        guard let handler = commandHandlers[commandKey] else {
+            return false
+        }
+
+        handler()
+        return true
     }
 
     private func carbonModifiersFromModifiers(_ modifiers: UInt) -> UInt32 {

@@ -525,7 +525,18 @@ class UserConfiguration: NSObject {
             }
         }
 
-        let injectedHandler: () -> Void = { [weak self] in
+        hotKeyRegistrar.registerHotKey(
+            with: commandKeyString,
+            modifiers: commandFlags,
+            handler: commandHandler(running: handler),
+            defaultsKey: commandKey,
+            override: override
+        )
+    }
+
+    /// Wraps a command's handler the way every command runs, from a hotkey or otherwise: confirm Accessibility permissions, then run off the main thread.
+    func commandHandler(running handler: @escaping HotKeyHandler) -> HotKeyHandler {
+        return { [weak self] in
             guard let `self` = self else {
                 return
             }
@@ -544,14 +555,6 @@ class UserConfiguration: NSObject {
                 handler()
             }
         }
-
-        hotKeyRegistrar.registerHotKey(
-            with: commandKeyString,
-            modifiers: commandFlags,
-            handler: injectedHandler,
-            defaultsKey: commandKey,
-            override: override
-        )
     }
 
     func hasCustomConfiguration() -> Bool {

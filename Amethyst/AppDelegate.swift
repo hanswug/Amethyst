@@ -31,6 +31,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var paddingMenuItem: NSMenuItem?
 
     private var isFirstLaunch = true
+    /// Command URLs that arrived before the commands were set up, e.g. the one that launched the app.
+    private var pendingCommandURLs: [URL] = []
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // Registered this early so a URL that launches the app isn't dropped.
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleGetURLEvent(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kInternetEventClass),
+            andEventID: AEEventID(kAEGetURL)
+        )
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         #if DEBUG
@@ -66,6 +78,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hotKeyManager = HotKeyManager(userConfiguration: UserConfiguration.shared)
 
         hotKeyManager?.setUpWithWindowManager(resolvedWindowManager, configuration: UserConfiguration.shared, appDelegate: self)
+
+        pendingCommandURLs.forEach(runCommand(from:))
+        pendingCommandURLs = []
+    }
+
+    @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+        guard let urlString = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: urlString) else {
+            log.warning("Ignoring a URL event without a valid URL")
+            return
+        }
+
+        guard hotKeyManager != nil else {
+            pendingCommandURLs.append(url)
+            return
+        }
+
+        runCommand(from: url)
+    }
+
+    /// Runs the command a command URL names. Only registered commands run; anything else is logged and ignored.
+    private func runCommand(from url: URL) {
+        guard let commandKey = CommandURL.commandKey(from: url) else {
+            log.warning("Ignoring unsupported URL: \(url)")
+            return
+        }
+
+        guard hotKeyManager?.runCommand(commandKey) == true else {
+            log.warning("Ignoring URL for unknown command: \(commandKey)")
+            return
+        }
+
+        log.debug("Ran command from URL: \(commandKey)")
     }
 
     override func awakeFromNib() {

@@ -20,5 +20,29 @@ class HotKeyManagerTests: QuickSpec {
                 expect(screenCommands.count).to(equal(7))
             }
         }
+
+        describe("command URL") {
+            func commandKey(_ string: String) -> String? {
+                return URL(string: string).flatMap { CommandURL.commandKey(from: $0) }
+            }
+
+            it("reads the command key") {
+                expect(commandKey("amethyst://command/cycle-padding-mode")).to(equal("cycle-padding-mode"))
+                expect(commandKey("amethyst://command/select-middle-wide-layout/")).to(equal("select-middle-wide-layout"))
+                expect(commandKey("AMETHYST://Command/swap-main")).to(equal("swap-main"))
+            }
+
+            it("decodes percent-encoded keys") {
+                expect(commandKey("amethyst://command/select-my%20mode-padding-mode")).to(equal("select-my mode-padding-mode"))
+            }
+
+            it("rejects other URLs") {
+                expect(commandKey("amethyst://command/")).to(beNil())
+                expect(commandKey("amethyst://command")).to(beNil())
+                expect(commandKey("amethyst://command/a/b")).to(beNil())
+                expect(commandKey("amethyst://config/cycle-padding-mode")).to(beNil())
+                expect(commandKey("https://command/cycle-padding-mode")).to(beNil())
+            }
+        }
     }
 }
