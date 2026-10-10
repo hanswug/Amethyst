@@ -34,7 +34,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - [ ] Phase 6: rotate / mirror (§5.6)
 - [x] Phase 2: command URL (§5.2) — built early as a detour; `open -g "amethyst://command/<key>"` runs any command
 
-**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); open: the missing-file case (Hans to decide), then removing the dead preferences-window code; then the command palette (Super+Y = `show-command-palette`), **then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
+**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); no config file → "No configuration file found" + path, quit; open: removing the dead preferences-window code; then the command palette (Super+Y = `show-command-palette`), **then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
 
 **Command palette (detour, next):** an in-app panel listing every registered command (`HotKeyManager.commandHandlers`, names from `hotKeyNameToDefaultsKey()`) with its current shortcut; type to filter, Enter runs. It must close and give focus back to the previously focused window before running the command. Bound to Super+Y; check that Raycast doesn't hold that key.
 

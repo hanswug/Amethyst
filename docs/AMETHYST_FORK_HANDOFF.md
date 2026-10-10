@@ -78,7 +78,8 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 - With a config file, keys it doesn't mention fall back to built-in defaults at every load (no leftover values from older configs or the old GUI).
 - The menu bar shows the current layout name next to the icon.
 - A config file that can't be read: alert "Error in configuration file" with its path, then quit. Finding the error is the editor's job.
-- Still open: what happens with no config file at all; deleting the unused preferences-window code.
+- No config file: alert "No configuration file found" with the expected path, then quit. The app never runs on built-in presets alone.
+- Still open: deleting the unused preferences-window code.
 
 ## 4. Build plan
 
