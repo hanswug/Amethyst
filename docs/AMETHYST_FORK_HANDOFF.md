@@ -71,6 +71,13 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 5. **Saved state must keep decoding.** With `restore-layouts-on-launch: true`, layouts are decoded from saved state. New stored properties use `decodeIfPresent` with a default.
 6. **No hidden defaults** *(replaces "behave like upstream unless configured", 2026-10-10)*. hw-Amethyst behaves as Hans configured it. Defaults inherited from upstream that he didn't choose (e.g. key bindings in `default.amethyst`) are removed rather than kept for compatibility.
 
+## 3b. Design principle: ≤ 8 windows, a mental ≤ 4×2 grid (2026-10-10)
+
+- Hans thinks in at most a 4×2 grid of resizable cells, never more than 8 tiled windows. On a 55" 4K display a 9th window means either a quick lookup (it should float) or a different task (another macOS Space).
+- His four modes: not working = Fullscreen stack (laptop); files on the laptop = Two Pane; light focus work = 3Column; lots of docs = Tall, ordered as it fits.
+- For phases 4–6: simple, predictable rules over clever geometry; no state a user wouldn't notice. Directional navigation needs only minimal tie-breaks; warp keeps only the bookkeeping a "move into that column" needs; rotate/mirror only if it serves one of the four modes (e.g. the Ark in portrait).
+- Idea for later: an overflow policy for `window-max-count` that floats the 9th window instead of minimising it.
+
 ## 3a. Config-only (detour, 2026-10-10)
 
 - The YAML is the single source of truth. No preferences window; the status menu offers **Edit Config…** and **Reload Config**.
