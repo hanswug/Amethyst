@@ -31,8 +31,10 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - [ ] Phase 4: directional focus and swap (§5.4)
 - [ ] Phase 5: warp (§5.5)
 - [ ] Phase 6: rotate / mirror (§5.6)
-- [ ] Phase 2: command URL (§5.2) — built after phase 6, just before the Raycast extension
+- [x] Phase 2: command URL (§5.2) — built early as a detour; `open -g "amethyst://command/<key>"` runs any command
 
-**Current phase:** 4 (build order: 1, 3, 4, 5, 6, 2, then the Raycast extension)
+**Current phase:** detour — command palette (Super+Y = `show-command-palette` with `mod4` + `y`), built on the phase 2 command registry. **Then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
 
-**After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst (on top of the phase 2 command URL). Until then, the scripts in `~/raycast-scripts` stay as they are: `toggle-amethyst-padding.sh` (dropdown) is the interim fork-safe version; `cycle-amethyst-padding.sh` is the old upstream version, disabled in Raycast, and must not be re-enabled (it kills hw-Amethyst and launches upstream).
+**Command palette (detour, next):** an in-app panel listing every registered command (`HotKeyManager.commandHandlers`, names from `hotKeyNameToDefaultsKey()`) with its current shortcut; type to filter, Enter runs. It must close and give focus back to the previously focused window before running the command. Bound to Super+Y; check that Raycast doesn't hold that key.
+
+**After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst on top of the command URL. The Raycast dropdown script was retired (moved to the Trash). `~/raycast-scripts/cycle-amethyst-padding.sh` is the old upstream version: it rewrites upstream's config, kills hw-Amethyst and launches upstream. It ran by accident on 2026-10-10 10:18; never run it.

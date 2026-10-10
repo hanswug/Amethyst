@@ -78,7 +78,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 |---|---|---|---|---|
 | 0 | `fork/setup` | Renamed app, Sparkle off, self-signed build script, profiling baseline | S | §5.0 |
 | 1 | `feat/padding-modes` | Padding modes switch instantly in-app | S | §5.1 |
-| 2 | `feat/command-url` | `amethyst://command/<key>`. **Built after phase 6**, just before the Raycast extension | S | §5.2 |
+| 2 | `feat/command-url` | `amethyst://command/<key>`. *Built early (2026-10-10) as a detour; a built-in command palette (Super+Y) follows, then phase 4* | S | §5.2 |
 | 3 | `feat/secondary-windows` | `floating-secondary-windows`, anchor model | S–M | §5.3 |
 | 4 | `feat/directional` | `focus-<dir>`, `swap-<dir>` and the shared neighbour finder | M | §5.4 |
 | 5 | `feat/warp` | `warp-<dir>` in 3Column, Tall and Two Pane | L | §5.5 |
