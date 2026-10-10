@@ -77,7 +77,8 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 - Key bindings come only from the file; built-in default keys are gone. The 22 formerly default-bound commands are listed in Hans's file as `<NONE>` with doc comments.
 - With a config file, keys it doesn't mention fall back to built-in defaults at every load (no leftover values from older configs or the old GUI).
 - The menu bar shows the current layout name next to the icon.
-- Still open: a clear alert for YAML errors (file, line, column) and a starter file when none exists; deleting the unused preferences-window code.
+- A config file that can't be read: alert "Error in configuration file" with its path, then quit. Finding the error is the editor's job.
+- Still open: what happens with no config file at all; deleting the unused preferences-window code.
 
 ## 4. Build plan
 
