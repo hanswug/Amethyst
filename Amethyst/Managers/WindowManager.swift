@@ -317,6 +317,7 @@ extension WindowManager {
         distributeEventToAllScreens(.remove(window: window))
         markAllScreensForReflow()
         windows.regenerateActiveIDCache()
+        releaseSecondaryWindowAnchor(window)
         windows.remove(window: window)
     }
 
@@ -332,6 +333,7 @@ extension WindowManager {
                 return
             }
             windows.setFloating(false, forWindow: focusedWindow)
+            claimSecondaryWindowAnchorIfFree(focusedWindow)
             distributeEventToScreen(screen, change: windowChange)
             markScreenForReflow(screen)
             return
@@ -339,6 +341,8 @@ extension WindowManager {
 
         let windowChange: Change = windows.isWindowFloating(focusedWindow) ? .add(window: focusedWindow) : .remove(window: focusedWindow)
         windows.setFloating(!windows.isWindowFloating(focusedWindow), forWindow: focusedWindow)
+        // Floating the anchor keeps it the anchor; tiling a secondary only makes it the anchor if there is none.
+        claimSecondaryWindowAnchorIfFree(focusedWindow)
         distributeEventToScreen(screen, change: windowChange)
         markScreenForReflow(screen)
     }
@@ -606,6 +610,25 @@ extension WindowManager {
 
         for (slot, candidate) in largestWindows where windows.secondaryWindowAnchors.claim(slot, for: candidate.window.id()) {
             log.debug("Secondary windows: \(candidate.window) is the anchor for pid \(slot.pid) on space \(slot.space) (largest window)")
+        }
+    }
+
+    /**
+     Frees the slot when an anchor goes away (closed, minimised, its app quit). A window of the same application on that space that the user tiled takes over; otherwise the slot stays free until the next new window tiles. Floating secondaries never take over by themselves.
+     */
+    private func releaseSecondaryWindowAnchor(_ window: Window) {
+        guard let slot = windows.secondaryWindowAnchors.release(window.id()) else {
+            return
+        }
+
+        let successor = windows.windows(forApplicationWithPID: slot.pid).first { candidate in
+            candidate.id() != window.id() && !windows.isWindowFloating(candidate) && CGWindowsInfo.windowSpace(candidate) == slot.space
+        }
+
+        if let successor = successor, windows.secondaryWindowAnchors.claim(slot, for: successor.id()) {
+            log.debug("Secondary windows: \(successor) took over as anchor from \(window)")
+        } else {
+            log.debug("Secondary windows: anchor \(window) went away; the next new window becomes the anchor")
         }
     }
 
