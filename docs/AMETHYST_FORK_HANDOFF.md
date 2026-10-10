@@ -210,6 +210,8 @@ Same id matching as `floating` (exact or `*` glob; reuse `runningApplicationFloa
 - **Known limitations (as built):**
   - The anchor role stays with a window's original space if the window is dragged to another space.
   - Minimising the anchor frees its slot; the next new window then tiles and becomes the anchor.
+  - An app that only hides its window on close (keeps it alive, off every space) keeps the anchor role, so its later windows float. Liveness checks that the window still exists, not that it sits on a space. Treated as an edge case: Obsidian destroys its windows.
+  - Floating secondaries don't count towards `window-max-count` (only tiled windows do). If the limit minimises the anchor, the slot frees as with a manual minimise.
   - Obsidian pop-out windows count as secondary windows and float (toggle-float tiles one).
   - The tests run inside the Debug app, which no longer manages windows or asks for Accessibility when hosting tests.
 
