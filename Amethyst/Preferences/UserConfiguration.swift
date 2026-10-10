@@ -416,6 +416,20 @@ class UserConfiguration: NSObject {
         return path
     }
 
+    /// A configuration file that can't be read stops the app: it never runs on part of a configuration. Finding the error is the editor's job.
+    private func exitWithConfigurationFileError() -> Never {
+        let path = configurationFilePath ?? "configuration file"
+        log.error("Error in configuration file: \(path)")
+
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = "Error in configuration file"
+        let appName = (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String) ?? "Amethyst"
+        alert.informativeText = "\(path)\n\n\(appName) will quit. Fix the file and start it again."
+        alert.runModal()
+        exit(1)
+    }
+
     private func loadConfigurationFile() {
         let configName = UserConfiguration.configurationName
         let amethystXDGConfigPath = UserConfiguration.xdgConfigurationDirectory
@@ -436,36 +450,21 @@ class UserConfiguration: NSObject {
             configurationYAML = yamlForConfig(at: amethystYAMLConfigPath)
 
             if configurationYAML == nil {
-                log.error("error loading configuration as yaml")
-
-                let alert = NSAlert()
-                alert.alertStyle = .critical
-                alert.messageText = "Error loading configuration"
-                alert.runModal()
+                exitWithConfigurationFileError()
             }
         } else if FileManager.default.fileExists(atPath: amethystXDGConfigPath, isDirectory: &isDirectory) {
             configurationFilePath = isDirectory.boolValue ? amethystXDGConfigPath.appending("/amethyst.yml") : amethystXDGConfigPath
             configurationYAML = yamlForConfig(at: configurationFilePath!)
 
             if configurationYAML == nil {
-                log.error("error loading configuration as yaml")
-
-                let alert = NSAlert()
-                alert.alertStyle = .critical
-                alert.messageText = "Error loading configuration"
-                alert.runModal()
+                exitWithConfigurationFileError()
             }
         } else if FileManager.default.fileExists(atPath: amethystJSONConfigPath, isDirectory: &isDirectory) {
             configurationFilePath = amethystJSONConfigPath
             configurationJSON = jsonForConfig(at: amethystJSONConfigPath)
 
             if configurationJSON == nil {
-                log.error("error loading configuration as json")
-
-                let alert = NSAlert()
-                alert.alertStyle = .critical
-                alert.messageText = "Error loading configuration"
-                alert.runModal()
+                exitWithConfigurationFileError()
             }
         }
 
