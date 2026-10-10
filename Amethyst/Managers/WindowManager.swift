@@ -374,6 +374,38 @@ extension WindowManager {
         }
     }
 
+    func selectPaddingMode(named name: String) {
+        guard let paddingMode = userConfiguration.selectPaddingMode(named: name) else {
+            log.warning("Unknown padding mode: \(name)")
+            return
+        }
+
+        paddingModeDidChange(to: paddingMode)
+    }
+
+    func cyclePaddingMode(forward: Bool) {
+        guard let paddingMode = userConfiguration.cyclePaddingMode(forward: forward) else {
+            return
+        }
+
+        paddingModeDidChange(to: paddingMode)
+    }
+
+    private func paddingModeDidChange(to paddingMode: PaddingMode) {
+        // Screen paddings are read on every reflow, so reflowing applies the new mode immediately.
+        markAllScreensForReflow()
+
+        DispatchQueue.main.async {
+            guard self.userConfiguration.enablesLayoutHUD() else {
+                return
+            }
+
+            for screenManager in self.screens.screenManagers {
+                screenManager.displayCustomHUD(title: "Padding · \(paddingMode.name)")
+            }
+        }
+    }
+
     func add(runningApplication: NSRunningApplication) {
         switch runningApplication.isManageable {
         case .manageable:

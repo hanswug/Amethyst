@@ -281,6 +281,20 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
                 screenManager?.selectLayout(layoutKey)
             }
         }
+
+        constructCommandWithCommandKey(CommandKey.cyclePaddingModeForward.rawValue) {
+            windowManager.cyclePaddingMode(forward: true)
+        }
+
+        constructCommandWithCommandKey(CommandKey.cyclePaddingModeBackward.rawValue) {
+            windowManager.cyclePaddingMode(forward: false)
+        }
+
+        userConfiguration.paddingModes().forEach { paddingMode in
+            self.constructCommandWithCommandKey(UserConfiguration.constructPaddingModeKeyString(paddingMode.name)) {
+                windowManager.selectPaddingMode(named: paddingMode.name)
+            }
+        }
     }
 
     private func constructKeyCodeMap() -> [String: [AMKeyCode]] {
@@ -441,6 +455,15 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         for (layoutKey, layoutName) in LayoutType<Application.Window>.availableLayoutStrings() {
             let commandName = "Select \(layoutName) layout"
             let commandKey = "select-\(layoutKey)-layout"
+            hotKeyNameToDefaultsKey.append([commandName, commandKey])
+        }
+
+        hotKeyNameToDefaultsKey.append(["Cycle padding mode forward", CommandKey.cyclePaddingModeForward.rawValue])
+        hotKeyNameToDefaultsKey.append(["Cycle padding mode backwards", CommandKey.cyclePaddingModeBackward.rawValue])
+
+        for paddingMode in UserConfiguration.shared.paddingModes() {
+            let commandName = "Select \(paddingMode.name) padding mode"
+            let commandKey = UserConfiguration.constructPaddingModeKeyString(paddingMode.name)
             hotKeyNameToDefaultsKey.append([commandName, commandKey])
         }
 

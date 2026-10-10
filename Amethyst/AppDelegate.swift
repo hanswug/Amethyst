@@ -28,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var startAtLoginMenuItem: NSMenuItem?
     @IBOutlet var toggleGlobalTilingMenuItem: NSMenuItem?
     @IBOutlet var layoutsMenuItem: NSMenuItem?
+    private var paddingMenuItem: NSMenuItem?
 
     private var isFirstLaunch = true
 
@@ -85,6 +86,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Set up status item menu delegate to refresh layouts when main menu is opened
         statusItemMenu?.delegate = self
+
+        // Padding modes come from the configuration, so their submenu is built here rather than in the nib.
+        if let statusItemMenu = statusItemMenu, let layoutsMenuItem = layoutsMenuItem {
+            let paddingMenuItem = NSMenuItem(title: "Padding", action: nil, keyEquivalent: "")
+            paddingMenuItem.submenu = NSMenu(title: "Padding")
+            statusItemMenu.insertItem(paddingMenuItem, at: statusItemMenu.index(of: layoutsMenuItem) + 1)
+            self.paddingMenuItem = paddingMenuItem
+        }
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
@@ -212,6 +221,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func populatePaddingMenu() {
+        guard let paddingMenuItem = paddingMenuItem, let submenu = paddingMenuItem.submenu else {
+            return
+        }
+
+        submenu.removeAllItems()
+
+        let paddingModes = UserConfiguration.shared.paddingModes()
+        paddingMenuItem.isHidden = paddingModes.isEmpty
+
+        let activeName = UserConfiguration.shared.activePaddingMode()?.name
+        for paddingMode in paddingModes {
+            let menuItem = NSMenuItem(title: paddingMode.name, action: #selector(selectPaddingMode(_:)), keyEquivalent: "")
+            menuItem.target = self
+            menuItem.representedObject = paddingMode.name
+            menuItem.state = paddingMode.name == activeName ? .on : .off
+            submenu.addItem(menuItem)
+        }
+    }
+
+    @IBAction func selectPaddingMode(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else {
+            return
+        }
+
+        windowManager?.selectPaddingMode(named: name)
+    }
+
     @IBAction func selectLayout(_ sender: NSMenuItem) {
         guard let layoutKey = sender.representedObject as? String,
               let windowManager = windowManager,
@@ -235,6 +272,7 @@ extension AppDelegate: NSMenuDelegate {
         // Refresh layouts menu when main status item menu is about to open
         if menu == statusItemMenu {
             populateLayoutsMenu()
+            populatePaddingMenu()
         }
     }
 }

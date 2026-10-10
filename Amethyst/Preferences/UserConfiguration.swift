@@ -95,6 +95,8 @@ enum ConfigurationKey: String {
     case screenPaddingRight = "screen-padding-right"
     case screenPaddingTop = "screen-padding-top"
     case screenPaddingBottom = "screen-padding-bottom"
+    case paddingModes = "padding-modes"
+    case paddingMode = "padding-mode"
     case debugLayoutInfo = "debug-layout-info"
     case restoreLayoutsOnLaunch = "restore-layouts-on-launch"
     case disablePaddingOnBuiltinDisplay = "disable-padding-on-builtin-display"
@@ -139,6 +141,8 @@ enum CommandKey: String {
     case relaunchAmethyst = "relaunch-amethyst"
     case increaseWindowMaxCount = "increase-window-max-count"
     case decreaseWindowMaxCount = "decrease-window-max-count"
+    case cyclePaddingModeForward = "cycle-padding-mode"
+    case cyclePaddingModeBackward = "cycle-padding-mode-backward"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -197,9 +201,43 @@ class FloatingBundle: NSObject {
     }
 }
 
+/// A named set of screen paddings that can be switched at runtime, e.g. to emulate a smaller display on a large one.
+struct PaddingMode: Equatable {
+    let name: String
+    let top: CGFloat
+    let bottom: CGFloat
+    let left: CGFloat
+    let right: CGFloat
+
+    static func from(_ object: Any) -> PaddingMode? {
+        guard let dict = object as? [String: Any] else {
+            return nil
+        }
+
+        let json = JSON(dict)
+
+        // A bare number in YAML (e.g. `name: 27`) is parsed as a number, so accept that as the name too.
+        guard let name = json["name"].string ?? json["name"].number?.stringValue, !name.isEmpty else {
+            return nil
+        }
+
+        return PaddingMode(
+            name: name,
+            top: CGFloat(json["top"].doubleValue),
+            bottom: CGFloat(json["bottom"].doubleValue),
+            left: CGFloat(json["left"].doubleValue),
+            right: CGFloat(json["right"].doubleValue)
+        )
+    }
+}
+
 class UserConfiguration: NSObject {
     static let shared = UserConfiguration()
+    /// Defaults key for the selected padding mode. Deliberately not a `ConfigurationKey`, so loading the configuration never overwrites it.
+    static let activePaddingModeKey = "active-padding-mode"
+
     private let storage: ConfigurationStorage
+    private let stateDefaults: UserDefaults
 
     weak var delegate: UserConfigurationDelegate?
 
@@ -223,8 +261,9 @@ class UserConfiguration: NSObject {
     var modifier3: AMModifierFlags?
     var modifier4: AMModifierFlags?
 
-    init(storage: ConfigurationStorage) {
+    init(storage: ConfigurationStorage, stateDefaults: UserDefaults = .standard) {
         self.storage = storage
+        self.stateDefaults = stateDefaults
     }
 
     override convenience init() {
@@ -298,6 +337,10 @@ class UserConfiguration: NSObject {
             }
 
             storage.set(hasLocalConfigurationValue ? value : defaultValue?.rawValue, forKey: key)
+        }
+
+        for invalidMode in (storage.array(forKey: .paddingModes) ?? []) where PaddingMode.from(invalidMode) == nil {
+            log.warning("Ignoring padding mode without a name: \(invalidMode)")
         }
     }
 
@@ -435,6 +478,10 @@ class UserConfiguration: NSObject {
 
     static func constructLayoutKeyString(_ layoutKey: String) -> String {
         return "select-\(layoutKey)-layout"
+    }
+
+    static func constructPaddingModeKeyString(_ paddingModeName: String) -> String {
+        return "select-\(paddingModeName)-padding-mode"
     }
 
     func constructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
@@ -714,19 +761,69 @@ class UserConfiguration: NSObject {
     }
 
     func screenPaddingTop() -> CGFloat {
-        return CGFloat(storage.float(forKey: .screenPaddingTop))
+        return activePaddingMode()?.top ?? CGFloat(storage.float(forKey: .screenPaddingTop))
     }
 
     func screenPaddingBottom() -> CGFloat {
-        return CGFloat(storage.float(forKey: .screenPaddingBottom))
+        return activePaddingMode()?.bottom ?? CGFloat(storage.float(forKey: .screenPaddingBottom))
     }
 
     func screenPaddingLeft() -> CGFloat {
-        return CGFloat(storage.float(forKey: .screenPaddingLeft))
+        return activePaddingMode()?.left ?? CGFloat(storage.float(forKey: .screenPaddingLeft))
     }
 
     func screenPaddingRight() -> CGFloat {
-        return CGFloat(storage.float(forKey: .screenPaddingRight))
+        return activePaddingMode()?.right ?? CGFloat(storage.float(forKey: .screenPaddingRight))
+    }
+
+    /// The configured padding modes in order. Entries without a name and repeated names are skipped.
+    func paddingModes() -> [PaddingMode] {
+        var names = Set<String>()
+        return (storage.array(forKey: .paddingModes) ?? [])
+            .compactMap { PaddingMode.from($0) }
+            .filter { names.insert($0.name).inserted }
+    }
+
+    /// The selected padding mode, falling back to `padding-mode` until one has been selected. `nil` if the name matches no configured mode, in which case the plain screen paddings apply.
+    func activePaddingMode() -> PaddingMode? {
+        let initialMode = storage.object(forKey: .paddingMode)
+        let initialName = (initialMode as? String) ?? (initialMode as? NSNumber)?.stringValue
+
+        guard let name = stateDefaults.string(forKey: UserConfiguration.activePaddingModeKey) ?? initialName else {
+            return nil
+        }
+
+        return paddingModes().first { $0.name == name }
+    }
+
+    /// Selects the padding mode with the given name. Returns the mode, or `nil` and changes nothing if no mode has that name.
+    @discardableResult func selectPaddingMode(named name: String) -> PaddingMode? {
+        guard let paddingMode = paddingModes().first(where: { $0.name == name }) else {
+            return nil
+        }
+
+        stateDefaults.set(paddingMode.name, forKey: UserConfiguration.activePaddingModeKey)
+        return paddingMode
+    }
+
+    /// Selects the next (or previous) padding mode in configuration order, wrapping around. Starts at the first (or last) mode when none is active. Returns `nil` if no modes are configured.
+    @discardableResult func cyclePaddingMode(forward: Bool) -> PaddingMode? {
+        let paddingModes = self.paddingModes()
+
+        guard !paddingModes.isEmpty else {
+            return nil
+        }
+
+        let nextIndex: Int
+        if let activeName = activePaddingMode()?.name, let index = paddingModes.firstIndex(where: { $0.name == activeName }) {
+            nextIndex = (index + (forward ? 1 : paddingModes.count - 1)) % paddingModes.count
+        } else {
+            nextIndex = forward ? 0 : paddingModes.count - 1
+        }
+
+        let paddingMode = paddingModes[nextIndex]
+        stateDefaults.set(paddingMode.name, forKey: UserConfiguration.activePaddingModeKey)
+        return paddingMode
     }
 
     func floatingBundleIdentifiersIsBlacklist() -> Bool {
