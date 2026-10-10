@@ -254,12 +254,6 @@ extension WindowManager: ApplicationEventHandlerDelegate {
 }
 
 extension WindowManager {
-    func preferencesDidClose() {
-        DispatchQueue.main.async {
-            self.focusTransitionCoordinator.focusScreen(at: 0)
-        }
-    }
-
     func focusedScreenManager() -> ScreenManager<WindowManager<Application>>? {
         return screens.focusedScreenManager()
     }

@@ -17,9 +17,6 @@ import SwiftyBeaver
 class AppDelegate: NSObject, NSApplicationDelegate {
     static let windowManagerEncodingKey = "EncodedWindowManager"
 
-    // The preferences window still exists in the nib but is never shown: the configuration file is the only source of settings.
-    @IBOutlet var preferencesWindowController: PreferencesWindowController?
-
     fileprivate var windowManager: WindowManager<SIApplication>?
     private var hotKeyManager: HotKeyManager<SIApplication>?
 
@@ -297,12 +294,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         screenManager.selectLayout(layoutKey)
         // Menu will be refreshed automatically when next opened via NSMenuDelegate
-    }
-}
-
-extension AppDelegate: NSWindowDelegate {
-    func windowWillClose(_ notification: Notification) {
-        windowManager?.preferencesDidClose()
     }
 }
 

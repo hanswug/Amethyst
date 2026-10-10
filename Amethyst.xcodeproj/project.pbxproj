@@ -22,15 +22,10 @@
 		400D49002A92B0A00082750F /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 400D48FF2A92B0A00082750F /* Yams */; };
 		400F2DF32AABF4FC00C1AAE2 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 400F2DF22AABF4FC00C1AAE2 /* KeyboardShortcuts */; };
 		40111CC9223370FD003D20BD /* SIWindow+AmethystTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40111CC8223370FD003D20BD /* SIWindow+AmethystTests.swift */; };
-		40111CCB22342CC4003D20BD /* DebugPreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40111CCA22342CC4003D20BD /* DebugPreferencesViewController.swift */; };
-		40111CCD22342CF3003D20BD /* DebugPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40111CCC22342CF3003D20BD /* DebugPreferencesViewController.xib */; };
 		401ADBAF2D55A1B6001FF53A /* recommended-main-pane-ratio.js in Resources */ = {isa = PBXBuildFile; fileRef = 401ADBAE2D55A1B6001FF53A /* recommended-main-pane-ratio.js */; };
 		401BBCB62333067F005118F8 /* ColumnLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BBCB52333067F005118F8 /* ColumnLayoutTests.swift */; };
 		401BC8981CE7E45300F89B3F /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8971CE7E45300F89B3F /* WindowManager.swift */; };
 		401BC89A1CE8C6AE00F89B3F /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8991CE8C6AE00F89B3F /* HotKeyManager.swift */; };
-		401BC89C1CE8D58A00F89B3F /* ShortcutsPreferencesListItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC89B1CE8D58A00F89B3F /* ShortcutsPreferencesListItemView.swift */; };
-		401BC8A21CE8D86B00F89B3F /* ShortcutsPreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A11CE8D86B00F89B3F /* ShortcutsPreferencesViewController.swift */; };
-		401BC8A41CE8DB0800F89B3F /* GeneralPreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A31CE8DB0800F89B3F /* GeneralPreferencesViewController.swift */; };
 		401BC8A61CE8E65D00F89B3F /* LayoutNameWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */; };
 		401BC8A81CE8E94000F89B3F /* WindowsInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A71CE8E94000F89B3F /* WindowsInformation.swift */; };
 		401BC8AE1CE8FD4700F89B3F /* UserConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8AD1CE8FD4700F89B3F /* UserConfigurationTests.swift */; };
@@ -69,8 +64,6 @@
 		40578C1B232DC607006553A0 /* TestScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40578C1A232DC607006553A0 /* TestScreen.swift */; };
 		40583E1329AEF70B008602BB /* ApplicationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40583E1229AEF70B008602BB /* ApplicationEventHandler.swift */; };
 		4058C46F1C4B119500B19D26 /* LayoutNameWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4058C46E1C4B119500B19D26 /* LayoutNameWindowController.swift */; };
-		4058C47A1C54113D00B19D26 /* GeneralPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4058C4791C54113D00B19D26 /* GeneralPreferencesViewController.xib */; };
-		4058C47E1C54119B00B19D26 /* ShortcutsPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4058C47D1C54119B00B19D26 /* ShortcutsPreferencesViewController.xib */; };
 		4062AD2B1C1F99EA00DB612B /* FloatingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4062AD2A1C1F99EA00DB612B /* FloatingLayout.swift */; };
 		4062AD2D1C1F9B8B00DB612B /* FullscreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4062AD2C1C1F9B8B00DB612B /* FullscreenLayout.swift */; };
 		4062AD2F1C1F9D6B00DB612B /* TallLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4062AD2E1C1F9D6B00DB612B /* TallLayout.swift */; };
@@ -88,10 +81,6 @@
 		40A7AEA7232ECF3000E79964 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A7AEA6232ECF3000E79964 /* Windows.swift */; };
 		40A87FDC2404AEAD005EE9C6 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A87FDB2404AEAD005EE9C6 /* main.swift */; };
 		40A87FFD2404B1B4005EE9C6 /* DebugInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A87FFC2404B1B4005EE9C6 /* DebugInfo.swift */; };
-		40A87FFF240AF2BC005EE9C6 /* MousePreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A87FFE240AF2BC005EE9C6 /* MousePreferencesViewController.swift */; };
-		40A88001240AF2D5005EE9C6 /* MousePreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40A88000240AF2D5005EE9C6 /* MousePreferencesViewController.xib */; };
-		40A88003240C40BC005EE9C6 /* LayoutsPreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A88002240C40BC005EE9C6 /* LayoutsPreferencesViewController.swift */; };
-		40A88005240C40D0005EE9C6 /* LayoutsPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40A88004240C40D0005EE9C6 /* LayoutsPreferencesViewController.xib */; };
 		40AB5BE923AB0A2B00E29346 /* TallRightLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB5BE823AB0A2B00E29346 /* TallRightLayoutTests.swift */; };
 		40AB5BEB23AB182300E29346 /* WidescreenTallLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB5BEA23AB182300E29346 /* WidescreenTallLayoutTests.swift */; };
 		40AB5BED23AC3CF800E29346 /* ThreeColumnLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB5BEC23AC3CF800E29346 /* ThreeColumnLayoutTests.swift */; };
@@ -102,12 +91,9 @@
 		40AE15F12A92EC5300E14536 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 40AE15F02A92EC5300E14536 /* Nimble */; };
 		40AE16312A943EF900E14536 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40AE16302A943EF900E14536 /* CoreGraphics.framework */; };
 		40AF71DA20BB348300F58EA9 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40AF71D920BB348300F58EA9 /* Images.xcassets */; };
-		40AF71DD20BB401400F58EA9 /* FloatingPreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AF71DB20BB401400F58EA9 /* FloatingPreferencesViewController.swift */; };
-		40AF71DE20BB401400F58EA9 /* FloatingPreferencesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40AF71DC20BB401400F58EA9 /* FloatingPreferencesViewController.xib */; };
 		40B0D145232D2E630021E0A7 /* FullscreenLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B0D144232D2E630021E0A7 /* FullscreenLayoutTests.swift */; };
 		40B0D14B232D944C0021E0A7 /* TestWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B0D14A232D944C0021E0A7 /* TestWindow.swift */; };
 		40B3927C1814967F009A296B /* LayoutNameWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40B3927B1814967F009A296B /* LayoutNameWindow.xib */; };
-		40C1357C1F202AEE00FF9FA7 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C1357B1F202AEE00FF9FA7 /* PreferencesWindow.swift */; };
 		40C3F91E1BD1B22E00F58660 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40C3F91A1BD1B22E00F58660 /* Security.framework */; };
 		40C3F91F1BD1B22E00F58660 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40C3F91B1BD1B22E00F58660 /* SystemConfiguration.framework */; };
 		40C3F9231BD1B35E00F58660 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 40C3F9221BD1B35E00F58660 /* libc++.tbd */; };
@@ -154,16 +140,11 @@
 		4006CF8F1CE017BA004CA512 /* UserConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserConfiguration.swift; sourceTree = "<group>"; };
 		400A5E9C2327350C00F0A2C3 /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
 		40111CC8223370FD003D20BD /* SIWindow+AmethystTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SIWindow+AmethystTests.swift"; sourceTree = "<group>"; };
-		40111CCA22342CC4003D20BD /* DebugPreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugPreferencesViewController.swift; sourceTree = "<group>"; };
-		40111CCC22342CF3003D20BD /* DebugPreferencesViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DebugPreferencesViewController.xib; sourceTree = "<group>"; };
 		401A529824D3B63A004359A4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		401ADBAE2D55A1B6001FF53A /* recommended-main-pane-ratio.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "recommended-main-pane-ratio.js"; sourceTree = "<group>"; };
 		401BBCB52333067F005118F8 /* ColumnLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnLayoutTests.swift; sourceTree = "<group>"; };
 		401BC8971CE7E45300F89B3F /* WindowManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		401BC8991CE8C6AE00F89B3F /* HotKeyManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HotKeyManager.swift; path = ../Events/HotKeyManager.swift; sourceTree = "<group>"; };
-		401BC89B1CE8D58A00F89B3F /* ShortcutsPreferencesListItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsPreferencesListItemView.swift; sourceTree = "<group>"; };
-		401BC8A11CE8D86B00F89B3F /* ShortcutsPreferencesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsPreferencesViewController.swift; sourceTree = "<group>"; };
-		401BC8A31CE8DB0800F89B3F /* GeneralPreferencesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneralPreferencesViewController.swift; sourceTree = "<group>"; };
 		401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutNameWindow.swift; sourceTree = "<group>"; };
 		401BC8A71CE8E94000F89B3F /* WindowsInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowsInformation.swift; sourceTree = "<group>"; };
 		401BC8A91CE8F49200F89B3F /* Amethyst-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Amethyst-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -206,8 +187,6 @@
 		40578C1A232DC607006553A0 /* TestScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScreen.swift; sourceTree = "<group>"; };
 		40583E1229AEF70B008602BB /* ApplicationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationEventHandler.swift; sourceTree = "<group>"; };
 		4058C46E1C4B119500B19D26 /* LayoutNameWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutNameWindowController.swift; sourceTree = "<group>"; };
-		4058C4791C54113D00B19D26 /* GeneralPreferencesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GeneralPreferencesViewController.xib; sourceTree = "<group>"; };
-		4058C47D1C54119B00B19D26 /* ShortcutsPreferencesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ShortcutsPreferencesViewController.xib; sourceTree = "<group>"; };
 		4062AD2A1C1F99EA00DB612B /* FloatingLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingLayout.swift; sourceTree = "<group>"; };
 		4062AD2C1C1F9B8B00DB612B /* FullscreenLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FullscreenLayout.swift; sourceTree = "<group>"; };
 		4062AD2E1C1F9D6B00DB612B /* TallLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TallLayout.swift; sourceTree = "<group>"; };
@@ -226,21 +205,14 @@
 		40A7AEA6232ECF3000E79964 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		40A87FDB2404AEAD005EE9C6 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		40A87FFC2404B1B4005EE9C6 /* DebugInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugInfo.swift; sourceTree = "<group>"; };
-		40A87FFE240AF2BC005EE9C6 /* MousePreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MousePreferencesViewController.swift; sourceTree = "<group>"; };
-		40A88000240AF2D5005EE9C6 /* MousePreferencesViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MousePreferencesViewController.xib; sourceTree = "<group>"; };
-		40A88002240C40BC005EE9C6 /* LayoutsPreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutsPreferencesViewController.swift; sourceTree = "<group>"; };
-		40A88004240C40D0005EE9C6 /* LayoutsPreferencesViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LayoutsPreferencesViewController.xib; sourceTree = "<group>"; };
 		40AB5BE823AB0A2B00E29346 /* TallRightLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallRightLayoutTests.swift; sourceTree = "<group>"; };
 		40AB5BEA23AB182300E29346 /* WidescreenTallLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidescreenTallLayoutTests.swift; sourceTree = "<group>"; };
 		40AB5BEC23AC3CF800E29346 /* ThreeColumnLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeColumnLayoutTests.swift; sourceTree = "<group>"; };
 		40AE16302A943EF900E14536 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		40AF71D920BB348300F58EA9 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		40AF71DB20BB401400F58EA9 /* FloatingPreferencesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingPreferencesViewController.swift; sourceTree = "<group>"; };
-		40AF71DC20BB401400F58EA9 /* FloatingPreferencesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FloatingPreferencesViewController.xib; sourceTree = "<group>"; };
 		40B0D144232D2E630021E0A7 /* FullscreenLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullscreenLayoutTests.swift; sourceTree = "<group>"; };
 		40B0D14A232D944C0021E0A7 /* TestWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestWindow.swift; sourceTree = "<group>"; };
 		40B3927B1814967F009A296B /* LayoutNameWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LayoutNameWindow.xib; sourceTree = "<group>"; };
-		40C1357B1F202AEE00FF9FA7 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		40C3F91A1BD1B22E00F58660 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		40C3F91B1BD1B22E00F58660 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		40C3F9221BD1B35E00F58660 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -311,19 +283,6 @@
 		4008E724190C4D9D0049E2F6 /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
-				40111CCA22342CC4003D20BD /* DebugPreferencesViewController.swift */,
-				40111CCC22342CF3003D20BD /* DebugPreferencesViewController.xib */,
-				40AF71DB20BB401400F58EA9 /* FloatingPreferencesViewController.swift */,
-				40AF71DC20BB401400F58EA9 /* FloatingPreferencesViewController.xib */,
-				401BC8A31CE8DB0800F89B3F /* GeneralPreferencesViewController.swift */,
-				4058C4791C54113D00B19D26 /* GeneralPreferencesViewController.xib */,
-				40A88002240C40BC005EE9C6 /* LayoutsPreferencesViewController.swift */,
-				40A88004240C40D0005EE9C6 /* LayoutsPreferencesViewController.xib */,
-				40A87FFE240AF2BC005EE9C6 /* MousePreferencesViewController.swift */,
-				40A88000240AF2D5005EE9C6 /* MousePreferencesViewController.xib */,
-				401BC89B1CE8D58A00F89B3F /* ShortcutsPreferencesListItemView.swift */,
-				401BC8A11CE8D86B00F89B3F /* ShortcutsPreferencesViewController.swift */,
-				4058C47D1C54119B00B19D26 /* ShortcutsPreferencesViewController.xib */,
 				4006CF8F1CE017BA004CA512 /* UserConfiguration.swift */,
 			);
 			path = Preferences;
@@ -584,7 +543,6 @@
 				40B3927B1814967F009A296B /* LayoutNameWindow.xib */,
 				401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */,
 				4058C46E1C4B119500B19D26 /* LayoutNameWindowController.swift */,
-				40C1357B1F202AEE00FF9FA7 /* PreferencesWindow.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -734,18 +692,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4058C47A1C54113D00B19D26 /* GeneralPreferencesViewController.xib in Resources */,
-				40111CCD22342CF3003D20BD /* DebugPreferencesViewController.xib in Resources */,
-				40A88001240AF2D5005EE9C6 /* MousePreferencesViewController.xib in Resources */,
 				402DB6EC1742E41A00D1C936 /* InfoPlist.strings in Resources */,
 				402DB6F21742E41A00D1C936 /* Credits.rtf in Resources */,
 				40AF71DA20BB348300F58EA9 /* Images.xcassets in Resources */,
 				402DB6F81742E41A00D1C936 /* MainMenu.xib in Resources */,
-				4058C47E1C54119B00B19D26 /* ShortcutsPreferencesViewController.xib in Resources */,
 				40B3927C1814967F009A296B /* LayoutNameWindow.xib in Resources */,
-				40AF71DE20BB401400F58EA9 /* FloatingPreferencesViewController.xib in Resources */,
 				40E705D8176EAD7800850DA6 /* default.amethyst in Resources */,
-				40A88005240C40D0005EE9C6 /* LayoutsPreferencesViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -791,8 +743,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				40CF37C229B58C7400CDB07A /* WindowsInfo.swift in Sources */,
-				40AF71DD20BB401400F58EA9 /* FloatingPreferencesViewController.swift in Sources */,
-				40A88003240C40BC005EE9C6 /* LayoutsPreferencesViewController.swift in Sources */,
 				4046EFD12238949900113067 /* Application.swift in Sources */,
 				4062AD331C1FA48C00DB612B /* ColumnLayout.swift in Sources */,
 				409645B31CEE8D950042F459 /* LogManager.swift in Sources */,
@@ -800,11 +750,9 @@
 				401BC89A1CE8C6AE00F89B3F /* HotKeyManager.swift in Sources */,
 				4062AD2F1C1F9D6B00DB612B /* TallLayout.swift in Sources */,
 				40578C19232D9CC0006553A0 /* Screen.swift in Sources */,
-				401BC89C1CE8D58A00F89B3F /* ShortcutsPreferencesListItemView.swift in Sources */,
 				400540F22325CDF4004B8656 /* Reliability.swift in Sources */,
 				4029C4F11C112478001E4788 /* Layout.swift in Sources */,
 				AA4AF40D26717DA900D2AE1B /* TwoPaneLayout.swift in Sources */,
-				401BC8A41CE8DB0800F89B3F /* GeneralPreferencesViewController.swift in Sources */,
 				2A6D9A4125E5D24D006A36B5 /* AppManager.swift in Sources */,
 				4046EFCF2236019400113067 /* Window.swift in Sources */,
 				40A87FDC2404AEAD005EE9C6 /* main.swift in Sources */,
@@ -832,16 +780,12 @@
 				4006CF8E1CDFFE90004CA512 /* AppDelegate.swift in Sources */,
 				4006CF901CE017BA004CA512 /* UserConfiguration.swift in Sources */,
 				4062AD2B1C1F99EA00DB612B /* FloatingLayout.swift in Sources */,
-				401BC8A21CE8D86B00F89B3F /* ShortcutsPreferencesViewController.swift in Sources */,
 				401BC8A81CE8E94000F89B3F /* WindowsInformation.swift in Sources */,
 				401BC8981CE7E45300F89B3F /* WindowManager.swift in Sources */,
 				400A5E9D2327350C00F0A2C3 /* Space.swift in Sources */,
 				401BC8BA1CE9319500F89B3F /* FocusFollowsMouseManager.swift in Sources */,
-				40C1357C1F202AEE00FF9FA7 /* PreferencesWindow.swift in Sources */,
 				40583E1329AEF70B008602BB /* ApplicationEventHandler.swift in Sources */,
 				4062AD351C1FA62500DB612B /* WideLayout.swift in Sources */,
-				40A87FFF240AF2BC005EE9C6 /* MousePreferencesViewController.swift in Sources */,
-				40111CCB22342CC4003D20BD /* DebugPreferencesViewController.swift in Sources */,
 				401C35B32244650F0019ED07 /* MouseState.swift in Sources */,
 				4062AD2D1C1F9B8B00DB612B /* FullscreenLayout.swift in Sources */,
 				40637075224EFED70081299D /* CGInfo.swift in Sources */,
