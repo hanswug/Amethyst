@@ -17,6 +17,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - **Never use the `fastlane` lane.** It signs with upstream's Developer ID team. Build with `scripts/build.sh` once phase 0 has created it.
 - **Tests:** add or extend unit tests for every behaviour change, and run the test suite with `scripts/test.sh` before declaring a phase done. Plain `xcodebuild test` fails on this machine: Xcode 27 rejects upstream's macOS 11 deployment target, and 4 Fullscreen layout tests pick up Hans's real YAML margins. The script handles both.
 - **Fork facts:** the app is `/Applications/hw-Amethyst.app`, bundle ID `com.ark.Amethyst`; Debug/test host is `com.ark.Amethyst.debug`. The executable and module are still `Amethyst`. Config: the fork reads `~/.config/hw-amethyst/amethyst.yml` only; upstream's `~/.config/amethyst/amethyst.yml` is its frozen fallback config and is never edited. Upstream `Amethyst.app` (brew cask) stays installed as a fallback; never run both at once.
+- **Config-only (2026-10-10):** the config file is the only source of settings and keys. A command is bound only if the file binds it (left out, `false` or `<NONE>` = unbound; no built-in default keys), and with a file present, keys it leaves out get built-in defaults on every load, never leftovers. There is no preferences window: the menu has **Edit Config…** (opens the file) and **Reload Config** (relaunch). The menu bar shows the current layout's name next to the icon.
 - **Installs:** use Homebrew when a brew route exists (SwiftLint, needed by the Lint build phase, comes from brew).
 - **Commits** end with `Co-Authored-By: HW+CC`.
 - **Profiling:** `scripts/profile.sh` when something feels slow; see `docs/PROFILING.md`.
@@ -33,7 +34,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - [ ] Phase 6: rotate / mirror (§5.6)
 - [x] Phase 2: command URL (§5.2) — built early as a detour; `open -g "amethyst://command/<key>"` runs any command
 
-**Current phase:** detour — command palette (Super+Y = `show-command-palette` with `mod4` + `y`), built on the phase 2 command registry. **Then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
+**Current phase:** detour — config-only is done (slices 1–2 + layout title); open: slice 3 (clear YAML error alert with file/line, starter file), then removing the dead preferences-window code; then the command palette (Super+Y = `show-command-palette`), **then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
 
 **Command palette (detour, next):** an in-app panel listing every registered command (`HotKeyManager.commandHandlers`, names from `hotKeyNameToDefaultsKey()`) with its current shortcut; type to filter, Enter runs. It must close and give focus back to the previously focused window before running the command. Bound to Super+Y; check that Raycast doesn't hold that key.
 

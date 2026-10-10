@@ -71,6 +71,14 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 5. **Saved state must keep decoding.** With `restore-layouts-on-launch: true`, layouts are decoded from saved state. New stored properties use `decodeIfPresent` with a default.
 6. **No hidden defaults** *(replaces "behave like upstream unless configured", 2026-10-10)*. hw-Amethyst behaves as Hans configured it. Defaults inherited from upstream that he didn't choose (e.g. key bindings in `default.amethyst`) are removed rather than kept for compatibility.
 
+## 3a. Config-only (detour, 2026-10-10)
+
+- The YAML is the single source of truth. No preferences window; the status menu offers **Edit Config…** and **Reload Config**.
+- Key bindings come only from the file; built-in default keys are gone. The 22 formerly default-bound commands are listed in Hans's file as `<NONE>` with doc comments.
+- With a config file, keys it doesn't mention fall back to built-in defaults at every load (no leftover values from older configs or the old GUI).
+- The menu bar shows the current layout name next to the icon.
+- Still open: a clear alert for YAML errors (file, line, column) and a starter file when none exists; deleting the unused preferences-window code.
+
 ## 4. Build plan
 
 | Phase | Branch | Deliverable | Size | Spec |
