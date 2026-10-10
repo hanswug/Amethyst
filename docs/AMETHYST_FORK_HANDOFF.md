@@ -79,7 +79,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 - The menu bar shows the current layout name next to the icon.
 - A config file that can't be read: alert "Error in configuration file" with its path, then quit. Finding the error is the editor's job.
 - No config file: alert "No configuration file found" with the expected path, then quit. The app never runs on built-in presets alone.
-- Still open: deleting the unused preferences-window code.
+- The preferences window and its panes are deleted from the code.
 
 ## 4. Build plan
 
