@@ -12,7 +12,6 @@ import LoginServiceKit
 import RxCocoa
 import RxSwift
 import Silica
-import Sparkle
 import SwiftyBeaver
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -48,22 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         UserConfiguration.shared.delegate = self
         UserConfiguration.shared.load()
-
-        #if RELEASE
-            let appcastURLString: String? = {
-                if UserConfiguration.shared.useCanaryBuild() {
-                    return Bundle.main.infoDictionary?["SUCanaryFeedURL"] as? String
-                } else {
-                    return Bundle.main.infoDictionary?["SUFeedURL"] as? String
-                }
-            }()
-
-            if let appcastURLString = appcastURLString, let url = URL(string: appcastURLString) {
-                SUUpdater.shared().feedURL = url
-            } else {
-                log.error("Sparkle feed URL is missing or malformed in Info.plist")
-            }
-        #endif
 
         preferencesWindowController?.window?.level = .floating
 
@@ -159,12 +142,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
 
         presentDotfileWarningIfNecessary()
-    }
-
-    @IBAction func checkForUpdates(_ sender: AnyObject) {
-        #if RELEASE
-            SUUpdater.shared().checkForUpdates(sender)
-        #endif
     }
 
     private func presentDotfileWarningIfNecessary() {

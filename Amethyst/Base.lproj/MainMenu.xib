@@ -45,12 +45,6 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="548"/>
-                <menuItem title="Check for Updates..." id="554">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="checkForUpdates:" target="494" id="l9Y-Ct-Bzq"/>
-                    </connections>
-                </menuItem>
                 <menuItem title="Reset Layouts" id="8DH-wG-R1x">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
