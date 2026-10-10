@@ -402,12 +402,11 @@ warp-east:   {mod: mod3, key: l}
 
 ## 7. Raycast after the fork
 
-The two scripts shrink to one line each, with no YAML edits and no restart:
+*(Updated after phase 1: cycling is bound natively in hw-Amethyst (Super+0 = `cycle-padding-mode` with `mod4: [option, control, shift, command]`), so the "Cycle Amethyst Layout Mode" script and its hotkey are retired.)*
+
+The remaining dropdown script shrinks to one line, with no YAML edits and no restart:
 
 ```bash
-# Cycle Amethyst Layout Mode
-open -g "amethyst://command/cycle-padding-mode"
-
 # Amethyst Layout Mode (keep the existing @raycast.argument1 dropdown: full / wide / 27)
 open -g "amethyst://command/select-$1-padding-mode"
 ```

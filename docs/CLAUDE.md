@@ -26,11 +26,11 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 ## Status
 
 - [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`
-- [ ] Phase 1: padding modes (§5.1)
+- [x] Phase 1: padding modes (§5.1) — Super+0 (mod4 = ⇧⌃⌥⌘) cycles natively; the Raycast cycle script is retired
 - [ ] Phase 2: command URL (§5.2)
 - [ ] Phase 3: float secondary windows (§5.3)
 - [ ] Phase 4: directional focus and swap (§5.4)
 - [ ] Phase 5: warp (§5.5)
 - [ ] Phase 6: rotate / mirror (§5.6)
 
-**Current phase:** 1
+**Current phase:** 2
