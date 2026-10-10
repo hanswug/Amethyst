@@ -22,6 +22,8 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
   - mod1 + `-`/`=`: shrink/expand main. mod2 + `-`/`=`: decrease/increase main count.
   - mod1 + `.` / mod2 + `,`: cycle layout forward/backward.
   - mod1 + t: toggle float. mod1 + i: layout HUD. mod2 + r: re-evaluate windows.
+  - **Super (mod4 = ⇧⌃⌥⌘), as of 2026-10-10:** 0 = cycle padding mode (hw-Amethyst); J = emojis, S / O / E / K = app launchers (Safari, Obsidian, CotEditor, Kaku), handled outside hw-Amethyst. **Y is reserved for the command palette.** Everything else on Super is free.
+  - Why h/l cw/ccw aren't enough: Hans can't remember the open order, so ~75% of the time he uses Alt-Tab/⌘Tab, and app hotkeys stand in for "go to the window over there". Without warp he swaps "until it's kind of OK, but never what I want" (phases 4–5).
 - **Settings that matter for the specs:**
 
 | Setting | Value | Where it matters |
