@@ -40,7 +40,8 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 | Topic | Decision | Why |
 |---|---|---|
 | Base | Fork Amethyst; not yabai, Hammerspoon or JS custom layouts | Amethyst already models list → layout → frames, with events, mouse and focus solved. BSP collapses on close; scripts react too late; JS `extends` freezes main count. |
-| Fork identity | Rename the bundle ID and name; **turn off Sparkle**; **self-signed code-signing certificate, built locally on each Mac** | Upstream stays installed as a fallback; the fork can't auto-update itself back to upstream; the Accessibility permission survives rebuilds without an Apple Developer account. Local builds aren't quarantined, so Gatekeeper never prompts. || Build order | **Quick wins first:** padding → command URL → secondary windows → directional → warp → rotate | Daily payoff early. Directional comes before warp because warp reuses its neighbour finder. |
+| Fork identity | Rename the bundle ID and name; **turn off Sparkle**; **self-signed code-signing certificate, built locally on each Mac** | Upstream stays installed as a fallback; the fork can't auto-update itself back to upstream; the Accessibility permission survives rebuilds without an Apple Developer account. Local builds aren't quarantined, so Gatekeeper never prompts. |
+| Build order | **Quick wins first:** padding → secondary windows → directional → warp → rotate → command URL → Raycast extension *(reordered 2026-10-10: the command URL moved last, since its main user is the Raycast extension and no phase depends on it)* | Daily payoff early. Directional comes before warp because warp reuses its neighbour finder. |
 | Padding modes | In-app, global, last used mode survives restarts | Replaces two Raycast scripts that edit the YAML and restart Amethyst. |
 | External control | `amethyst://command/<command-key>` runs any command | One handler; Raycast and shell scripts can call everything. |
 | Secondary windows | Per-app list; anchor model, per space | Floats Settings, preference and Open windows with no title rules. |
@@ -77,7 +78,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 |---|---|---|---|---|
 | 0 | `fork/setup` | Renamed app, Sparkle off, self-signed build script, profiling baseline | S | §5.0 |
 | 1 | `feat/padding-modes` | Padding modes switch instantly in-app | S | §5.1 |
-| 2 | `feat/command-url` | `amethyst://command/<key>`; Raycast scripts replaced | S | §5.2 |
+| 2 | `feat/command-url` | `amethyst://command/<key>`. **Built after phase 6**, just before the Raycast extension | S | §5.2 |
 | 3 | `feat/secondary-windows` | `floating-secondary-windows`, anchor model | S–M | §5.3 |
 | 4 | `feat/directional` | `focus-<dir>`, `swap-<dir>` and the shared neighbour finder | M | §5.4 |
 | 5 | `feat/warp` | `warp-<dir>` in 3Column, Tall and Two Pane | L | §5.5 |
@@ -85,7 +86,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 
 `fork/main` was created from `fork/setup` when phase 0 finished; phases 1–6 branch off it and merge back (§3 rule 1).
 
-After phases 1–2, Hans deletes his two Raycast scripts (§7). After phase 3, the Obsidian title rule leaves his config (§6). After phase 4, he rebinds h/j/k/l (§6).
+Phases keep their numbers but are built in the order 1, 3, 4, 5, 6, 2, then a Raycast extension for hw-Amethyst on top of the command URL. After phase 1, Hans retired both Raycast padding scripts (§7). After phase 3, the Obsidian title rule leaves his config (§6). After phase 4, he rebinds h/j/k/l (§6).
 
 ## 5. Specs
 
