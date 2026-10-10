@@ -77,6 +77,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 - His four modes: not working = Fullscreen stack (laptop); files on the laptop = Two Pane; light focus work = 3Column; lots of docs = Tall, ordered as it fits.
 - For phases 4–6: simple, predictable rules over clever geometry; no state a user wouldn't notice. Directional navigation needs only minimal tie-breaks; warp keeps only the bookkeeping a "move into that column" needs; rotate/mirror only if it serves one of the four modes (e.g. the Ark in portrait).
 - Idea for later: an overflow policy for `window-max-count` that floats the 9th window instead of minimising it.
+- **Side columns hold at most 3 rows** in layouts with a main pane: below that most apps no longer fit their minimum height. Capacity with main count 1: Tall = main + 3, 3Column = main + 3 + 3. When the side columns are full, a new window floats (same overflow idea as above). Two Pane and Fullscreen stack by design and are unaffected. Warp into a full column is refused (or swaps), which bounds the 3Column column-size bookkeeping to ≤ 3. Likely a setting, e.g. `max-column-rows: 3`.
 
 ## 3a. Config-only (detour, 2026-10-10)
 
