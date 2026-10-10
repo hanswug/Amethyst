@@ -15,13 +15,17 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - **Decisions are locked.** If the code contradicts the handover (wrong path, different behaviour, a decision that can't work), stop and ask Hans. Don't improvise a different design.
 - **Hans does the GUI steps himself:** creating the self-signed certificate in Keychain Access, granting Accessibility, picking the fork's name and bundle ID. Stop and tell him exactly what to do.
 - **Never use the `fastlane` lane.** It signs with upstream's Developer ID team. Build with `scripts/build.sh` once phase 0 has created it.
-- **Tests:** add or extend unit tests for every behaviour change, and run the test suite before declaring a phase done.
+- **Tests:** add or extend unit tests for every behaviour change, and run the test suite with `scripts/test.sh` before declaring a phase done. Plain `xcodebuild test` fails on this machine: Xcode 27 rejects upstream's macOS 11 deployment target, and 4 Fullscreen layout tests pick up Hans's real YAML margins. The script handles both.
+- **Fork facts:** the app is `/Applications/hw-Amethyst.app`, bundle ID `com.ark.Amethyst`; Debug/test host is `com.ark.Amethyst.debug`. The executable and module are still `Amethyst`. Upstream `Amethyst.app` (brew cask) stays installed as a fallback; never run both at once.
+- **Installs:** use Homebrew when a brew route exists (SwiftLint, needed by the Lint build phase, comes from brew).
+- **Commits** end with `Co-Authored-By: HW+CC`.
+- **Profiling:** `scripts/profile.sh` when something feels slow; see `docs/PROFILING.md`.
 - **With no new config keys set, the fork must behave exactly like upstream** (ground rule 6).
 - **When a phase is done,** update Status below, summarise what changed, and list anything Hans must do by hand (bindings, config, re-granting permissions).
 
 ## Status
 
-- [ ] Phase 0: fork setup and baseline (§5.0)
+- [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`; work Mac still to set up (certificate + `scripts/build.sh`)
 - [ ] Phase 1: padding modes (§5.1)
 - [ ] Phase 2: command URL (§5.2)
 - [ ] Phase 3: float secondary windows (§5.3)
@@ -29,4 +33,4 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - [ ] Phase 5: warp (§5.5)
 - [ ] Phase 6: rotate / mirror (§5.6)
 
-**Current phase:** 0
+**Current phase:** 1
