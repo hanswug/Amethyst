@@ -416,16 +416,25 @@ class UserConfiguration: NSObject {
         return path
     }
 
-    /// A configuration file that can't be read stops the app: it never runs on part of a configuration. Finding the error is the editor's job.
+    /// The app only runs on a configuration file: one that's missing or can't be read stops it. Finding the error is the editor's job.
     private func exitWithConfigurationFileError() -> Never {
         let path = configurationFilePath ?? "configuration file"
-        log.error("Error in configuration file: \(path)")
+        exitWithAlert("Error in configuration file", path: path, advice: "Fix the file and start it again.")
+    }
+
+    private func exitWithMissingConfigurationFile() -> Never {
+        let path = UserConfiguration.xdgConfigurationDirectory.appending("/amethyst.yml").replacingOccurrences(of: NSHomeDirectory(), with: "~")
+        exitWithAlert("No configuration file found", path: path, advice: "Create it and start again.")
+    }
+
+    private func exitWithAlert(_ message: String, path: String, advice: String) -> Never {
+        log.error("\(message): \(path)")
 
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.messageText = "Error in configuration file"
+        alert.messageText = message
         let appName = (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String) ?? "Amethyst"
-        alert.informativeText = "\(path)\n\n\(appName) will quit. Fix the file and start it again."
+        alert.informativeText = "\(path)\n\n\(appName) will quit. \(advice)"
         alert.runModal()
         exit(1)
     }
@@ -466,6 +475,8 @@ class UserConfiguration: NSObject {
             if configurationJSON == nil {
                 exitWithConfigurationFileError()
             }
+        } else {
+            exitWithMissingConfigurationFile()
         }
 
         defaultConfiguration = jsonForConfig(at: defaultAmethystConfigPath ?? "")
