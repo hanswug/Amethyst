@@ -29,7 +29,8 @@ class TestConfigurationStorage: ConfigurationStorage {
     }
 
     func float(forKey key: ConfigurationKey) -> Float {
-        return (storage[key] as? Float) ?? 0
+        // Like UserDefaults, read any number (YAML integers arrive as Int).
+        return (storage[key] as? NSNumber)?.floatValue ?? 0
     }
 
     func stringArray(forKey key: ConfigurationKey) -> [String]? {
@@ -70,205 +71,68 @@ class UserConfigurationTests: QuickSpec {
 
     override func spec() {
         describe("constructing commands") {
-            context("overrides") {
-                it("when user configuration exists") {
-                    var configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    let localConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "1"
-                        ]
-                    ]
-                    configuration.configurationYAML = nil
-                    configuration.configurationJSON = JSON(localConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    var registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-
-                    configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    configuration.configurationYAML = localConfiguration
-                    configuration.configurationJSON = nil
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-                }
-
-                it("when custom mod1 is specified") {
-                    var configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    let localConfiguration: [String: Any] = [
-                        "mod1": [
-                            "command"
-                        ]
-                    ]
-                    let defaultConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "1"
-                        ]
-                    ]
-                    configuration.configurationYAML = nil
-                    configuration.configurationJSON = JSON(localConfiguration)
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    var registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-
-                    configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    configuration.configurationYAML = localConfiguration
-                    configuration.configurationJSON = nil
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-
-                }
-
-                it("when custom mod2 is specified") {
-                    var configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    let localConfiguration: [String: Any] = [
-                        "mod2": [
-                            "command"
-                        ]
-                    ]
-                    let defaultConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "1"
-                        ]
-                    ]
-                    configuration.configurationJSON = JSON(localConfiguration)
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    var registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-
-                    configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    configuration.configurationYAML = localConfiguration
-                    configuration.configurationJSON = nil
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.override).to(beTrue())
-                }
-            }
-
-            context("takes command") {
-                it("from local configuration over default") {
-                    var configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    let localConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "1"
-                        ]
-                    ]
-                    let defaultConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "2"
-                        ]
-                    ]
-                    configuration.configurationJSON = JSON(localConfiguration)
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    var registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.keyString).to(equal("1"))
-
-                    configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    configuration.configurationJSON = JSON(localConfiguration)
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(registrar.keyString).to(equal("1"))
-                }
-
-                it("from default in absence of local configuration") {
-                    let configuration = UserConfiguration(storage: TestConfigurationStorage())
-                    let defaultConfiguration: [String: Any] = [
-                        "test": [
-                            "mod": "mod1",
-                            "key": "1"
-                        ]
-                    ]
-                    configuration.configurationJSON = JSON([:])
-                    configuration.defaultConfiguration = JSON(defaultConfiguration)
-                    configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                    let registrar = TestHotKeyRegistrar()
-
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-
-                    expect(configuration.defaultConfiguration?["test"]["key"].string).to(equal("1"))
-                    expect(registrar.keyString).to(equal("1"))
-                }
-            }
-
-            it("does not crash for malformed commands") {
-                var configuration = UserConfiguration(storage: TestConfigurationStorage())
-                let localConfiguration: [String: Any] = [
-                    "test": [
-                        "key": "2"
-                    ]
-                ]
-                let defaultConfiguration: [String: Any] = [
-                    "test": [
-                        "mod": "mod1",
-                        "key": "2"
-                    ]
-                ]
-                configuration.configurationYAML = nil
-                configuration.configurationJSON = JSON(localConfiguration)
-                configuration.defaultConfiguration = JSON(defaultConfiguration)
-                configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
-
-                var registrar = TestHotKeyRegistrar()
-
-                expect {
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-                }.toNot(throwError())
-
-                configuration = UserConfiguration(storage: TestConfigurationStorage())
-                configuration.configurationYAML = localConfiguration
+            func registrar(for yaml: [String: Any], commandKey: String = "test", defaults: [String: Any] = [:]) -> TestHotKeyRegistrar {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+                configuration.configurationYAML = yaml
                 configuration.configurationJSON = nil
-                configuration.defaultConfiguration = JSON(defaultConfiguration)
+                configuration.defaultConfiguration = JSON(defaults)
                 configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
+                configuration.modifier4 = configuration.modifierFlagsForStrings(["option", "control", "shift", "command"])
 
-                registrar = TestHotKeyRegistrar()
+                let registrar = TestHotKeyRegistrar()
+                configuration.constructCommand(for: registrar, commandKey: commandKey, handler: {})
+                return registrar
+            }
 
-                expect {
-                    configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
-                }.toNot(throwError())
+            it("binds the key the configuration gives") {
+                let registrar = registrar(for: ["test": ["mod": "mod4", "key": "0"]])
+
+                expect(registrar.keyString).to(equal("0"))
+                expect(registrar.modifiers).to(equal([.option, .control, .shift, .command]))
+                expect(registrar.defaultsKey).to(equal("test"))
+            }
+
+            it("also reads JSON configurations") {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+                configuration.configurationYAML = nil
+                configuration.configurationJSON = JSON(["test": ["mod": "mod1", "key": "1"]])
+                configuration.modifier1 = configuration.modifierFlagsForStrings(["command"])
+                let registrar = TestHotKeyRegistrar()
+
+                configuration.constructCommand(for: registrar, commandKey: "test", handler: {})
+
+                expect(registrar.keyString).to(equal("1"))
+            }
+
+            it("accepts a number as the key") {
+                expect(registrar(for: ["test": ["mod": "mod1", "key": 1]]).keyString).to(equal("1"))
+            }
+
+            it("always replaces previously stored shortcuts") {
+                expect(registrar(for: ["test": ["mod": "mod1", "key": "1"]]).override).to(beTrue())
+                expect(registrar(for: [:]).override).to(beTrue())
+            }
+
+            it("leaves commands the configuration doesn't bind unbound, ignoring built-in defaults") {
+                let registrar = registrar(for: ["mod1": ["command"]], defaults: ["test": ["mod": "mod1", "key": "2"]])
+
+                expect(registrar.keyString).to(beNil())
+                expect(registrar.modifiers).to(beNil())
+                expect(registrar.handler).toNot(beNil())
+            }
+
+            it("leaves commands set to false unbound") {
+                expect(registrar(for: ["test": false]).keyString).to(beNil())
+            }
+
+            it("leaves commands bound to <NONE> unbound") {
+                expect(registrar(for: ["test": ["mod": "<NONE>", "key": "<NONE>"]]).keyString).to(beNil())
+            }
+
+            it("leaves malformed commands unbound without crashing") {
+                expect(registrar(for: ["test": ["key": "2"]]).keyString).to(beNil())
+                expect(registrar(for: ["test": ["mod": "mod7", "key": "2"]]).keyString).to(beNil())
+                expect(registrar(for: ["test": "nonsense"]).keyString).to(beNil())
             }
         }
 
@@ -557,6 +421,21 @@ class UserConfigurationTests: QuickSpec {
                 configuration.defaultConfiguration = JSON(defaultConfiguration)
                 configuration.loadConfiguration()
                 expect(configuration.layoutKeys()).to(equal(existingLayouts))
+            }
+
+            it("with a configuration file, keys it leaves out don't keep earlier values") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+                storage.set(["wide"], forKey: .layouts)
+                storage.set(Float(540), forKey: .screenPaddingTop)
+
+                configuration.configurationYAML = ["mod1": ["option"]]
+                configuration.configurationJSON = nil
+                configuration.defaultConfiguration = JSON(["layouts": ["tall"]])
+                configuration.loadConfiguration()
+
+                expect(configuration.layoutKeys()).to(equal(["tall"]))
+                expect(storage.object(forKey: .screenPaddingTop)).to(beNil())
             }
 
             it("local json configuration does override existing configuration") {
@@ -857,14 +736,13 @@ class UserConfigurationTests: QuickSpec {
                 ]
             }
 
-            func plainPaddingStorage() -> TestConfigurationStorage {
-                let storage = TestConfigurationStorage()
-                storage.set(Float(10), forKey: .screenPaddingTop)
-                storage.set(Float(20), forKey: .screenPaddingBottom)
-                storage.set(Float(30), forKey: .screenPaddingLeft)
-                storage.set(Float(40), forKey: .screenPaddingRight)
-                return storage
-            }
+            let plainPaddingsYAML = """
+
+            screen-padding-top: 10
+            screen-padding-bottom: 20
+            screen-padding-left: 30
+            screen-padding-right: 40
+            """
 
             describe("parsing") {
                 it("reads modes in order with omitted sides as zero") {
@@ -906,20 +784,20 @@ class UserConfigurationTests: QuickSpec {
 
             describe("screen padding") {
                 it("uses the plain screen paddings when no modes are configured") {
-                    let configuration = loadedConfiguration("layouts: [tall]", storage: plainPaddingStorage())
+                    let configuration = loadedConfiguration("layouts: [tall]" + plainPaddingsYAML)
 
                     expect(configuration.activePaddingMode()).to(beNil())
                     expect(paddings(configuration)).to(equal([10, 20, 30, 40]))
                 }
 
                 it("uses the plain screen paddings while no mode is selected") {
-                    let configuration = loadedConfiguration(modesYAML, storage: plainPaddingStorage())
+                    let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
 
                     expect(paddings(configuration)).to(equal([10, 20, 30, 40]))
                 }
 
                 it("uses the active mode's values") {
-                    let configuration = loadedConfiguration(modesYAML, storage: plainPaddingStorage())
+                    let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
 
                     configuration.selectPaddingMode(named: "27")
 
@@ -928,7 +806,7 @@ class UserConfigurationTests: QuickSpec {
 
                 it("falls back to the plain screen paddings for an unknown active name") {
                     stateDefaults.set("gone", forKey: UserConfiguration.activePaddingModeKey)
-                    let configuration = loadedConfiguration(modesYAML, storage: plainPaddingStorage())
+                    let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
 
                     expect(configuration.activePaddingMode()).to(beNil())
                     expect(paddings(configuration)).to(equal([10, 20, 30, 40]))

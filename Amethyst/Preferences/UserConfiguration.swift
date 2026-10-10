@@ -329,6 +329,14 @@ class UserConfiguration: NSObject {
             let defaultValue = defaultConfiguration?[key.rawValue]
             let existingValue = storage.object(forKey: key)
 
+            // With a configuration file, the file rules: a key it leaves out gets the built-in default (or none),
+            // never a value left over from an earlier configuration or the old preferences window.
+            if hasCustomConfiguration() {
+                let hasDefaultConfigurationValue = (defaultValue != nil && defaultValue?.error == nil)
+                storage.set(value ?? (hasDefaultConfigurationValue ? defaultValue?.rawValue : nil), forKey: key)
+                continue
+            }
+
             let hasLocalConfigurationValue = value != nil
             let hasDefaultConfigurationValue = (defaultValue != nil && defaultValue?.error == nil)
             let hasExistingValue = (existingValue != nil)
@@ -485,52 +493,38 @@ class UserConfiguration: NSObject {
         return "select-\(paddingModeName)-padding-mode"
     }
 
+    /**
+     Registers a command's hotkey. Only the configuration file binds keys: a command it leaves out, sets to `false` or binds to `<NONE>` has no hotkey, and there are no built-in default keys. Shortcuts stored by earlier versions (e.g. recorded in the old preferences window) are always replaced.
+     */
     func constructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
-        var override = false
-        var command: [String: String]? = configurationValue(forKeyValue: commandKey, fallbackToDefault: false)
-        if command != nil {
-            override = true
-        } else if let enabled: Bool = configurationValue(forKeyValue: commandKey, fallbackToDefault: false), !enabled {
-            override = true
-            command = nil
-        } else {
-            let mod1: [String]? = configurationValueForKey(.mod1, fallbackToDefault: false)
-            let mod2: [String]? = configurationValueForKey(.mod2, fallbackToDefault: false)
-            let mod3: [String]? = configurationValueForKey(.mod3, fallbackToDefault: false)
-            let mod4: [String]? = configurationValueForKey(.mod4, fallbackToDefault: false)
-            if mod1 != nil || mod2 != nil || mod3 != nil || mod4 != nil {
-                override = true
-            }
-            command = defaultConfiguration?[commandKey].rawValue as? [String: String]
-        }
+        let command: [String: Any]? = configurationValue(forKeyValue: commandKey, fallbackToDefault: false)
+        // `key: 1` is a number in YAML, so accept any scalar as the key.
+        let keyString = command?[ConfigurationKey.commandKey.rawValue].map { "\($0)" }
+        let modifierString = command?[ConfigurationKey.commandMod.rawValue] as? String
 
-        let commandKeyString = command?[ConfigurationKey.commandKey.rawValue]
-        let commandModifierString = command?[ConfigurationKey.commandMod.rawValue]
-
-        var commandFlags: AMModifierFlags?
-
-        if let modifierString = commandModifierString {
-            switch modifierString {
-            case "mod1":
-                commandFlags = modifier1
-            case "mod2":
-                commandFlags = modifier2
-            case "mod3":
-                commandFlags = modifier3
-            case "mod4":
-                commandFlags = modifier4
-            default:
-                log.warning("Unknown modifier string: \(modifierString)")
-                return
-            }
+        var modifiers: AMModifierFlags?
+        switch modifierString {
+        case "mod1"?:
+            modifiers = modifier1
+        case "mod2"?:
+            modifiers = modifier2
+        case "mod3"?:
+            modifiers = modifier3
+        case "mod4"?:
+            modifiers = modifier4
+        case nil, "<NONE>"?:
+            modifiers = nil
+        case let unknown?:
+            log.warning("Unknown modifier \(unknown) for \(commandKey); leaving it unbound")
+            modifiers = nil
         }
 
         hotKeyRegistrar.registerHotKey(
-            with: commandKeyString,
-            modifiers: commandFlags,
+            with: modifiers == nil ? nil : keyString,
+            modifiers: modifiers,
             handler: commandHandler(running: handler),
             defaultsKey: commandKey,
-            override: override
+            override: true
         )
     }
 
