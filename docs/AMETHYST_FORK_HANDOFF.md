@@ -4,7 +4,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 
 **For Claude Code:** every decision here has been made with Hans (§2). Build in the phase order of §4, one branch per phase, each off `fork/main` (§3 rule 1). Stop and ask Hans only if something in this document turns out to be false in the code. File paths and approximate line numbers were checked against the baseline commit; re-check them after rebasing.
 
-**Scope: personal use.** No public release is planned (no Apple Developer account, and BetterStage already serves that market). Generic features may still go upstream as pull requests. Appendix A covers what a public release would take, in case that ever changes.
+**Scope: personal use.** No public release is planned (no Apple Developer account, and BetterStage already serves that market). **Pivot (2026-10-10): hw-Amethyst is its own app**, designed for Hans's setup; upstream is only the fallback app and an occasional source of bug fixes (§3). Appendix A covers what a public release would take, in case that ever changes.
 
 ---
 
@@ -54,23 +54,22 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 | Warp in 3Column | Columns grow and shrink (stored column sizes) | 1/2/2 → warp → 1/3/1; closing a window shrinks only its own column. |
 | Warp elsewhere | **Tall:** moves the main boundary. **Two Pane:** west/east swaps with main. Everything else: no-op | These are the layouts Hans uses. |
 | New window in 3Column | Shorter side column, never main; ties go to the secondary pane | Main changes only on command; additions reproduce upstream's split exactly. |
-| Hotkeys | All new commands ship **unbound**; Hans binds them in YAML (§6 has a suggested scheme) | No collisions; PR-friendly. |
+| Hotkeys | *(Changed 2026-10-10.)* New commands ship **with Hans's chosen keys** as hw-Amethyst's defaults where he has picked them (Super+0, Super+Y, later h/j/k/l); inherited key defaults he didn't choose are cleared | hw-Amethyst is its own app (§3); keys stay free for its own features. |
 | Dropped | Float by AX role/subrole; re-check float on title change; cross-display directions; public release | Covered by other features or out of scope. |
 
 ## 3. Ground rules
 
-1. **Small, rebasable patches.** One branch per phase, off the private integration branch `fork/main` (= `development` + phase 0 + every finished phase). Upstream is active.
+1. **Small commits, one branch per phase**, off the integration branch `fork/main` (= `development` + phase 0 + every finished phase).
    - Finished, tested phases merge back into `fork/main`; the installed app is always built from `fork/main`.
    - Why not off `development`: on Xcode 27 a plain `development` branch can't build or test without `fork/setup`'s scripts (deployment target, test isolation), and later phases build on earlier ones (2 uses 1's commands, 5 reuses 4's neighbour finder).
-   - To propose a feature upstream: `git rebase --onto development fork/main feat/<x>` (or cherry-pick its commits). Phase 0's commits only touch identity, signing, scripts and docs, so feature commits lift off cleanly. Keep feature commits free of fork-only changes so this stays true.
-   - Rebasing on upstream: rebase `fork/main` onto the new `development`, then rebase any open phase branch onto `fork/main`.
-2. **Upstream-friendly.** Padding modes, the command URL, secondary windows, directional navigation and warp should each be proposable upstream (open an issue first to ask whether it's wanted). Only the fork-identity changes (§5.0) stay private.
+   - Upstream fixes: cherry-pick the ones worth having into `fork/main` (or rebase it onto a newer `development` when that's cheap). Not a constraint on how features are written.
+2. **hw-Amethyst is its own app** *(replaces "upstream-friendly", 2026-10-10)*. Features, defaults and wording are designed for Hans's setup only; nothing needs to be proposable upstream. Upstream stays installed as the fallback app with its own untouched config, and upstream bug fixes are cherry-picked when useful.
 3. **Signing:** use a **self-signed code-signing certificate**, not ad-hoc signing (§5.0). macOS ties the Accessibility permission to the signing identity. Ad-hoc builds change identity on every build and force a re-grant.
 4. **Build and test:** don't use the `fastlane` lane. It exports with method `developer-id` and upstream's team ID (`exportOptions.plist`), which Hans doesn't have. Build with `xcodebuild` and the self-signed identity (§5.0). Tests:
    - Layout: `AmethystTests/Tests/Layout/*` (including `ThreeColumnLayoutTests.swift` and `TallLayoutTests.swift`), with helpers in `AmethystTests/Helpers/FrameAssignmentVerification.swift`.
    - Config: `AmethystTests/Tests/Configuration/UserConfigurationTests.swift`.
 5. **Saved state must keep decoding.** With `restore-layouts-on-launch: true`, layouts are decoded from saved state. New stored properties use `decodeIfPresent` with a default.
-6. **Behave like upstream unless configured.** With none of the new keys or bindings set, the fork behaves exactly like upstream.
+6. **No hidden defaults** *(replaces "behave like upstream unless configured", 2026-10-10)*. hw-Amethyst behaves as Hans configured it. Defaults inherited from upstream that he didn't choose (e.g. key bindings in `default.amethyst`) are removed rather than kept for compatibility.
 
 ## 4. Build plan
 

@@ -20,7 +20,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - **Installs:** use Homebrew when a brew route exists (SwiftLint, needed by the Lint build phase, comes from brew).
 - **Commits** end with `Co-Authored-By: HW+CC`.
 - **Profiling:** `scripts/profile.sh` when something feels slow; see `docs/PROFILING.md`.
-- **With no new config keys set, the fork must behave exactly like upstream** (ground rule 6).
+- **hw-Amethyst is its own app** (ground rules 2 and 6): design for Hans's setup, no hidden inherited defaults; upstream is only the fallback app and a source of occasional fixes. Don't frame decisions or wording around upstream.
 - **When a phase is done,** update Status below, summarise what changed, and list anything Hans must do by hand (bindings, config, re-granting permissions).
 
 ## Status
