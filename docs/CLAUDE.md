@@ -25,7 +25,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 ## Status
 
-- [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`; work Mac still to set up (certificate + `scripts/build.sh`)
+- [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`
 - [ ] Phase 1: padding modes (§5.1)
 - [ ] Phase 2: command URL (§5.2)
 - [ ] Phase 3: float secondary windows (§5.3)
