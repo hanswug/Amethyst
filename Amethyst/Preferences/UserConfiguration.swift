@@ -336,10 +336,13 @@ class UserConfiguration: NSObject {
     }
 
     private func loadConfigurationFile() {
+        // A renamed build can set AMConfigName in its Info.plist to read its own config files
+        // instead of sharing Amethyst's.
+        let configName = (Bundle.main.infoDictionary?["AMConfigName"] as? String) ?? "amethyst"
         let xdgConfigPath = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? NSHomeDirectory().appending("/.config")
-        let amethystXDGConfigPath = xdgConfigPath.appending("/amethyst")
-        let amethystYAMLConfigPath = NSHomeDirectory().appending("/.amethyst.yml")
-        let amethystJSONConfigPath = NSHomeDirectory().appending("/.amethyst")
+        let amethystXDGConfigPath = xdgConfigPath.appending("/\(configName)")
+        let amethystYAMLConfigPath = NSHomeDirectory().appending("/.\(configName).yml")
+        let amethystJSONConfigPath = NSHomeDirectory().appending("/.\(configName)")
         let defaultAmethystConfigPath = Bundle.main.path(forResource: "default", ofType: "amethyst")
 
         var isDirectory: ObjCBool = false

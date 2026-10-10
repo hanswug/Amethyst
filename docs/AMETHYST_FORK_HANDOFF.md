@@ -11,9 +11,10 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 ## 1. Context
 
 - **Why this fork exists:** Hans wants **directional** navigation (west/east/north/south) for focus, swap and warp, instead of previous/next (clockwise/counter-clockwise). For switching windows in general he uses an Alt-Tab app; Amethyst doesn't need to replicate that.
-- **Two Macs, one screen.** Hans plugs the **same** Samsung Odyssey Ark Gen 2 (55", 3840×2160, curved, can pivot to portrait "cockpit" mode) into either his **personal Mac** or his **work Mac**. Only one display is in use at a time: the Ark in clamshell, or a built-in panel. Both Macs run the fork and share the same YAML (dotfiles), so padding modes and every other decision apply to both unchanged.- **Daily layouts** (`layouts:` order, selected with mod1 + 1…5): Fullscreen, Two Pane, 3Column Left, 3Column Middle (`middle-wide`), Tall.
+- **Two Macs, one screen.** Hans plugs the **same** Samsung Odyssey Ark Gen 2 (55", 3840×2160, curved, can pivot to portrait "cockpit" mode) into either his **personal Mac** or his **work Mac**. Only one display is in use at a time: the Ark in clamshell, or a built-in panel. Both Macs run the fork and share the same YAML (dotfiles), so padding modes and every other decision apply to both unchanged.
+- **Daily layouts** (`layouts:` order, selected with mod1 + 1…5): Fullscreen, Two Pane, 3Column Left, 3Column Middle (`middle-wide`), Tall.
 - **"Main" means focus.** Hans puts the window he's working on in the main pane and enlarges it, and the others shrink. Nothing should change the main pane unless he asks.
-- **Config:** `~/.config/amethyst/amethyst.yml`. It may be a symlink into a dotfiles repo; edit the real file.
+- **Config:** the fork reads its own file, `~/.config/hw-amethyst/amethyst.yml` (§5.0). Upstream keeps `~/.config/amethyst/amethyst.yml`, frozen as the fallback's config. Either may be a symlink into a dotfiles repo; edit the real file.
 - **Current bindings:**
   - Modifiers: mod1 = ⌥⌃, mod2 = ⌥⌃⌘.
   - mod1/mod2 + h/l: focus/swap counter-clockwise/clockwise.
@@ -103,7 +104,10 @@ After phases 1–2, Hans deletes his two Raycast scripts (§7). After phase 3, t
   - A new preferences domain means GUI preferences don't carry over. That's fine: the YAML is the source of truth.
   - Saved layout state starts fresh once.
   - Grant Accessibility to the new app, and switch the login item over.
-- **Shared YAML:** both apps read the same file. Upstream ignores the fork's new keys, because `UserConfiguration.loadConfiguration()` (~L286) only iterates known `ConfigurationKey` cases. Falling back to upstream therefore needs no config edits.
+- **Separate config files** *(changed 2026-10-10; originally one shared YAML)*:
+  - The fork reads `~/.hw-amethyst.yml`, then `~/.config/hw-amethyst/amethyst.yml` (or `$XDG_CONFIG_HOME/hw-amethyst`), then `~/.hw-amethyst`. Upstream reads its own files, which it can keep unchanged.
+  - The name comes from `AMConfigName` in `Amethyst-Info.plist`; without that key the code behaves as upstream's.
+  - **Why the shared file was dropped:** it would degrade the fallback. The fork's config removes and renames settings upstream relies on: `screen-padding-top` gives way to padding modes in phase 1, and `focus-cw/ccw: false` comes in phase 4.
 - **Profiling baseline:** Hans reports occasional slowdown and quirks. Run Instruments' Time Profiler during normal use, find out whether the cost is in Amethyst or in an app flooding it with Accessibility notifications, and record the findings in `docs/PROFILING.md`.
 - **Debug CLI:** `<App>.app/Contents/MacOS/Amethyst debug windows` lists window titles and whether each is managed.
 
@@ -333,7 +337,7 @@ neighbor(of focused, direction, frames: [WindowID: CGRect], frontToBack: [Window
 
 ## 6. Hans's config after the fork (target)
 
-Add or replace these parts of `amethyst.yml` as each phase lands:
+Add or replace these parts of the fork's `~/.config/hw-amethyst/amethyst.yml` as each phase lands (upstream's file stays as it is):
 
 ```yaml
 # Phase 1 — padding modes (replaces screen-padding-top: 540 etc.)

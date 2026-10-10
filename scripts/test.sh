@@ -34,4 +34,10 @@ TEST_RUNNER_XDG_CONFIG_HOME="$EMPTY_CONFIG_HOME" xcodebuild \
     -derivedDataPath build/DerivedData \
     -quiet \
     MACOSX_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
-    test "$@"
+    -resultBundlePath "$EMPTY_CONFIG_HOME/result.xcresult" \
+    test "$@" || status=$?
+
+xcrun xcresulttool get test-results summary --path "$EMPTY_CONFIG_HOME/result.xcresult" 2>/dev/null \
+    | python3 -c 'import json, sys; d = json.load(sys.stdin); print("==> {}: {} passed, {} failed, {} skipped".format(d["result"], d["passedTests"], d["failedTests"], d["skippedTests"]))' \
+    || echo "==> no test results (build failed?)"
+exit "${status:-0}"
