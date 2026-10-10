@@ -10,7 +10,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 ## How we work
 
-- **One phase per session**, one branch per phase, named as in §4 of the handover.
+- **One phase per session**, one branch per phase, named as in §4 of the handover, branched off `fork/main` (not `development`; see §3 rule 1). When the phase is done and tested, merge it into `fork/main` and rebuild with `scripts/build.sh` from `fork/main`.
 - **Plan first.** Propose the plan for the phase and wait for Hans to approve it before editing files.
 - **Decisions are locked.** If the code contradicts the handover (wrong path, different behaviour, a decision that can't work), stop and ask Hans. Don't improvise a different design.
 - **Hans does the GUI steps himself:** creating the self-signed certificate in Keychain Access, granting Accessibility, picking the fork's name and bundle ID. Stop and tell him exactly what to do.

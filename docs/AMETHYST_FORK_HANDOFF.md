@@ -2,7 +2,7 @@
 
 Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branch `development`, commit `6508ee2` (2026-08-19)
 
-**For Claude Code:** every decision here has been made with Hans (§2). Build in the phase order of §4, one branch per phase. Stop and ask Hans only if something in this document turns out to be false in the code. File paths and approximate line numbers were checked against the baseline commit; re-check them after rebasing.
+**For Claude Code:** every decision here has been made with Hans (§2). Build in the phase order of §4, one branch per phase, each off `fork/main` (§3 rule 1). Stop and ask Hans only if something in this document turns out to be false in the code. File paths and approximate line numbers were checked against the baseline commit; re-check them after rebasing.
 
 **Scope: personal use.** No public release is planned (no Apple Developer account, and BetterStage already serves that market). Generic features may still go upstream as pull requests. Appendix A covers what a public release would take, in case that ever changes.
 
@@ -57,7 +57,11 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 
 ## 3. Ground rules
 
-1. **Small, rebasable patches.** One branch per phase, off `development`. Upstream is active.
+1. **Small, rebasable patches.** One branch per phase, off the private integration branch `fork/main` (= `development` + phase 0 + every finished phase). Upstream is active.
+   - Finished, tested phases merge back into `fork/main`; the installed app is always built from `fork/main`.
+   - Why not off `development`: on Xcode 27 a plain `development` branch can't build or test without `fork/setup`'s scripts (deployment target, test isolation), and later phases build on earlier ones (2 uses 1's commands, 5 reuses 4's neighbour finder).
+   - To propose a feature upstream: `git rebase --onto development fork/main feat/<x>` (or cherry-pick its commits). Phase 0's commits only touch identity, signing, scripts and docs, so feature commits lift off cleanly. Keep feature commits free of fork-only changes so this stays true.
+   - Rebasing on upstream: rebase `fork/main` onto the new `development`, then rebase any open phase branch onto `fork/main`.
 2. **Upstream-friendly.** Padding modes, the command URL, secondary windows, directional navigation and warp should each be proposable upstream (open an issue first to ask whether it's wanted). Only the fork-identity changes (§5.0) stay private.
 3. **Signing:** use a **self-signed code-signing certificate**, not ad-hoc signing (§5.0). macOS ties the Accessibility permission to the signing identity. Ad-hoc builds change identity on every build and force a re-grant.
 4. **Build and test:** don't use the `fastlane` lane. It exports with method `developer-id` and upstream's team ID (`exportOptions.plist`), which Hans doesn't have. Build with `xcodebuild` and the self-signed identity (§5.0). Tests:
@@ -77,6 +81,8 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 | 4 | `feat/directional` | `focus-<dir>`, `swap-<dir>` and the shared neighbour finder | M | §5.4 |
 | 5 | `feat/warp` | `warp-<dir>` in 3Column, Tall and Two Pane | L | §5.5 |
 | 6 | `feat/rotate` | Rotate / mirror post-transform | M | §5.6 |
+
+`fork/main` was created from `fork/setup` when phase 0 finished; phases 1–6 branch off it and merge back (§3 rule 1).
 
 After phases 1–2, Hans deletes his two Raycast scripts (§7). After phase 3, the Obsidian title rule leaves his config (§6). After phase 4, he rebinds h/j/k/l (§6).
 
