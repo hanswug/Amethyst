@@ -255,6 +255,8 @@ class UserConfiguration: NSObject {
 
     var configurationYAML: [String: Any]?
     var configurationJSON: JSON?
+    /// The configuration file that was loaded, if any.
+    private(set) var configurationFilePath: String?
     var defaultConfiguration: JSON?
 
     var modifier1: AMModifierFlags?
@@ -387,12 +389,36 @@ class UserConfiguration: NSObject {
         return try? JSON(data: data)
     }
 
-    private func loadConfigurationFile() {
-        // A renamed build can set AMConfigName in its Info.plist to read its own config files
-        // instead of sharing Amethyst's.
-        let configName = (Bundle.main.infoDictionary?["AMConfigName"] as? String) ?? "amethyst"
+    /// The name of the configuration files. A renamed build sets AMConfigName in its Info.plist to read its own files.
+    static var configurationName: String {
+        return (Bundle.main.infoDictionary?["AMConfigName"] as? String) ?? "amethyst"
+    }
+
+    /// `$XDG_CONFIG_HOME/<name>` (a file, or a directory holding `amethyst.yml`).
+    static var xdgConfigurationDirectory: String {
         let xdgConfigPath = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? NSHomeDirectory().appending("/.config")
-        let amethystXDGConfigPath = xdgConfigPath.appending("/\(configName)")
+        return xdgConfigPath.appending("/\(configurationName)")
+    }
+
+    /// The configuration file to edit: the loaded one, or a new `$XDG_CONFIG_HOME/<name>/amethyst.yml` created on demand.
+    func editableConfigurationFilePath() throws -> String {
+        if let configurationFilePath = configurationFilePath, FileManager.default.fileExists(atPath: configurationFilePath) {
+            return configurationFilePath
+        }
+
+        let directory = UserConfiguration.xdgConfigurationDirectory
+        let path = directory.appending("/amethyst.yml")
+        if !FileManager.default.fileExists(atPath: path) {
+            try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+            let starter = "# \(UserConfiguration.configurationName) configuration. This file is the only source of settings and key bindings.\n"
+            try starter.write(toFile: path, atomically: true, encoding: .utf8)
+        }
+        return path
+    }
+
+    private func loadConfigurationFile() {
+        let configName = UserConfiguration.configurationName
+        let amethystXDGConfigPath = UserConfiguration.xdgConfigurationDirectory
         let amethystYAMLConfigPath = NSHomeDirectory().appending("/.\(configName).yml")
         let amethystJSONConfigPath = NSHomeDirectory().appending("/.\(configName)")
         let defaultAmethystConfigPath = Bundle.main.path(forResource: "default", ofType: "amethyst")
@@ -406,6 +432,7 @@ class UserConfiguration: NSObject {
          4. default json
          */
         if FileManager.default.fileExists(atPath: amethystYAMLConfigPath, isDirectory: &isDirectory) {
+            configurationFilePath = amethystYAMLConfigPath
             configurationYAML = yamlForConfig(at: amethystYAMLConfigPath)
 
             if configurationYAML == nil {
@@ -417,7 +444,8 @@ class UserConfiguration: NSObject {
                 alert.runModal()
             }
         } else if FileManager.default.fileExists(atPath: amethystXDGConfigPath, isDirectory: &isDirectory) {
-            configurationYAML = yamlForConfig(at: isDirectory.boolValue ? amethystXDGConfigPath.appending("/amethyst.yml") : amethystXDGConfigPath)
+            configurationFilePath = isDirectory.boolValue ? amethystXDGConfigPath.appending("/amethyst.yml") : amethystXDGConfigPath
+            configurationYAML = yamlForConfig(at: configurationFilePath!)
 
             if configurationYAML == nil {
                 log.error("error loading configuration as yaml")
@@ -428,6 +456,7 @@ class UserConfiguration: NSObject {
                 alert.runModal()
             }
         } else if FileManager.default.fileExists(atPath: amethystJSONConfigPath, isDirectory: &isDirectory) {
+            configurationFilePath = amethystJSONConfigPath
             configurationJSON = jsonForConfig(at: amethystJSONConfigPath)
 
             if configurationJSON == nil {

@@ -17,6 +17,7 @@ import SwiftyBeaver
 class AppDelegate: NSObject, NSApplicationDelegate {
     static let windowManagerEncodingKey = "EncodedWindowManager"
 
+    // The preferences window still exists in the nib but is never shown: the configuration file is the only source of settings.
     @IBOutlet var preferencesWindowController: PreferencesWindowController?
 
     fileprivate var windowManager: WindowManager<SIApplication>?
@@ -30,7 +31,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var layoutsMenuItem: NSMenuItem?
     private var paddingMenuItem: NSMenuItem?
 
-    private var isFirstLaunch = true
     /// Command URLs that arrived before the commands were set up, e.g. the one that launched the app.
     private var pendingCommandURLs: [URL] = []
 
@@ -66,8 +66,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         UserConfiguration.shared.delegate = self
         UserConfiguration.shared.load()
 
-        preferencesWindowController?.window?.level = .floating
-
         if let encodedWindowManager = UserDefaults.standard.data(forKey: AppDelegate.windowManagerEncodingKey), UserConfiguration.shared.restoreLayoutsOnLaunch() {
             let decoder = JSONDecoder()
             windowManager = try? decoder.decode(WindowManager<SIApplication>.self, from: encodedWindowManager)
@@ -81,6 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         pendingCommandURLs.forEach(runCommand(from:))
         pendingCommandURLs = []
+
     }
 
     @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
@@ -145,15 +144,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationDidBecomeActive(_ notification: Notification) {
-        guard !isFirstLaunch else {
-            isFirstLaunch = false
-            return
-        }
-
-        showPreferencesWindow(self)
-    }
-
     func applicationWillTerminate(_ notification: Notification) {
         guard let windowManager = windowManager else {
             return
@@ -191,30 +181,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppManager.relaunch()
     }
 
-    @IBAction func showPreferencesWindow(_ sender: AnyObject) {
-        guard let isVisible = preferencesWindowController?.window?.isVisible, !isVisible else {
-            return
-        }
-
-        preferencesWindowController?.showWindow(nil)
-        NSApp.activate(ignoringOtherApps: true)
-
-        presentDotfileWarningIfNecessary()
-    }
-
-    private func presentDotfileWarningIfNecessary() {
-        let shouldWarn = !UserDefaults.standard.bool(forKey: "disable-dotfile-conflict-warning")
-        if shouldWarn && UserConfiguration.shared.hasCustomConfiguration() {
+    /// Opens the configuration file in its default editor, creating a starter file if there is none.
+    @IBAction func editConfig(_ sender: AnyObject) {
+        do {
+            let path = try UserConfiguration.shared.editableConfigurationFilePath()
+            NSWorkspace.shared.open(URL(fileURLWithPath: path))
+        } catch {
+            log.error("Could not open the configuration file: \(error)")
             let alert = NSAlert()
             alert.alertStyle = .warning
-            alert.messageText = "Warning"
-            alert.informativeText = "You have a .amethyst file, which can override in-app preferences. You may encounter unexpected behavior."
-            alert.showsSuppressionButton = true
+            alert.messageText = "Could not open the configuration file"
+            alert.informativeText = error.localizedDescription
             alert.runModal()
-
-            if alert.suppressionButton?.state == .on {
-                UserDefaults.standard.set(true, forKey: "disable-dotfile-conflict-warning")
-            }
         }
     }
 

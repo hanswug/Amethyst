@@ -38,10 +38,10 @@
                         <action selector="toggleStartAtLogin:" target="494" id="550"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Preferences..." id="utO-om-0eu">
+                <menuItem title="Edit Config…" id="utO-om-0eu">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="showPreferencesWindow:" target="494" id="DhJ-Jj-71M"/>
+                        <action selector="editConfig:" target="494" id="DhJ-Jj-71M"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="548"/>
@@ -51,7 +51,7 @@
                         <action selector="resetLayouts:" target="494" id="Osy-WG-Dy8"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Relaunch Amethyst" id="crd-PN-Vy2">
+                <menuItem title="Reload Config" id="crd-PN-Vy2">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="relaunch:" target="494" id="EeN-oj-Mtv"/>
