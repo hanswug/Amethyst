@@ -207,6 +207,11 @@ Same id matching as `floating` (exact or `*` glob; reuse `runningApplicationFloa
 - **Startup:** discovery order is arbitrary, so make the **largest** standard window of each listed app per space the anchor.
 - **Manual toggle wins:** mod1 + t on a secondary tiles it, but it doesn't take the anchor role while the anchor is alive.
 - **Known race:** an app restoring several windows at once may get more than one tiled. Acceptable; document it.
+- **Known limitations (as built):**
+  - The anchor role stays with a window's original space if the window is dragged to another space.
+  - Minimising the anchor frees its slot; the next new window then tiles and becomes the anchor.
+  - Obsidian pop-out windows count as secondary windows and float (toggle-float tiles one).
+  - The tests run inside the Debug app, which no longer manages windows or asks for Accessibility when hosting tests.
 
 **Acceptance:**
 - Obsidian main window tiles; Settings, Community plugins and Community themes float with **no** Obsidian `window-titles` entry.

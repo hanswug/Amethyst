@@ -27,12 +27,12 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 - [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`
 - [x] Phase 1: padding modes (§5.1) — Super+0 (mod4 = ⇧⌃⌥⌘) cycles natively; both Raycast padding scripts are retired
-- [ ] Phase 3: float secondary windows (§5.3)
+- [x] Phase 3: float secondary windows (§5.3) — `floating-secondary-windows: [md.obsidian]`; the Obsidian title rule is commented out in the fork config
 - [ ] Phase 4: directional focus and swap (§5.4)
 - [ ] Phase 5: warp (§5.5)
 - [ ] Phase 6: rotate / mirror (§5.6)
 - [ ] Phase 2: command URL (§5.2) — built after phase 6, just before the Raycast extension
 
-**Current phase:** 3 (build order: 1, 3, 4, 5, 6, 2, then the Raycast extension)
+**Current phase:** 4 (build order: 1, 3, 4, 5, 6, 2, then the Raycast extension)
 
 **After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst (on top of the phase 2 command URL). Until then, the scripts in `~/raycast-scripts` stay as they are: `toggle-amethyst-padding.sh` (dropdown) is the interim fork-safe version; `cycle-amethyst-padding.sh` is the old upstream version, disabled in Raycast, and must not be re-enabled (it kills hw-Amethyst and launches upstream).
