@@ -25,6 +25,15 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 - **hw-Amethyst is its own app** (ground rules 2 and 6): design for Hans's setup, no hidden inherited defaults; upstream is only the fallback app and a source of occasional fixes. Don't frame decisions or wording around upstream.
 - **When a phase is done,** update Status below, summarise what changed, and list anything Hans must do by hand (bindings, config, re-granting permissions).
 
+## Start here (next session)
+
+1. **Command palette** on branch `feat/command-palette` off `fork/main`, under the trial rule (install from the branch, Hans tries it, merge only on "keep it"). Command `show-command-palette`, bound in Hans's config to Super+Y (`mod4` + `y`). Lists every command from `HotKeyManager.commandHandlers` with names from `hotKeyNameToDefaultsKey()` and current keys; type to filter, Enter runs; closes and restores focus to the previous window before running.
+2. **Phase 4: directional focus and swap** (§5.4), designed by §3b: ≤ 8 windows, a mental ≤ 4×2 grid, simple rules, only visible windows, Two Pane = main + slot, Fullscreen = west/east cycle. Bindings per §6: focus on ⌃⌥ + h/j/k/l, swap on ⌃⌥⌘ + h/j/k/l; test on spare keys first, rebind h/j/k/l only at the end.
+3. **Backlog of small ideas** (each behind a config switch where cheap): overflow policy (9th window floats instead of minimising the oldest, `ScreenManager.minimizeWindows`); `max-column-rows: 3` for side columns; fix the `debug windows` crash (`Amethyst/Debug/WindowsInfo.swift` force-unwrap).
+4. **Hans's side, optional:** make Zed the default for `.yml` (Finder → ⌘I → Open with → Change All) so Edit Config… opens Zed.
+
+Repo: `origin` = github.com/hanswug/Amethyst (public fork, `fork/main` pushed), `upstream` = ianyh/Amethyst. `gh` is installed and logged in. Discussion with Ian: github.com/ianyh/Amethyst/discussions/1895.
+
 ## Status
 
 - [x] Phase 0: fork setup and baseline (§5.0) — branch `fork/setup`
@@ -39,4 +48,4 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 **Command palette (detour, next):** an in-app panel listing every registered command (`HotKeyManager.commandHandlers`, names from `hotKeyNameToDefaultsKey()`) with its current shortcut; type to filter, Enter runs. It must close and give focus back to the previously focused window before running the command. Bound to Super+Y; check that Raycast doesn't hold that key.
 
-**After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst on top of the command URL. The Raycast dropdown script was retired (moved to the Trash). `~/raycast-scripts/cycle-amethyst-padding.sh` is the old upstream version: it rewrites upstream's config, kills hw-Amethyst and launches upstream. It ran by accident on 2026-10-10 10:18. Kept as a reminder of the starting point, with its execute bit removed so Raycast can't run it; never run it.
+**After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst on top of the command URL. The Raycast dropdown script was retired (moved to the Trash). `~/raycast-scripts/cycle-amethyst-padding.sh` is the old upstream version: it rewrites upstream's config, kills hw-Amethyst and launches upstream. It ran by accident on 2026-10-10 10:18. It ran again at 10:47 despite its execute bit being removed (Raycast runs scripts through their interpreter), so it is now renamed `cycle-amethyst-padding.sh.old`: kept as a reminder of the starting point, invisible to Raycast; never run it.
