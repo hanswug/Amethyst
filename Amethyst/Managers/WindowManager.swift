@@ -64,6 +64,8 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     private let windows = Windows()
     private var lastReflowTime = Date()
     private var lastFocusDate: Date?
+    /// Windows claimed as secondary-window anchors before being tracked, with when; see `claimSecondaryWindowAnchors(among:)`.
+    private var untrackedSecondaryWindowAnchors: [Window.WindowID: (window: Window, claimed: Date)] = [:]
     private var pendingTabDetection: [Window.WindowID: Window] = [:]
     private var earlyFocusedWindows: Set<Window.WindowID> = []
     private var eventQueue: [PendingEvent] = []
@@ -269,7 +271,7 @@ extension WindowManager {
     fileprivate func add(application: AnyApplication<Application>) {
         guard applications[application.pid()] == nil else {
             let applicationWindows = application.windows()
-            claimSecondaryWindowAnchors(among: applicationWindows)
+            claimSecondaryWindowAnchors(among: applicationWindows, of: application)
             for window in applicationWindows {
                 add(window: window)
             }
@@ -283,7 +285,7 @@ extension WindowManager {
                     self?.applications[application.pid()] = application
 
                     let applicationWindows = application.windows()
-                    self?.claimSecondaryWindowAnchors(among: applicationWindows)
+                    self?.claimSecondaryWindowAnchors(among: applicationWindows, of: application)
                     for window in applicationWindows {
                         self?.add(window: window)
                     }
@@ -530,7 +532,7 @@ extension WindowManager {
     }
 
     private func determineFloatForWindow(_ window: Window, application: AnyApplication<Application>, force: Bool) throws {
-        if try floatsAsSecondaryWindow(window, application: application, force: force) {
+        if try floatsAsSecondaryWindow(window, force: force) {
             windows.setFloating(true, forWindow: window)
             return
         }
@@ -559,7 +561,7 @@ extension WindowManager {
     /**
      Whether a window floats because of `floating-secondary-windows`: its application is listed and already has a live anchor on the window's space. This only ever forces floating; otherwise the regular floating rules decide.
      */
-    private func floatsAsSecondaryWindow(_ window: Window, application: AnyApplication<Application>, force: Bool) throws -> Bool {
+    private func floatsAsSecondaryWindow(_ window: Window, force: Bool) throws -> Bool {
         guard let runningApplication = NSRunningApplication(processIdentifier: window.pid()),
               userConfiguration.floatsSecondaryWindows(of: runningApplication) else {
             return false
@@ -578,25 +580,41 @@ extension WindowManager {
             return false
         }
 
-        // The anchor may not be tracked yet when it was claimed up front by `claimSecondaryWindowAnchors(among:)`.
-        let isAnchorLive = windows.window(withID: anchorID) != nil || application.windows().contains { $0.id() == anchorID }
-        guard isAnchorLive else {
-            // The anchor went away without a remove event; free its slot.
-            windows.secondaryWindowAnchors.release(anchorID)
-            return false
+        if let anchor = windows.window(withID: anchorID) {
+            // Closed windows can stay tracked (not every app reports them destroyed), so ask whether it still exists.
+            guard windowExists(anchor) else {
+                releaseSecondaryWindowAnchor(anchor)
+                return windows.secondaryWindowAnchors.anchor(for: slot) != nil
+            }
+            return true
         }
 
-        return true
+        // An anchor claimed up front by `claimSecondaryWindowAnchors(among:)` that isn't tracked yet. Tracking takes at most a
+        // few seconds of retries; one that never gets tracked (e.g. an invisible window) must not keep the slot.
+        if let untracked = untrackedSecondaryWindowAnchors[anchorID],
+           windowExists(untracked.window), Date().timeIntervalSince(untracked.claimed) < 6 {
+            return true
+        }
+
+        windows.secondaryWindowAnchors.release(anchorID)
+        untrackedSecondaryWindowAnchors.removeValue(forKey: anchorID)
+        return false
     }
 
     /**
      When an application's existing windows are picked up together (Amethyst starting, an application launching with restored windows) they are judged in arbitrary order, and the first tiled one would claim the anchor. Instead, claim free slots up front for the largest window per space, so e.g. a Settings window open next to the main window floats rather than tiles.
      */
-    private func claimSecondaryWindowAnchors(among applicationWindows: [Window]) {
+    private func claimSecondaryWindowAnchors(among applicationWindows: [Window], of application: AnyApplication<Application>) {
         var largestWindows: [SecondaryWindowAnchors<Window.WindowID>.Slot: (window: Window, area: CGFloat)] = [:]
 
         // Only windows seen for the first time: an already tracked (e.g. floating) window never becomes the anchor this way.
-        for window in applicationWindows where !windows.isWindowTracked(window) && window.shouldBeManaged() && !window.shouldFloat() {
+        // The application's window list is cached and can still contain closed windows, so check each one still exists.
+        for window in applicationWindows where !windows.isWindowTracked(window) && windowExists(window) && window.shouldBeManaged() {
+            // A window the regular rules float (e.g. an Open panel) can't be the tiled anchor.
+            if case .reliable(.floating) = application.defaultFloatForWindow(window) {
+                continue
+            }
+
             guard let slot = secondaryWindowSlot(for: window) else {
                 continue
             }
@@ -609,6 +627,7 @@ extension WindowManager {
         }
 
         for (slot, candidate) in largestWindows where windows.secondaryWindowAnchors.claim(slot, for: candidate.window.id()) {
+            untrackedSecondaryWindowAnchors[candidate.window.id()] = (candidate.window, Date())
             log.debug("Secondary windows: \(candidate.window) is the anchor for pid \(slot.pid) on space \(slot.space) (largest window)")
         }
     }
@@ -617,12 +636,17 @@ extension WindowManager {
      Frees the slot when an anchor goes away (closed, minimised, its app quit). A window of the same application on that space that the user tiled takes over; otherwise the slot stays free until the next new window tiles. Floating secondaries never take over by themselves.
      */
     private func releaseSecondaryWindowAnchor(_ window: Window) {
+        untrackedSecondaryWindowAnchors.removeValue(forKey: window.id())
+
         guard let slot = windows.secondaryWindowAnchors.release(window.id()) else {
             return
         }
 
         let successor = windows.windows(forApplicationWithPID: slot.pid).first { candidate in
-            candidate.id() != window.id() && !windows.isWindowFloating(candidate) && CGWindowsInfo.windowSpace(candidate) == slot.space
+            candidate.id() != window.id()
+                && !windows.isWindowFloating(candidate)
+                && CGWindowsInfo.windowSpace(candidate) == slot.space
+                && windowExists(candidate)
         }
 
         if let successor = successor, windows.secondaryWindowAnchors.claim(slot, for: successor.id()) {
@@ -632,8 +656,20 @@ extension WindowManager {
         }
     }
 
+    /// Whether the window still exists, asked of the window server directly (the applications' window lists are cached).
+    private func windowExists(_ window: Window) -> Bool {
+        let cgID = window.cgID()
+        guard cgID != kCGNullWindowID else {
+            return false
+        }
+
+        return CGWindowsInfo<Window>(options: .optionIncludingWindow, windowID: cgID)?.descriptions.isEmpty == false
+    }
+
     /// A tiled window of a listed application becomes its space's anchor if the slot is free.
     private func claimSecondaryWindowAnchorIfFree(_ window: Window) {
+        untrackedSecondaryWindowAnchors.removeValue(forKey: window.id())
+
         guard !windows.isWindowFloating(window), let slot = secondaryWindowSlot(for: window) else {
             return
         }
