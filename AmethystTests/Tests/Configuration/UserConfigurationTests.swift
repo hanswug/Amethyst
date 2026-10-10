@@ -772,6 +772,49 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("floating secondary windows") {
+            func configuration(_ patterns: [String]?) -> UserConfiguration {
+                let storage = TestConfigurationStorage()
+                if let patterns = patterns {
+                    storage.set(patterns, forKey: .floatingSecondaryWindows)
+                }
+                return UserConfiguration(storage: storage)
+            }
+
+            func application(_ bundleIdentifier: String?) -> TestBundleIdentifiable {
+                let application = TestBundleIdentifiable()
+                application.bundleIdentifier = bundleIdentifier
+                return application
+            }
+
+            it("lists no applications by default") {
+                expect(configuration(nil).floatsSecondaryWindows(of: application("md.obsidian"))).to(beFalse())
+            }
+
+            it("matches exact ids") {
+                let configuration = configuration(["md.obsidian"])
+
+                expect(configuration.floatsSecondaryWindows(of: application("md.obsidian"))).to(beTrue())
+                expect(configuration.floatsSecondaryWindows(of: application("md.obsidian.helper"))).to(beFalse())
+                expect(configuration.floatsSecondaryWindows(of: application(nil))).to(beFalse())
+            }
+
+            it("matches globs like the floating list") {
+                let configuration = configuration(["com.jetbrains.*"])
+
+                expect(configuration.floatsSecondaryWindows(of: application("com.jetbrains.intellij"))).to(beTrue())
+                expect(configuration.floatsSecondaryWindows(of: application("com.jetbrainsX"))).to(beFalse())
+            }
+
+            it("is independent of the floating list") {
+                let storage = TestConfigurationStorage()
+                storage.set(["md.obsidian"], forKey: .floatingBundleIdentifiers)
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.floatsSecondaryWindows(of: application("md.obsidian"))).to(beFalse())
+            }
+        }
+
         describe("padding modes") {
             let modesYAML = """
             padding-modes:

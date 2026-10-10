@@ -77,6 +77,7 @@ enum ConfigurationKey: String {
     case windowMaxCount = "window-max-count"
     case floatingBundleIdentifiers = "floating"
     case floatingBundleIdentifiersIsBlacklist = "floating-is-blacklist"
+    case floatingSecondaryWindows = "floating-secondary-windows"
     case ignoreMenuBar = "ignore-menu-bar"
     case floatSmallWindows = "float-small-windows"
     case smallWindowSize = "small-window-size"
@@ -616,33 +617,34 @@ class UserConfiguration: NSObject {
     }
 
     func runningApplicationFloatingBundle(_ runningApplication: BundleIdentifiable) -> FloatingBundle? {
-        let floatingBundles = self.floatingBundles()
+        return floatingBundles().first { floatingBundle in
+            UserConfiguration.bundleIdentifier(runningApplication.bundleIdentifier, matches: floatingBundle.id)
+        }
+    }
 
-        let bundleIdentifier = runningApplication.bundleIdentifier ?? ""
+    /// Whether the application is listed in `floating-secondary-windows`, i.e. only its first window on a space tiles and its other windows float.
+    func floatsSecondaryWindows(of runningApplication: BundleIdentifiable) -> Bool {
+        let patterns = storage.stringArray(forKey: .floatingSecondaryWindows) ?? []
+        return patterns.contains { UserConfiguration.bundleIdentifier(runningApplication.bundleIdentifier, matches: $0) }
+    }
 
-        for floatingBundle in floatingBundles {
-            if floatingBundle.id.contains("*") {
-                do {
-                    let pattern = floatingBundle.id
-                        .replacingOccurrences(of: ".", with: "\\.")
-                        .replacingOccurrences(of: "*", with: ".*")
-                    let regex = try NSRegularExpression(pattern: "^\(pattern)$", options: [])
-                    let fullRange = NSRange(location: 0, length: bundleIdentifier.count)
-
-                    if regex.firstMatch(in: bundleIdentifier, options: [], range: fullRange) != nil {
-                        return floatingBundle
-                    }
-                } catch {
-                    continue
-                }
-            } else {
-                if floatingBundle.id == runningApplication.bundleIdentifier {
-                    return floatingBundle
-                }
-            }
+    /// Matches a bundle identifier against an application id from the configuration: exactly, or as a glob when the id contains `*`.
+    private static func bundleIdentifier(_ bundleIdentifier: String?, matches pattern: String) -> Bool {
+        guard pattern.contains("*") else {
+            return pattern == bundleIdentifier
         }
 
-        return nil
+        let bundleIdentifier = bundleIdentifier ?? ""
+        let regexPattern = pattern
+            .replacingOccurrences(of: ".", with: "\\.")
+            .replacingOccurrences(of: "*", with: ".*")
+
+        guard let regex = try? NSRegularExpression(pattern: "^\(regexPattern)$", options: []) else {
+            return false
+        }
+
+        let fullRange = NSRange(location: 0, length: bundleIdentifier.count)
+        return regex.firstMatch(in: bundleIdentifier, options: [], range: fullRange) != nil
     }
 
     func ignoreMenuBar() -> Bool {

@@ -268,7 +268,9 @@ extension WindowManager {
 
     fileprivate func add(application: AnyApplication<Application>) {
         guard applications[application.pid()] == nil else {
-            for window in application.windows() {
+            let applicationWindows = application.windows()
+            claimSecondaryWindowAnchors(among: applicationWindows)
+            for window in applicationWindows {
                 add(window: window)
             }
             return
@@ -280,7 +282,9 @@ extension WindowManager {
                 onCompleted: { [weak self] in
                     self?.applications[application.pid()] = application
 
-                    for window in application.windows() {
+                    let applicationWindows = application.windows()
+                    self?.claimSecondaryWindowAnchors(among: applicationWindows)
+                    for window in applicationWindows {
                         self?.add(window: window)
                     }
                 }
@@ -522,6 +526,11 @@ extension WindowManager {
     }
 
     private func determineFloatForWindow(_ window: Window, application: AnyApplication<Application>, force: Bool) throws {
+        if try floatsAsSecondaryWindow(window, application: application, force: force) {
+            windows.setFloating(true, forWindow: window)
+            return
+        }
+
         switch application.defaultFloatForWindow(window) {
         case .unreliable where !force:
             throw TrackingError.unreliableFloating
@@ -529,6 +538,85 @@ extension WindowManager {
             windows.setFloating(true, forWindow: window)
         case .reliable(.notFloating), .unreliable(.notFloating):
             windows.setFloating(false, forWindow: window)
+        }
+    }
+
+    /// The `floating-secondary-windows` slot of a window, or `nil` if its application isn't listed or its space is unknown.
+    private func secondaryWindowSlot(for window: Window) -> SecondaryWindowAnchors<Window.WindowID>.Slot? {
+        guard let runningApplication = NSRunningApplication(processIdentifier: window.pid()),
+              userConfiguration.floatsSecondaryWindows(of: runningApplication),
+              let space = CGWindowsInfo.windowSpace(window) else {
+            return nil
+        }
+
+        return SecondaryWindowAnchors.Slot(pid: window.pid(), space: space)
+    }
+
+    /**
+     Whether a window floats because of `floating-secondary-windows`: its application is listed and already has a live anchor on the window's space. This only ever forces floating; otherwise the regular floating rules decide.
+     */
+    private func floatsAsSecondaryWindow(_ window: Window, application: AnyApplication<Application>, force: Bool) throws -> Bool {
+        guard let runningApplication = NSRunningApplication(processIdentifier: window.pid()),
+              userConfiguration.floatsSecondaryWindows(of: runningApplication) else {
+            return false
+        }
+
+        guard let slot = secondaryWindowSlot(for: window) else {
+            // Without a space there is no anchor to compare with. Retry, and when that keeps failing float the window:
+            // a wrongly floated window costs one toggle, a wrongly tiled one reshuffles the layout.
+            guard force else {
+                throw TrackingError.unreliableFloating
+            }
+            return true
+        }
+
+        guard let anchorID = windows.secondaryWindowAnchors.anchor(for: slot), anchorID != window.id() else {
+            return false
+        }
+
+        // The anchor may not be tracked yet when it was claimed up front by `claimSecondaryWindowAnchors(among:)`.
+        let isAnchorLive = windows.window(withID: anchorID) != nil || application.windows().contains { $0.id() == anchorID }
+        guard isAnchorLive else {
+            // The anchor went away without a remove event; free its slot.
+            windows.secondaryWindowAnchors.release(anchorID)
+            return false
+        }
+
+        return true
+    }
+
+    /**
+     When an application's existing windows are picked up together (Amethyst starting, an application launching with restored windows) they are judged in arbitrary order, and the first tiled one would claim the anchor. Instead, claim free slots up front for the largest window per space, so e.g. a Settings window open next to the main window floats rather than tiles.
+     */
+    private func claimSecondaryWindowAnchors(among applicationWindows: [Window]) {
+        var largestWindows: [SecondaryWindowAnchors<Window.WindowID>.Slot: (window: Window, area: CGFloat)] = [:]
+
+        // Only windows seen for the first time: an already tracked (e.g. floating) window never becomes the anchor this way.
+        for window in applicationWindows where !windows.isWindowTracked(window) && window.shouldBeManaged() && !window.shouldFloat() {
+            guard let slot = secondaryWindowSlot(for: window) else {
+                continue
+            }
+
+            let frame = window.frame()
+            let area = frame.width * frame.height
+            if area > largestWindows[slot]?.area ?? -1 {
+                largestWindows[slot] = (window, area)
+            }
+        }
+
+        for (slot, candidate) in largestWindows where windows.secondaryWindowAnchors.claim(slot, for: candidate.window.id()) {
+            log.debug("Secondary windows: \(candidate.window) is the anchor for pid \(slot.pid) on space \(slot.space) (largest window)")
+        }
+    }
+
+    /// A tiled window of a listed application becomes its space's anchor if the slot is free.
+    private func claimSecondaryWindowAnchorIfFree(_ window: Window) {
+        guard !windows.isWindowFloating(window), let slot = secondaryWindowSlot(for: window) else {
+            return
+        }
+
+        if windows.secondaryWindowAnchors.claim(slot, for: window.id()) {
+            log.debug("Secondary windows: \(window) is the anchor for pid \(slot.pid) on space \(slot.space)")
         }
     }
 
@@ -571,6 +659,7 @@ extension WindowManager {
             }
         }
 
+        claimSecondaryWindowAnchorIfFree(window)
         markScreenForReflow(screen)
     }
 

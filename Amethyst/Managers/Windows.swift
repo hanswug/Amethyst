@@ -9,6 +9,48 @@
 import Foundation
 import Silica
 
+/**
+ The anchor window of each application on each space, for `floating-secondary-windows`.
+
+ The anchor is the one real tiled window of a listed application on a space; while it exists, the application's other windows on that space float. macOS doesn't reliably say which window opened which, so the model is order-based: the first tiled window claims the slot.
+ */
+struct SecondaryWindowAnchors<WindowID: Hashable> {
+    struct Slot: Hashable {
+        let pid: pid_t
+        let space: CGSSpaceID
+    }
+
+    private var anchors: [Slot: WindowID] = [:]
+
+    func anchor(for slot: Slot) -> WindowID? {
+        return anchors[slot]
+    }
+
+    func slot(anchoredBy windowID: WindowID) -> Slot? {
+        return anchors.first { $0.value == windowID }?.key
+    }
+
+    /// Makes the window the slot's anchor unless the slot already has one. Returns whether it did.
+    @discardableResult mutating func claim(_ slot: Slot, for windowID: WindowID) -> Bool {
+        guard anchors[slot] == nil else {
+            return false
+        }
+
+        anchors[slot] = windowID
+        return true
+    }
+
+    /// Frees the slot the window anchors, if any, and returns it.
+    @discardableResult mutating func release(_ windowID: WindowID) -> Slot? {
+        guard let slot = slot(anchoredBy: windowID) else {
+            return nil
+        }
+
+        anchors.removeValue(forKey: slot)
+        return slot
+    }
+}
+
 extension WindowManager {
     class Windows {
         private(set) var windows: [Window] = []
@@ -16,6 +58,7 @@ extension WindowManager {
         private var activeIDCache: Set<CGWindowID> = Set()
         private var deactivatedPIDs: Set<pid_t> = Set()
         private var floatingMap: [Window.WindowID: Bool] = [:]
+        var secondaryWindowAnchors = SecondaryWindowAnchors<Window.WindowID>()
 
         // MARK: Window Filters
 
