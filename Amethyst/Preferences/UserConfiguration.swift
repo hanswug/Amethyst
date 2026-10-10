@@ -868,10 +868,18 @@ class UserConfiguration: NSObject {
     }
 }
 
+extension ProcessInfo {
+    /// Whether the app was launched as the host of a unit test bundle rather than to manage windows.
+    var isHostingTests: Bool {
+        return ["XCTestConfigurationFilePath", "XCTestSessionIdentifier", "XCTestBundlePath"].contains { environment[$0] != nil }
+    }
+}
+
 extension UserConfiguration {
     @discardableResult func confirmAccessibilityPermissions() -> Bool {
+        // When the app is only hosting unit tests it doesn't need Accessibility, so check without prompting.
         let options = [
-            kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true
+            kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: !ProcessInfo.processInfo.isHostingTests
         ]
 
         return AXIsProcessTrustedWithOptions(options as CFDictionary)

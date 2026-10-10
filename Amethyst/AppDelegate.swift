@@ -46,6 +46,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         log.info("Logging is enabled")
         log.debug("Debug logging is enabled")
 
+        // Hosting unit tests: don't manage windows, which needs Accessibility and makes macOS ask for it on every build.
+        guard !ProcessInfo.processInfo.isHostingTests else {
+            return
+        }
+
         UserConfiguration.shared.delegate = self
         UserConfiguration.shared.load()
 
