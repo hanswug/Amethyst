@@ -80,6 +80,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         pendingCommandURLs.forEach(runCommand(from:))
         pendingCommandURLs = []
 
+        NotificationCenter.default.addObserver(forName: .currentLayoutDidChange, object: nil, queue: .main) { [weak self] _ in
+            self?.updateStatusItemTitle()
+        }
+        updateStatusItemTitle()
+    }
+
+    /// Shows the current layout's name next to the menu bar icon.
+    private func updateStatusItemTitle() {
+        let screenManager = windowManager?.focusedScreenManager() ?? windowManager?.screenManager(at: 0)
+        let layoutName = screenManager?.currentLayout?.layoutName
+        statusItem?.button?.imagePosition = .imageLeft
+        statusItem?.button?.title = layoutName.map { " \($0)" } ?? ""
     }
 
     @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {

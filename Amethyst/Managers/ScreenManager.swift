@@ -340,6 +340,10 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
         currentLayoutIndex = index
 
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .currentLayoutDidChange, object: nil)
+        }
+
         guard !changingSpace || userConfiguration.enablesLayoutHUDOnSpaceChange() else {
             return
         }
@@ -439,4 +443,9 @@ extension ScreenManager: Comparable {
 
         return originX1 < originX2
     }
+}
+
+extension Notification.Name {
+    /// Posted on the main queue when a screen's current layout changes: cycled, selected, or restored on a space change.
+    static let currentLayoutDidChange = Notification.Name("AmethystCurrentLayoutDidChange")
 }
