@@ -27,3 +27,8 @@ fastlane/report.xml
 # Homebrew
 Brewfile.lock.json
 
+
+# Personal working notes (local only)
+/CLAUDE.md
+/docs/CLAUDE.md
+/docs/AMETHYST_FORK_HANDOFF.md
