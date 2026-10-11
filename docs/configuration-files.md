@@ -13,7 +13,7 @@ The first file that exists is used:
 - **Missing or broken file:** if there's no file, or it can't be read, hw-Amethyst shows an alert with the path and quits.
 - **Menu:** **Edit Config…** opens the file in its default editor. **Reload Config** relaunches the app so changes apply.
 - **Defaults:** settings the file leaves out get the built-in defaults below, on every load.
-- **Example:** the [README](../README.md#configuration) has a short one.
+- **Examples:** the [README](../README.md#configuration) has a short one; [hw-amethyst.sample.yml](../hw-amethyst.sample.yml) is a complete, real config.
 
 ## Settings
 

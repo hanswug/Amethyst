@@ -68,7 +68,7 @@ enables-window-count-hud: true
 focus-cw: false           # unbound, same as leaving it out or <NONE>
 ```
 
-The other settings (margins, `floating`, mouse behaviour and so on) are described in [docs/configuration-files.md](docs/configuration-files.md). File paths there read `amethyst` where hw-Amethyst uses `hw-amethyst`.
+[hw-amethyst.sample.yml](hw-amethyst.sample.yml) is a complete, real config. Every setting and command is described in [docs/configuration-files.md](docs/configuration-files.md).
 
 ## Layouts
 

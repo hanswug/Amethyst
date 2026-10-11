@@ -1,32 +1,24 @@
-# Default settings for Amethyst
-# Repo: `https://github.com/ianyh/Amethyst`
-#
-# Note due to issue 1419 (https://github.com/ianyh/Amethyst/issues/1419) some
-# config values may conflict and not work if they are the same as the default
-# values for Amethyst. You can see these values on GitHub at
-# https://github.com/ianyh/Amethyst/blob/development/Amethyst/default.amethyst
-# If you're experiencing conflicts and the settings are the same as the default,
-# comment out the commands in this file.
-#
-# Move this file to: `~/.amethyst.yml`
-# In order to register changes restart Amethyst.
-# If you experience issues pulling in the changes you can also quit Amethyst and run: `defaults delete com.amethyst.Amethyst.plist`
-# This removes the current preferences and causes Amethyst to restart with default preferences and pull configs from this file.
+# Hans's hw-Amethyst config, snapshot of 2026-10-11. Copy to ~/.config/hw-amethyst/amethyst.yml.
+# hw-Amethyst configuration: the only source of settings and key bindings.
+# Location: ~/.config/hw-amethyst/amethyst.yml (or ~/.hw-amethyst.yml).
+# Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
+# A command is bound only if this file binds it. Settings left out get built-in defaults.
+# Reference: docs/configuration-files.md in the hw-Amethyst repo.
 
 # layouts - Ordered list of layouts to use by layout key (default tall, wide, fullscreen, and column).
 layouts:
-  - tall
   - fullscreen
   # - tall-right
-  - wide
-  # - two-pane
-  # - middle-wide
-  # - 3column-left
+  # wide
+  - two-pane
+  - 3column-left
+  - middle-wide
+  - tall
   # - middle-wide # The legacy name of "3column-middle"
   # - 3column-right
   # - 4column-left
   # - 4column-right
-  - column
+  # - column
   # - row
   # - floating
   # - widescreen-tall
@@ -36,16 +28,16 @@ layouts:
 # First mod (default option + shift).
 mod1:
   - option
-  - shift
-  # - control
+  # - shift
+  - control
   # - command
 
 # Second mod (default option + shift + control).
 mod2:
   - option
-  - shift
+#  - shift
   - control
-  # - command
+  - command
 
 # Commands:
 # special key values
@@ -55,6 +47,7 @@ mod2:
 # right
 # down
 # left
+# delete
 
 # special characters require quotes
 # '.'
@@ -63,32 +56,32 @@ mod2:
 # Move to the next layout in the list.
 cycle-layout:
   mod: mod1
-  key: space
+  key: '.'
 
 # Move to the previous layout in the list.
 cycle-layout-backward:
   mod: mod2
-  key: space
+  key: ','
 
 # Shrink the main pane by a percentage of the screen dimension as defined by window-resize-step. Note that not all layouts respond to this command.
 shrink-main:
   mod: mod1
-  key: h
+  key: '-'
 
 # Expand the main pane by a percentage of the screen dimension as defined by window-resize-step. Note that not all layouts respond to this command.
 expand-main:
-  mod: mod1
-  key: l
+ mod: mod1
+ key: '='
 
 # Increase the number of windows in the main pane. Note that not all layouts respond to this command.
 increase-main:
-  mod: mod1
-  key: ','
+ mod: mod2
+ key: '='
 
 # Decrease the number of windows in the main pane. Note that not all layouts respond to this command.
 decrease-main:
-  mod: mod1
-  key: '.'
+  mod: mod2
+  key: '-'
 
 # General purpose command for custom layouts. Functionality is layout-dependent.
 # command1:
@@ -110,97 +103,75 @@ decrease-main:
 # Focus the next window in the list going counter-clockwise.
 focus-ccw:
   mod: mod1
-  key: j
+  key: h
 
 # Focus the next window in the list going clockwise.
 focus-cw:
   mod: mod1
-  key: k
+  key: l
 
 # Focus the main window in the list.
 focus-main:
   mod: mod1
   key: m
 
-# Focus the next screen in the list going counter-clockwise.
-focus-screen-ccw:
-  mod: mod1
-  key: p
-
-# Focus the next screen in the list going clockwise.
-focus-screen-cw:
-  mod: mod1
-  key: n
-
-# Move the currently focused window onto the next screen in the list going counter-clockwise.
-swap-screen-ccw:
-  mod: mod2
-  key: h
-
-# Move the currently focused window onto the next screen in the list going clockwise.
-swap-screen-cw:
-  mod: mod2
-  key: l
-
 # Swap the position of the currently focused window with the next window in the list going counter-clockwise.
 swap-ccw:
   mod: mod2
-  key: j
+  key: h
 
 # Swap the position of the currently focused window with the next window in the list going clockwise.
 swap-cw:
   mod: mod2
-  key: k
+  key: l
 
 # Swap the position of the currently focused window with the main window in the list.
 swap-main:
-  mod: mod1
-  key: enter
-
-# Move focus to the n-th screen in the list; e.g., focus-screen-3 will move mouse focus to the 3rd screen. Note that the main window in the given screen will be focused.
-#focus-screen-n:
-# focus-screen-<screen-number>:
-#   mod: mod1
-#   key: y
-# Move the currently focused window to the n-th screen; e.g., throw-screen-3 will move the window to the 3rd screen.
-# throw-screen-n:
-# throw-screen-<screen-number>:
-#   mod: mod1
-#   key: u
-# Move the currently focused window to the n-th space; e.g., throw-space-3 will move the window to the 3rd space.
-# throw-space-<screen-number>:
-#   mod: mod1
-#   key: i
-
-# Select tall layout
-select-tall-layout:
-  mod: mod1
-  key: a
+  mod: mod2
+  key: m
 
 # Select wide layout
-select-wide-layout:
-  mod: mod1
-  key: s
+#select-wide-layout:
+#  mod: mod1
+#  key: s
 
 # Select fullscreen layout
 select-fullscreen-layout:
   mod: mod1
-  key: d
+  key: '1'
 
-# Select column layout
-select-column-layout:
+# Select two-pane layout
+select-two-pane-layout:
   mod: mod1
-  key: f
+  key: '2'
 
-# Move the currently focused window to the space to the left.
-throw-space-left:
-  mod: mod2
-  key: left
+# Select 3column-left layout
+select-3column-left-layout:
+  mod: mod1
+  key: '3'
 
-# Move currently the focused window to the space to the right.
-throw-space-right:
-  mod: mod2
-  key: right
+# Select 3column-middle layout
+select-middle-wide-layout:
+  mod: mod1
+  key: '4'
+
+# Select tall layout
+select-tall-layout:
+  mod: mod1
+  key: '5'
+
+# The following commands used to be bound by built-in defaults and were never chosen explicitly,
+# so they are unbound (<NONE>). hw-Amethyst binds only what this file binds; set mod/key to bind one.
+
+# Select wide layout.
+select-wide-layout:
+  mod: <NONE>
+  key: <NONE>
+
+# Select column layout.
+select-column-layout:
+  mod: <NONE>
+  key: <NONE>
 
 # Toggle the floating state of the currently focused window; i.e., if it was floating make it tiled and if it was tiled make it floating.
 toggle-float:
@@ -214,39 +185,39 @@ display-current-layout:
 
 # Turn on or off tiling entirely.
 toggle-tiling:
-  mod: mod2
-  key: t
+ mod: <NONE>
+ key: <NONE>
 
 # Turn on tiling.
-# enable-tiling:
-#   mod: mod2
-#   key: <NONE>
+enable-tiling:
+  mod: <NONE>
+  key: <NONE>
 
 # Turn off tiling.
-# disable-tiling:
-#   mod: mod2
-#   key: <NONE>
+disable-tiling:
+  mod: <NONE>
+  key: <NONE>
 
 # Rerun the current layout's algorithm.
 reevaluate-windows:
-  mod: mod1
-  key: z
+  mod: mod2
+  key: r
 
 # Turn on or off focus-follows-mouse.
 toggle-focus-follows-mouse:
-  mod: mod2
-  key: x
+ mod: <NONE>
+ key: <NONE>
 
 # Automatically quit and reopen Amethyst.
 relaunch-amethyst:
-  mod: mod2
-  key: z
+ mod: <NONE>
+ key: <NONE>
 
 # disable screen padding on builtin display
-disable-padding-on-builtin-display: false
+disable-padding-on-builtin-display: true
 
 # Boolean flag for whether or not to add margins between windows (default false).
-window-margins: false
+window-margins: true
 
 # Boolean flag for whether or not to set window margins if there is only one window on the screen, assuming window margins are enabled (default false).
 smart-window-margins: false
@@ -255,11 +226,14 @@ smart-window-margins: false
 # window-margins: true
 # window-margin-size: 5
 # The size of the margins between windows (in px, default 0).
-window-margin-size: 0
+window-margin-size: 8
 
 # The max number of windows that may be visible on a screen at one time before
 # additional windows are minimized. A value of 0 disables the feature.
-window-max-count: 0
+window-max-count: 8
+
+# true to show the new window max count on screen after increasing or decreasing it (default false).
+enables-window-count-hud: true
 
 # The smallest height that a window can be sized to regardless of its layout frame (in px, default 0).
 window-minimum-height: 0
@@ -268,12 +242,31 @@ window-minimum-height: 0
 window-minimum-width: 0
 
 # List of bundle identifiers for applications to either be automatically floating or automatically tiled based on floating-is-blacklist (default []).
-floating: []
+floating: [
+  "com.apple.calculator",
+  "org.hammerspoon.Hammerspoon",
+  "net.duoziwei.KeepTop",
+  "com.aone.keka",
+  "com.hegenberg.KeyboardCleanTool",
+  "com.raycast.macos",
+  "com.knollsoft.Hookshot",
+  "cc.ffitch.shottr",
+  "pro.betterdisplay.BetterDisplay",
+  "com.apple.systempreferences",
+  "com.apple.finder",
+  # md.obsidian title rule replaced by floating-secondary-windows (phase 3):
+  # {id: "md.obsidian", window-titles: ["^(Settings|Community plugins|Community themes) - .+ - Obsidian"]},
+  {id: "*", window-titles: ["^(Open|Save)$"]}]
 
 # Boolean flag determining behavior of the floating list. true if the applications should be floating and all others tiled. false if the applications should be tiled and all others floating (default true).
 floating-is-blacklist: true
 
-# true if screen frames should exclude the status bar. false if the screen frames should include the status bar (default false).
+# hw-Amethyst: apps whose first window on a space tiles (the "anchor") while
+# their other windows (Settings, plugin browsers, Open dialogs…) float.
+floating-secondary-windows:
+  - md.obsidian
+
+# true to lay windows out over the whole screen, menu bar and Dock area included (default false).
 ignore-menu-bar: false
 
 # true if menu bar icon should be hidden (default false).
@@ -286,16 +279,16 @@ float-small-windows: true
 small-window-size: 500
 
 # true if the mouse should move position to the center of a window when it becomes focused (default false). Note that this is largely incompatible with focus-follows-mouse.
-mouse-follows-focus: false
+mouse-follows-focus: true
 
 # true if the windows underneath the mouse should become focused as the mouse moves (default false). Note that this is largely incompatible with mouse-follows-focus
 focus-follows-mouse: false
 
 # true if dragging and dropping windows on to each other should swap their positions (default false).
-mouse-swaps-windows: false
+mouse-swaps-windows: true
 
 # true if changing the frame of a window with the mouse should update the layout to accommodate the change (default false). Note that not all layouts will be able to respond to the change.
-mouse-resizes-windows: false
+mouse-resizes-windows: true
 
 # true to display the name of the layout when a new layout is selected (default true).
 enables-layout-hud: true
@@ -303,14 +296,8 @@ enables-layout-hud: true
 # true to display the name of the layout when moving to a new space (default true).
 enables-layout-hud-on-space-change: true
 
-# true to get updates to beta versions of the software (default false).
-use-canary-build: false
-
 # true to insert new windows into the first position and false to insert new windows into the last position (default false).
 new-windows-to-main: false
-
-# true to automatically move to a space when throwing a window to it (default true).
-follow-space-thrown-windows: true
 
 # The integer percentage of the screen dimension to increment and decrement main pane ratios by (default 5).
 window-resize-step: 5
@@ -322,10 +309,37 @@ screen-padding-left: 0
 screen-padding-right: 0
 
 # Padding to apply between windows and the top edge of the screen (in px, default 0).
-screen-padding-top: 0
+screen-padding-top: 0   # padding modes below replace the old 540
 
 # Padding to apply between windows and the bottom edge of the screen (in px, default 0).
 screen-padding-bottom: 0
+
+# --- hw-Amethyst: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
+# Super+0 cycles full → wide → 27. The selected mode survives restarts;
+# padding-mode only applies until a mode has been selected.
+mod4:
+  - option
+  - control
+  - shift
+  - command
+padding-modes:
+  - name: full
+  - name: wide
+    top: 540
+  - name: "27"
+    left: 640
+    right: 640
+    top: 720
+padding-mode: wide
+cycle-padding-mode:
+  mod: mod4
+  key: "0"
+
+# --- hw-Amethyst: command palette ---
+# Super+Y lists every command with its shortcut; type to filter, Enter runs, Esc closes.
+show-command-palette:
+  mod: mod4
+  key: y
 
 # true to maintain layout state across application executions (default true).
 restore-layouts-on-launch: true
