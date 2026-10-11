@@ -56,6 +56,14 @@ class CommandPaletteTests: QuickSpec {
                 ]))
             }
 
+            it("leaves out layouts the configuration doesn't use") {
+                let hidden = CommandPalette.unconfiguredLayoutCommands(
+                    availableLayoutKeys: ["tall", "4column", "two-pane"],
+                    configuredLayoutKeys: ["two-pane", "tall"]
+                )
+                expect(hidden).to(equal(["select-4column-layout"]))
+            }
+
             it("names every command, the palette included") {
                 let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
                 expect(keys).to(contain(CommandKey.showCommandPalette.rawValue))

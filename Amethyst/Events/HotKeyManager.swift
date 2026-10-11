@@ -419,9 +419,14 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         return true
     }
 
-    /// What the command palette lists: every named command that is set up, except the palette itself, with its current shortcut.
+    /// What the command palette lists: every named command that is set up, except the palette itself and layouts the configuration doesn't use, with its current shortcut.
     @MainActor func commandPaletteEntries() -> [CommandPaletteEntry] {
-        return CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: Set(commandHandlers.keys)) { commandKey in
+        let hiddenLayoutCommands = CommandPalette.unconfiguredLayoutCommands(
+            availableLayoutKeys: LayoutType<Application.Window>.availableLayoutStrings().map { $0.key },
+            configuredLayoutKeys: userConfiguration.layoutKeys()
+        )
+        let listed = Set(commandHandlers.keys).subtracting(hiddenLayoutCommands)
+        return CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: listed) { commandKey in
             KeyboardShortcuts.getShortcut(for: KeyboardShortcuts.Name(commandKey))?.description
         }
     }

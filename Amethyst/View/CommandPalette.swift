@@ -30,6 +30,12 @@ enum CommandPalette {
         }
     }
 
+    /// The select-layout commands to leave out: selecting a layout only works for layouts in the configuration's `layouts`.
+    static func unconfiguredLayoutCommands(availableLayoutKeys: [String], configuredLayoutKeys: [String]) -> Set<String> {
+        let configured = Set(configuredLayoutKeys)
+        return Set(availableLayoutKeys.filter { !configured.contains($0) }.map(UserConfiguration.constructLayoutKeyString))
+    }
+
     /// The entries matching every word of the query in their name or command key, ignoring case. An empty query matches everything.
     static func filter(_ entries: [CommandPaletteEntry], query: String) -> [CommandPaletteEntry] {
         let words = query.lowercased().split(whereSeparator: { $0.isWhitespace })
