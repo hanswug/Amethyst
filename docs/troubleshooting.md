@@ -6,17 +6,19 @@ Here are some common problems and their solutions.
 
 ### "Always float"
 
-Amethyst has the option to float everything by default until the user manually intervenes. When this mode is unintentionally enabled it can appear that nothing is working. The option is located in settings in the Floating tab and configured with the `floating-is-blacklist` key in a configuration file.
+hw-Amethyst can float every application except the ones listed. When this mode is on by accident, it looks as if nothing is working. It's set by `floating-is-blacklist` in the config file:
 
-If you have not intentionally enabled this make sure that the option in the Floating tab says "Automatically float applications listed" as in this screenshot.
+```yaml
+floating-is-blacklist: true   # the apps in `floating` float, everything else tiles (the default)
+```
 
-<img src="./images/floating-preferences.png" width="50%">
+With `false`, the list is inverted: only the apps in `floating` tile.
 
 ## One application isn't working!
 
 ### "Assign To All Desktops"
 
-macOS has the option to assign an application specifically to no Desktops, one Desktop, or all Desktops. Amethyst does not handle the last option very well.
+macOS has the option to assign an application specifically to no Desktops, one Desktop, or all Desktops. hw-Amethyst does not handle the last option very well.
 
 To change this setting you can right click (or control click or whatever gesture you may have associated with right click) on the application icon in the Dock. Under Options there is an Assign To section. See the screenshot below for reference.
 
