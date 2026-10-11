@@ -144,6 +144,7 @@ enum CommandKey: String {
     case decreaseWindowMaxCount = "decrease-window-max-count"
     case cyclePaddingModeForward = "cycle-padding-mode"
     case cyclePaddingModeBackward = "cycle-padding-mode-backward"
+    case showCommandPalette = "show-command-palette"
 }
 
 protocol UserConfigurationDelegate: AnyObject {

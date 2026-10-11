@@ -27,7 +27,7 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 ## Start here (next session)
 
-1. **Command palette** on branch `feat/command-palette` off `fork/main`, under the trial rule (install from the branch, Hans tries it, merge only on "keep it"). Command `show-command-palette`, bound in Hans's config to Super+Y (`mod4` + `y`). Lists every command from `HotKeyManager.commandHandlers` with names from `hotKeyNameToDefaultsKey()` and current keys; type to filter, Enter runs; closes and restores focus to the previous window before running.
+1. **Command palette: in trial** on `feat/command-palette` (built and installed from that branch, 2026-10-11; spec §5.2a). Ask Hans whether to keep it. On "keep it": merge into `fork/main`, rebuild from `fork/main`. On "drop it": rebuild `fork/main` (the Super+Y line in his config is then ignored).
 2. **Phase 4: directional focus and swap** (§5.4), designed by §3b: ≤ 8 windows, a mental ≤ 4×2 grid, simple rules, only visible windows, Two Pane = main + slot, Fullscreen = west/east cycle. Bindings per §6: focus on ⌃⌥ + h/j/k/l, swap on ⌃⌥⌘ + h/j/k/l; test on spare keys first, rebind h/j/k/l only at the end.
 3. **Backlog of small ideas** (each behind a config switch where cheap): overflow policy (9th window floats instead of minimising the oldest, `ScreenManager.minimizeWindows`); `max-column-rows: 3` for side columns; fix the `debug windows` crash (`Amethyst/Debug/WindowsInfo.swift` force-unwrap).
 4. **Hans's side, optional:** make Zed the default for `.yml` (Finder → ⌘I → Open with → Change All) so Edit Config… opens Zed.
@@ -44,8 +44,8 @@ Repo: `origin` = github.com/hanswug/Amethyst (public fork, `fork/main` pushed), 
 - [ ] Phase 6: rotate / mirror (§5.6)
 - [x] Phase 2: command URL (§5.2) — built early as a detour; `open -g "amethyst://command/<key>"` runs any command
 
-**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); no config file → "No configuration file found" + path, quit; the preferences-window code is deleted. Next: the command palette (Super+Y = `show-command-palette`), **then back to phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
+**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); no config file → "No configuration file found" + path, quit; the preferences-window code is deleted. The command palette (Super+Y) is built and in trial; **next: phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
 
-**Command palette (detour, next):** an in-app panel listing every registered command (`HotKeyManager.commandHandlers`, names from `hotKeyNameToDefaultsKey()`) with its current shortcut; type to filter, Enter runs. It must close and give focus back to the previously focused window before running the command. Bound to Super+Y; check that Raycast doesn't hold that key.
+**Command palette (detour, in trial):** Super+Y lists every command with its shortcut; type to filter, Enter runs. Spotlight-style non-activating panel (§5.2a). Built on `feat/command-palette`, installed from that branch; waiting for Hans's keep/drop.
 
 **After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst on top of the command URL. The Raycast dropdown script was retired (moved to the Trash). `~/raycast-scripts/cycle-amethyst-padding.sh` is the old upstream version: it rewrites upstream's config, kills hw-Amethyst and launches upstream. It ran by accident on 2026-10-10 10:18. It ran again at 10:47 despite its execute bit being removed (Raycast runs scripts through their interpreter), so it is now renamed `cycle-amethyst-padding.sh.old`: kept as a reminder of the starting point, invisible to Raycast; never run it.

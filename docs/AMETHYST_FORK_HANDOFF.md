@@ -197,6 +197,12 @@ Omitted sides default to 0. With no `padding-modes` defined, behaviour is identi
 - Unbound commands work.
 - An unknown key only logs.
 
+### 5.2a Command palette (detour, 2026-10-11)
+
+- **What:** `show-command-palette` (Super+Y in Hans's config) opens a panel listing every command with its current shortcut. Type to filter (every word must appear in the name or command key, ignoring case), ↑/↓ select, Enter runs, Esc or a click elsewhere closes, Super+Y toggles.
+- **Behaves like Spotlight/Raycast:** a non-activating panel, centred on screen, so the app you're in stays in front and the command acts on its window. No extra focus handling.
+- **Code:** `Amethyst/View/CommandPalette.swift`. Entries come from `hotKeyNameToDefaultsKey()` ∩ `HotKeyManager.commandHandlers` (minus the palette itself), with shortcuts from `KeyboardShortcuts`, and are rebuilt on every open. Commands run through `HotKeyManager.runCommand`, like the command URL.
+
 ### 5.3 Float secondary windows (anchor model)
 
 **Idea (from BetterStage):** besides the per-app `floating` list, a list of apps whose *additional* windows float. Their Settings, plugin browsers, preference and Open windows float, with no title rules.

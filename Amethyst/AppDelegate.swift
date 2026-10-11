@@ -28,6 +28,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var layoutsMenuItem: NSMenuItem?
     private var paddingMenuItem: NSMenuItem?
 
+    private lazy var commandPalette = CommandPaletteController { [weak self] commandKey in
+        self?.hotKeyManager?.runCommand(commandKey)
+    }
+
     /// Command URLs that arrived before the commands were set up, e.g. the one that launched the app.
     private var pendingCommandURLs: [URL] = []
 
@@ -103,6 +107,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         runCommand(from: url)
+    }
+
+    /// Opens the command palette with every command and its current shortcut, or closes it if it's open.
+    @MainActor func toggleCommandPalette() {
+        guard !commandPalette.isVisible else {
+            commandPalette.close()
+            return
+        }
+
+        commandPalette.show(entries: hotKeyManager?.commandPaletteEntries() ?? [])
     }
 
     /// Runs the command a command URL names. Only registered commands run; anything else is logged and ignored.

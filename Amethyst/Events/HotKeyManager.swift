@@ -8,6 +8,7 @@
 
 import Carbon
 import Foundation
+import KeyboardShortcuts
 import Silica
 
 // Type for defining key code.
@@ -318,6 +319,12 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
                 windowManager.selectPaddingMode(named: paddingMode.name)
             }
         }
+
+        constructCommandWithCommandKey(CommandKey.showCommandPalette.rawValue) { [weak appDelegate] in
+            DispatchQueue.main.async {
+                appDelegate?.toggleCommandPalette()
+            }
+        }
     }
 
     private func constructKeyCodeMap() -> [String: [AMKeyCode]] {
@@ -412,6 +419,13 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         return true
     }
 
+    /// What the command palette lists: every named command that is set up, except the palette itself, with its current shortcut.
+    @MainActor func commandPaletteEntries() -> [CommandPaletteEntry] {
+        return CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: Set(commandHandlers.keys)) { commandKey in
+            KeyboardShortcuts.getShortcut(for: KeyboardShortcuts.Name(commandKey))?.description
+        }
+    }
+
     private func carbonModifiersFromModifiers(_ modifiers: UInt) -> UInt32 {
         var carbonModifiers: UInt32 = 0
 
@@ -502,6 +516,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         }
 
         hotKeyNameToDefaultsKey.append(["Relaunch Amethyst", CommandKey.relaunchAmethyst.rawValue])
+        hotKeyNameToDefaultsKey.append(["Show command palette", CommandKey.showCommandPalette.rawValue])
 
         return hotKeyNameToDefaultsKey
     }
