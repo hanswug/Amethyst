@@ -128,6 +128,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
                     panedLayout.increaseMainPaneCount()
                 }
             }
+            screenManager?.displayMainPaneCountHUD()
         }
 
         constructCommandWithCommandKey(CommandKey.decreaseMain.rawValue) {
@@ -137,6 +138,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
                     panedLayout.decreaseMainPaneCount()
                 }
             }
+            screenManager?.displayMainPaneCountHUD()
         }
 
         // Commands 1–4 only do something in custom layouts, so they're offered only when there are any.
@@ -377,16 +379,18 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         return true
     }
 
-    /// What the command palette lists: every named command that is set up, except the palette itself and layouts the configuration doesn't use, with its current shortcut.
-    @MainActor func commandPaletteEntries() -> [CommandPaletteEntry] {
+    /// What the command palette lists: every named command that is set up, except the palette itself and layouts the configuration doesn't use,
+    /// with its current shortcut and any note (e.g. a current value) by command key.
+    @MainActor func commandPaletteEntries(notes: [String: String] = [:]) -> [CommandPaletteEntry] {
         let hiddenLayoutCommands = CommandPalette.unconfiguredLayoutCommands(
             availableLayoutKeys: LayoutType<Application.Window>.availableLayoutStrings().map { $0.key },
             configuredLayoutKeys: userConfiguration.layoutKeys()
         )
         let listed = Set(commandHandlers.keys).subtracting(hiddenLayoutCommands)
-        return CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: listed) { commandKey in
+        let entries = CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: listed) { commandKey in
             KeyboardShortcuts.getShortcut(for: KeyboardShortcuts.Name(commandKey))?.description
         }
+        return CommandPalette.annotating(entries, notes: notes)
     }
 
     private func carbonModifiersFromModifiers(_ modifiers: UInt) -> UInt32 {

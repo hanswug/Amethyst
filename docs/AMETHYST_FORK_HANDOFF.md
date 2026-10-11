@@ -202,6 +202,7 @@ Omitted sides default to 0. With no `padding-modes` defined, behaviour is identi
 - **What:** `show-command-palette` (Super+Y in Hans's config) opens a panel listing every command with its current shortcut. Type to filter (every word must appear in the name or command key, ignoring case), ↑/↓ select, Enter runs, Esc or a click elsewhere closes, Super+Y toggles.
 - **Behaves like Spotlight/Raycast:** a non-activating panel, centred on screen, so the app you're in stays in front and the command acts on its window. No extra focus handling.
 - **Only commands that can work:** select-layout commands only for layouts in `layouts:`; screen and space commands are gone (§2, Dropped); custom layout commands only with custom layouts.
+- **Current values:** the window max count and main pane count entries show the current value, e.g. `Increase main pane count (now 1)` (main pane count only when the current layout has a main pane). After running, from any route, a HUD shows the new value: `Window max count · 9` (needs `enables-window-count-hud: true`) and `Main pane count · 2` (follows `enables-layout-hud`).
 - **Code:** `Amethyst/View/CommandPalette.swift`. Entries come from `hotKeyNameToDefaultsKey()` ∩ `HotKeyManager.commandHandlers` (minus the palette itself), with shortcuts from `KeyboardShortcuts`, and are rebuilt on every open. Commands run through `HotKeyManager.runCommand`, like the command URL.
 
 ### 5.3 Float secondary windows (anchor model)

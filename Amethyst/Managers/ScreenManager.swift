@@ -394,6 +394,18 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         displayCustomHUD(title: currentLayoutName, description: currentLayoutDescription)
     }
 
+    /// Shows the current layout's main pane count. Only paned layouts have one.
+    func displayMainPaneCountHUD() {
+        guard userConfiguration.enablesLayoutHUD(), let panedLayout = currentLayout as? PanedLayout else {
+            return
+        }
+
+        let count = panedLayout.mainPaneCount
+        DispatchQueue.main.async {
+            self.displayCustomHUD(title: "Main pane count · \(count)")
+        }
+    }
+
     @objc func hideLayoutHUD(_ sender: AnyObject) {
         layoutNameWindowController.close()
     }

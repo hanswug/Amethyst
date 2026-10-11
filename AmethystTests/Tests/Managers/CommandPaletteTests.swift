@@ -39,6 +39,19 @@ class CommandPaletteTests: QuickSpec {
             }
         }
 
+        describe("notes") {
+            it("adds a note only to the entries that have one, keeping the order") {
+                let annotated = CommandPalette.annotating(all, notes: ["cycle-padding-mode": "now wide", "not-listed": "now 1"])
+                expect(annotated.map { $0.name }).to(equal([
+                    "Swap focused window with main window",
+                    "Cycle padding mode forward (now wide)",
+                    "Select 27 padding mode"
+                ]))
+                expect(annotated.map { $0.commandKey }).to(equal(all.map { $0.commandKey }))
+                expect(annotated[1].shortcut).to(equal(cyclePadding.shortcut))
+            }
+        }
+
         describe("entries") {
             let namesAndKeys = [
                 ["Swap focused window with main window", "swap-main"],

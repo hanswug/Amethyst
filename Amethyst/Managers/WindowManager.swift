@@ -372,8 +372,8 @@ extension WindowManager {
 
         for screenManager in screens.screenManagers {
             let currentCount = userConfiguration.windowMaxCount() ?? 0
-            let countText = currentCount == 0 ? "Unlimited" : "\(currentCount)"
-            let title = "Window Max Count: \(countText)"
+            let countText = currentCount == 0 ? "unlimited" : "\(currentCount)"
+            let title = "Window max count · \(countText)"
             screenManager.displayCustomHUD(title: title)
         }
     }

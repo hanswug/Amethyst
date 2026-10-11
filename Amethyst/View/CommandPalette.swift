@@ -36,6 +36,17 @@ enum CommandPalette {
         return Set(availableLayoutKeys.filter { !configured.contains($0) }.map(UserConfiguration.constructLayoutKeyString))
     }
 
+    /// Adds a note such as a current value to the names of the entries that have one, by command key: `Increase main pane count (now 2)`.
+    static func annotating(_ entries: [CommandPaletteEntry], notes: [String: String]) -> [CommandPaletteEntry] {
+        return entries.map { entry in
+            guard let note = notes[entry.commandKey] else {
+                return entry
+            }
+
+            return CommandPaletteEntry(name: "\(entry.name) (\(note))", commandKey: entry.commandKey, shortcut: entry.shortcut)
+        }
+    }
+
     /// The entries matching every word of the query in their name or command key, ignoring case. An empty query matches everything.
     static func filter(_ entries: [CommandPaletteEntry], query: String) -> [CommandPaletteEntry] {
         let words = query.lowercased().split(whereSeparator: { $0.isWhitespace })

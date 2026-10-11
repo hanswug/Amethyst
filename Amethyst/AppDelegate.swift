@@ -116,7 +116,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        commandPalette.show(entries: hotKeyManager?.commandPaletteEntries() ?? [])
+        commandPalette.show(entries: hotKeyManager?.commandPaletteEntries(notes: commandPaletteNotes()) ?? [])
+    }
+
+    /// Current values shown next to the commands that change them.
+    private func commandPaletteNotes() -> [String: String] {
+        let windowMaxCount = UserConfiguration.shared.windowMaxCount().map { "now \($0)" } ?? "now unlimited"
+        var notes = [
+            CommandKey.increaseWindowMaxCount.rawValue: windowMaxCount,
+            CommandKey.decreaseWindowMaxCount.rawValue: windowMaxCount
+        ]
+
+        if let panedLayout = windowManager?.focusedScreenManager()?.currentLayout as? PanedLayout {
+            notes[CommandKey.increaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
+            notes[CommandKey.decreaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
+        }
+
+        return notes
     }
 
     /// Runs the command a command URL names. Only registered commands run; anything else is logged and ignored.
