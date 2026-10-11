@@ -27,10 +27,9 @@ A personal fork of Amethyst, the tiling window manager, for Hans. The full plan,
 
 ## Start here (next session)
 
-1. **Command palette: in trial** on `feat/command-palette` (built and installed from that branch, 2026-10-11; spec §5.2a). Ask Hans whether to keep it. On "keep it": merge into `fork/main`, rebuild from `fork/main`. On "drop it": rebuild `fork/main` (the Super+Y line in his config is then ignored).
-2. **Phase 4: directional focus and swap** (§5.4), designed by §3b: ≤ 8 windows, a mental ≤ 4×2 grid, simple rules, only visible windows, Two Pane = main + slot, Fullscreen = west/east cycle. Bindings per §6: focus on ⌃⌥ + h/j/k/l, swap on ⌃⌥⌘ + h/j/k/l; test on spare keys first, rebind h/j/k/l only at the end.
-3. **Backlog of small ideas** (each behind a config switch where cheap): overflow policy (9th window floats instead of minimising the oldest, `ScreenManager.minimizeWindows`); `max-column-rows: 3` for side columns; fix the `debug windows` crash (`Amethyst/Debug/WindowsInfo.swift` force-unwrap).
-4. **Hans's side, optional:** make Zed the default for `.yml` (Finder → ⌘I → Open with → Change All) so Edit Config… opens Zed.
+1. **Phase 4: directional focus and swap** (§5.4), designed by §3b: ≤ 8 windows, a mental ≤ 4×2 grid, simple rules, only visible windows, Two Pane = main + slot, Fullscreen = west/east cycle. Bindings per §6: focus on ⌃⌥ + h/j/k/l, swap on ⌃⌥⌘ + h/j/k/l; test on spare keys first, rebind h/j/k/l only at the end.
+2. **Backlog of small ideas** (each behind a config switch where cheap): overflow policy (9th window floats instead of minimising the oldest, `ScreenManager.minimizeWindows`); `max-column-rows: 3` for side columns; fix the `debug windows` crash (`Amethyst/Debug/WindowsInfo.swift` force-unwrap).
+3. **Hans's side, optional:** make Zed the default for `.yml` (Finder → ⌘I → Open with → Change All) so Edit Config… opens Zed.
 
 Repo: `origin` = github.com/hanswug/Amethyst (public fork, `fork/main` pushed), `upstream` = ianyh/Amethyst. `gh` is installed and logged in. Discussion with Ian: github.com/ianyh/Amethyst/discussions/1895.
 
@@ -43,9 +42,10 @@ Repo: `origin` = github.com/hanswug/Amethyst (public fork, `fork/main` pushed), 
 - [ ] Phase 5: warp (§5.5)
 - [ ] Phase 6: rotate / mirror (§5.6)
 - [x] Phase 2: command URL (§5.2) — built early as a detour; `open -g "amethyst://command/<key>"` runs any command
+- [x] Command palette (§5.2a, detour) — Super+Y; kept by Hans on 2026-10-11 and merged into `fork/main`
 
-**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); no config file → "No configuration file found" + path, quit; the preferences-window code is deleted. The command palette (Super+Y) is built and in trial; **next: phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
+**Current phase:** detour — config-only is done (slices 1–2 + layout title); a broken config file now shows "Error in configuration file" + path and quits (no debugging help by design); no config file → "No configuration file found" + path, quit; the preferences-window code is deleted. The command palette (Super+Y) is done and merged; **next: phase 4** (directional focus and swap), then 5, 6, then the Raycast extension.
 
-**Command palette (detour, in trial):** Super+Y lists every command with its shortcut; type to filter, Enter runs. Spotlight-style non-activating panel (§5.2a). Built on `feat/command-palette`, installed from that branch; waiting for Hans's keep/drop. The branch also drops the screen and throw-to-space commands and offers custom layout commands only with custom layouts (§2, Dropped); Hans's config no longer lists them (`follow-space-thrown-windows` went too).
+**Command palette (done, 2026-10-11):** Super+Y lists every command with its shortcut; type to filter, Enter runs (§5.2a). It came with three related changes: the palette lists only layouts in `layouts:`; the screen and throw-to-space commands are dropped (§2, Dropped), and custom layout commands appear only when custom layouts exist; window max count and main pane count show their current value in the palette and a HUD after changing.
 
 **After all phases succeed:** build a dedicated Raycast extension for hw-Amethyst on top of the command URL. The Raycast dropdown script was retired (moved to the Trash). `~/raycast-scripts/cycle-amethyst-padding.sh` is the old upstream version: it rewrites upstream's config, kills hw-Amethyst and launches upstream. It ran by accident on 2026-10-10 10:18. It ran again at 10:47 despite its execute bit being removed (Raycast runs scripts through their interpreter), so it is now renamed `cycle-amethyst-padding.sh.old`: kept as a reminder of the starting point, invisible to Raycast; never run it.
