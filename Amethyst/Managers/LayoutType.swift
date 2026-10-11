@@ -247,23 +247,27 @@ enum LayoutType<Window: WindowType> {
             .compactMap { $0.layoutClass }
             .map { ($0.layoutKey, $0.layoutName) }
 
+        let customLayouts = customLayoutKeys().map { ($0, layoutNameForKey($0)!) }
+        layoutTypes.append(contentsOf: customLayouts)
+
+        return layoutTypes
+    }
+
+    /// The keys of the custom layouts: the names of the `.js` files in the layouts directory.
+    static func customLayoutKeys() -> [String] {
         do {
             let layoutsDirectory = try FileManager.default.layoutsDirectory()
-            let customLayoutFiles = try FileManager.default.contentsOfDirectory(
+            return try FileManager.default.contentsOfDirectory(
                 at: layoutsDirectory,
                 includingPropertiesForKeys: nil,
                 options: []
-            ).filter { $0.pathExtension == "js" }
-
-            let customLayouts = customLayoutFiles
-                .map { $0.deletingPathExtension().lastPathComponent }
-                .map { ($0, layoutNameForKey($0)!) }
-            layoutTypes.append(contentsOf: customLayouts)
+            )
+            .filter { $0.pathExtension == "js" }
+            .map { $0.deletingPathExtension().lastPathComponent }
         } catch {
             log.error("failed to parse custom layouts")
+            return []
         }
-
-        return layoutTypes
     }
 
     static func layoutsWithConfiguration(_ userConfiguration: UserConfiguration) -> [Layout<Window>] {

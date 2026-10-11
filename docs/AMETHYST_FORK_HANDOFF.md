@@ -58,7 +58,7 @@ Owner: Hans · Prepared 2026-10-10 · Upstream baseline: `ianyh/Amethyst`, branc
 | Warp elsewhere | **Tall:** moves the main boundary. **Two Pane:** west/east swaps with main. Everything else: no-op | These are the layouts Hans uses. |
 | New window in 3Column | Shorter side column, never main; ties go to the secondary pane | Main changes only on command; additions reproduce upstream's split exactly. |
 | Hotkeys | *(Changed 2026-10-10.)* New commands ship **with Hans's chosen keys** as hw-Amethyst's defaults where he has picked them (Super+0, Super+Y, later h/j/k/l); inherited key defaults he didn't choose are cleared | hw-Amethyst is its own app (§3); keys stay free for its own features. |
-| Dropped | Float by AX role/subrole; re-check float on title change; cross-display directions; public release | Covered by other features or out of scope. |
+| Dropped | Float by AX role/subrole; re-check float on title change; cross-display directions; public release. *(2026-10-11)* The screen commands (`focus-screen-*`, `throw-screen-*`, `focus/swap-screen-ccw/cw`) and throw-to-space (`throw-space-*`) are no longer registered; the custom-layout `command1–4` are registered only when a custom layout (`.js`) exists | Covered by other features or out of scope. Single display. Throw-to-space fakes a title-bar drag plus the Desktop shortcut, which macOS keeps breaking (dead on macOS 27); Raycast moves windows between Spaces, and each Space tiles whatever lands on it. |
 
 ## 3. Ground rules
 
@@ -201,6 +201,7 @@ Omitted sides default to 0. With no `padding-modes` defined, behaviour is identi
 
 - **What:** `show-command-palette` (Super+Y in Hans's config) opens a panel listing every command with its current shortcut. Type to filter (every word must appear in the name or command key, ignoring case), ↑/↓ select, Enter runs, Esc or a click elsewhere closes, Super+Y toggles.
 - **Behaves like Spotlight/Raycast:** a non-activating panel, centred on screen, so the app you're in stays in front and the command acts on its window. No extra focus handling.
+- **Only commands that can work:** select-layout commands only for layouts in `layouts:`; screen and space commands are gone (§2, Dropped); custom layout commands only with custom layouts.
 - **Code:** `Amethyst/View/CommandPalette.swift`. Entries come from `hotKeyNameToDefaultsKey()` ∩ `HotKeyManager.commandHandlers` (minus the palette itself), with shortcuts from `KeyboardShortcuts`, and are rebuilt on every open. Commands run through `HotKeyManager.runCommand`, like the command URL.
 
 ### 5.3 Float secondary windows (anchor model)

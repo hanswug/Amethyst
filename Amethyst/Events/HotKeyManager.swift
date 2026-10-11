@@ -139,38 +139,41 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
-        constructCommandWithCommandKey(CommandKey.command1.rawValue) {
-            let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-            screenManager?.updateCurrentLayout { layout in
-                if let customLayout = layout as? CustomLayout {
-                    customLayout.command1()
+        // Commands 1–4 only do something in custom layouts, so they're offered only when there are any.
+        if !LayoutType<Application.Window>.customLayoutKeys().isEmpty {
+            constructCommandWithCommandKey(CommandKey.command1.rawValue) {
+                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+                screenManager?.updateCurrentLayout { layout in
+                    if let customLayout = layout as? CustomLayout {
+                        customLayout.command1()
+                    }
                 }
             }
-        }
 
-        constructCommandWithCommandKey(CommandKey.command2.rawValue) {
-            let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-            screenManager?.updateCurrentLayout { layout in
-                if let customLayout = layout as? CustomLayout {
-                    customLayout.command2()
+            constructCommandWithCommandKey(CommandKey.command2.rawValue) {
+                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+                screenManager?.updateCurrentLayout { layout in
+                    if let customLayout = layout as? CustomLayout {
+                        customLayout.command2()
+                    }
                 }
             }
-        }
 
-        constructCommandWithCommandKey(CommandKey.command3.rawValue) {
-            let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-            screenManager?.updateCurrentLayout { layout in
-                if let customLayout = layout as? CustomLayout {
-                    customLayout.command3()
+            constructCommandWithCommandKey(CommandKey.command3.rawValue) {
+                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+                screenManager?.updateCurrentLayout { layout in
+                    if let customLayout = layout as? CustomLayout {
+                        customLayout.command3()
+                    }
                 }
             }
-        }
 
-        constructCommandWithCommandKey(CommandKey.command4.rawValue) {
-            let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-            screenManager?.updateCurrentLayout { layout in
-                if let customLayout = layout as? CustomLayout {
-                    customLayout.command4()
+            constructCommandWithCommandKey(CommandKey.command4.rawValue) {
+                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+                screenManager?.updateCurrentLayout { layout in
+                    if let customLayout = layout as? CustomLayout {
+                        customLayout.command4()
+                    }
                 }
             }
         }
@@ -185,22 +188,6 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
 
         constructCommandWithCommandKey(CommandKey.focusMain.rawValue) {
             windowManager.focusTransitionCoordinator.moveFocusToMain()
-        }
-
-        constructCommandWithCommandKey(CommandKey.focusScreenCCW.rawValue) {
-            windowManager.focusTransitionCoordinator.moveFocusScreenCounterClockwise()
-        }
-
-        constructCommandWithCommandKey(CommandKey.focusScreenCW.rawValue) {
-            windowManager.focusTransitionCoordinator.moveFocusScreenClockwise()
-        }
-
-        constructCommandWithCommandKey(CommandKey.swapScreenCCW.rawValue) {
-            windowManager.windowTransitionCoordinator.swapFocusedWindowScreenCounterClockwise()
-        }
-
-        constructCommandWithCommandKey(CommandKey.swapScreenCW.rawValue) {
-            windowManager.windowTransitionCoordinator.swapFocusedWindowScreenClockwise()
         }
 
         constructCommandWithCommandKey(CommandKey.swapCCW.rawValue) {
@@ -219,35 +206,6 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             DispatchQueue.main.async {
                 windowManager.displayCurrentLayout()
             }
-        }
-
-        (1...5).forEach { screenNumber in
-            let focusCommandKey = "\(CommandKey.focusScreenPrefix.rawValue)-\(screenNumber)"
-            let throwCommandKey = "\(CommandKey.throwScreenPrefix.rawValue)-\(screenNumber)"
-
-            self.constructCommandWithCommandKey(focusCommandKey) {
-                windowManager.focusTransitionCoordinator.focusScreen(at: screenNumber - 1)
-            }
-
-            self.constructCommandWithCommandKey(throwCommandKey) {
-                windowManager.windowTransitionCoordinator.throwToScreenAtIndex(screenNumber - 1)
-            }
-        }
-
-        (1...16).forEach { spaceNumber in
-            let commandKey = "\(CommandKey.throwSpacePrefix.rawValue)-\(spaceNumber)"
-
-            self.constructCommandWithCommandKey(commandKey) {
-                windowManager.windowTransitionCoordinator.pushFocusedWindowToSpace(spaceNumber - 1)
-            }
-        }
-
-        constructCommandWithCommandKey(CommandKey.throwSpaceLeft.rawValue) {
-            windowManager.windowTransitionCoordinator.pushFocusedWindowToSpaceLeft()
-        }
-
-        constructCommandWithCommandKey(CommandKey.throwSpaceRight.rawValue) {
-            windowManager.windowTransitionCoordinator.pushFocusedWindowToSpaceRight()
         }
 
         constructCommandWithCommandKey(CommandKey.toggleFloat.rawValue) {
@@ -453,7 +411,8 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         return carbonModifiers
     }
 
-    static func hotKeyNameToDefaultsKey() -> [[String]] {
+    /// Display names by command key, for every command that is set up. Commands 1–4 are listed only when there are custom layouts.
+    static func hotKeyNameToDefaultsKey(customLayoutKeys: [String] = LayoutType<Application.Window>.customLayoutKeys()) -> [[String]] {
         var hotKeyNameToDefaultsKey: [[String]] = []
 
         hotKeyNameToDefaultsKey.append(["Cycle layout forward", CommandKey.cycleLayoutForward.rawValue])
@@ -464,39 +423,19 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Decrease main pane count", CommandKey.decreaseMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Increase window max count", CommandKey.increaseWindowMaxCount.rawValue])
         hotKeyNameToDefaultsKey.append(["Decrease window max count", CommandKey.decreaseWindowMaxCount.rawValue])
-        hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
-        hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])
-        hotKeyNameToDefaultsKey.append(["Custom layout command 3", CommandKey.command3.rawValue])
-        hotKeyNameToDefaultsKey.append(["Custom layout command 4", CommandKey.command4.rawValue])
+        if !customLayoutKeys.isEmpty {
+            hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
+            hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])
+            hotKeyNameToDefaultsKey.append(["Custom layout command 3", CommandKey.command3.rawValue])
+            hotKeyNameToDefaultsKey.append(["Custom layout command 4", CommandKey.command4.rawValue])
+        }
         hotKeyNameToDefaultsKey.append(["Move focus counter clockwise", CommandKey.focusCCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus clockwise", CommandKey.focusCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus to main window", CommandKey.focusMain.rawValue])
-        hotKeyNameToDefaultsKey.append(["Move focus to counter clockwise screen", CommandKey.focusScreenCCW.rawValue])
-        hotKeyNameToDefaultsKey.append(["Move focus to clockwise screen", CommandKey.focusScreenCW.rawValue])
-        hotKeyNameToDefaultsKey.append(["Swap focused window to counter clockwise screen", CommandKey.swapScreenCCW.rawValue])
-        hotKeyNameToDefaultsKey.append(["Swap focused window to clockwise screen", CommandKey.swapScreenCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window counter clockwise", CommandKey.swapCCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window clockwise", CommandKey.swapCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window with main window", CommandKey.swapMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Force windows to be reevaluated", CommandKey.reevaluateWindows.rawValue])
-        hotKeyNameToDefaultsKey.append(["Throw focused window to space left", CommandKey.throwSpaceLeft.rawValue])
-        hotKeyNameToDefaultsKey.append(["Throw focused window to space right", CommandKey.throwSpaceRight.rawValue])
-
-        (1...16).forEach { spaceNumber in
-            let name = "Throw focused window to space \(spaceNumber)"
-
-            hotKeyNameToDefaultsKey.append([name, "\(CommandKey.throwSpacePrefix.rawValue)-\(spaceNumber)"])
-        }
-
-        (1...5).forEach { screenNumber in
-            let focusCommandName = "Focus screen \(screenNumber)"
-            let throwCommandName = "Throw focused window to screen \(screenNumber)"
-            let focusCommandKey = "\(CommandKey.focusScreenPrefix.rawValue)-\(screenNumber)"
-            let throwCommandKey = "\(CommandKey.throwScreenPrefix.rawValue)-\(screenNumber)"
-
-            hotKeyNameToDefaultsKey.append([focusCommandName, focusCommandKey])
-            hotKeyNameToDefaultsKey.append([throwCommandName, throwCommandKey])
-        }
 
         hotKeyNameToDefaultsKey.append(["Toggle float for focused window", CommandKey.toggleFloat.rawValue])
         hotKeyNameToDefaultsKey.append(["Display current layout", CommandKey.displayCurrentLayout.rawValue])

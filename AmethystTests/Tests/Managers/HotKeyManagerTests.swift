@@ -14,10 +14,18 @@ import Silica
 class HotKeyManagerTests: QuickSpec {
     override func spec() {
         describe("hotKeyNameToDefaultsKey") {
-            it("has the right number of screens") {
-                let keyMapping = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey()
-                let screenCommands = keyMapping.filter { $0[1].hasPrefix(CommandKey.focusScreenPrefix.rawValue) }
-                expect(screenCommands.count).to(equal(7))
+            it("has no screen or space commands") {
+                let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
+                expect(keys.filter { $0.contains("-screen") || $0.hasPrefix("throw-space") }).to(beEmpty())
+            }
+
+            it("lists the custom layout commands only when there are custom layouts") {
+                let without = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: []).map { $0[1] }
+                let with = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: ["my-layout"]).map { $0[1] }
+                let customCommands = [CommandKey.command1, .command2, .command3, .command4].map { $0.rawValue }
+
+                expect(without.filter { customCommands.contains($0) }).to(beEmpty())
+                expect(with).to(contain(customCommands))
             }
         }
 
