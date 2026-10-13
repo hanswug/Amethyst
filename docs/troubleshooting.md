@@ -29,3 +29,11 @@ macOS has the option to assign an application specifically to no Desktops, one D
 To change this setting you can right click (or control click or whatever gesture you may have associated with right click) on the application icon in the Dock. Under Options there is an Assign To section. See the screenshot below for reference.
 
 <img src="./images/desktop-assignment.png" width="50%">
+
+### A window looks floating but is tiled
+
+Many apps (Safari, for example) have a minimum window size. When the layout gives such a window a smaller tile (a narrow column, many rows, a deep BSP split), macOS keeps it at its minimum. It then sticks out of its tile and overlaps its neighbours, so it looks as if it floated.
+
+It is still tiled: it moves when the layout changes, and focus and swap commands reach it. `toggle-float` would float it for real. This is expected: hw-Amethyst can't make an app smaller than the app allows.
+
+What helps: fewer windows on that screen, or a layout that gives it a bigger tile (the main pane, Two Pane). The planned `max-column-rows` setting is meant to keep side columns above most apps' minimum height.
