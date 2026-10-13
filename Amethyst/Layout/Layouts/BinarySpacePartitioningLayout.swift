@@ -229,6 +229,9 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
      The tree is kept up to date by window events, but some never reach it: hiding an app, or closing or moving a window
      while another Space is showing. A stale leaf would leave an empty hole and squeeze the real windows; a window the
      tree never heard of would not be laid out at all.
+
+     It also picks up the focused window: clicking a window of another app sends no focus event, so the next new
+     window would otherwise split whichever window had focus before.
      */
     private func syncTree(with windows: [LayoutWindow<Window>]) {
         let windowIDs = Set(windows.map { $0.id })
@@ -236,14 +239,17 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
             .filter { !windowIDs.contains($0) }
             .forEach { rootNode.removeWindowID($0) }
 
-        guard rootNode.left != nil || rootNode.right != nil else {
+        if rootNode.left != nil || rootNode.right != nil {
+            windows
+                .filter { rootNode.findWindowID($0.id) == nil }
+                .forEach { insertWindowID($0.id) }
+        } else {
             constructInitialTreeWithWindows(windows)
-            return
         }
 
-        windows
-            .filter { rootNode.findWindowID($0.id) == nil }
-            .forEach { insertWindowID($0.id) }
+        if let focusedWindow = windows.first(where: { $0.isFocused }) {
+            lastKnownFocusedWindowID = focusedWindow.id
+        }
     }
 
     override func updateWithChange(_ windowChange: Change<Window>) {

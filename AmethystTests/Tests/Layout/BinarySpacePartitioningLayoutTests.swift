@@ -631,6 +631,48 @@ class BinarySpacePartitioningLayoutTests: QuickSpec {
                     expect(assignments.frames()).to(equal(expectedFrames), description: assignments.description(withExpectedFrames: expectedFrames))
                 }
 
+                it("splits the window focused at the last layout") {
+                    let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
+                    TestScreen.availableScreens = [screen]
+
+                    let windows = [
+                        TestWindow(element: nil)!,
+                        TestWindow(element: nil)!,
+                        TestWindow(element: nil)!
+                    ]
+                    let layout = BinarySpacePartitioningLayout<TestWindow>()
+                    layout.updateWithChange(.add(window: windows[0]))
+                    layout.updateWithChange(.add(window: windows[1]))
+                    layout.updateWithChange(.focusChanged(window: windows[1]))
+
+                    // The left window got focus by clicking it in another app, which sends no focus event.
+                    let focusedLeftWindowSet = WindowSet<TestWindow>(
+                        windows: windows.dropLast().map {
+                            LayoutWindow<TestWindow>(id: $0.id(), frame: $0.frame(), isFocused: $0 == windows[0])
+                        },
+                        isWindowWithIDActive: { _ in return true },
+                        isWindowWithIDFloating: { _ in return false },
+                        windowForID: { id in return windows.first { $0.id() == id } }
+                    )
+                    _ = layout.frameAssignments(focusedLeftWindowSet, on: screen)
+
+                    layout.updateWithChange(.add(window: windows[2]))
+
+                    let windowSet = WindowSet<TestWindow>(
+                        windows: windows.map { LayoutWindow<TestWindow>(id: $0.id(), frame: $0.frame(), isFocused: false) },
+                        isWindowWithIDActive: { _ in return true },
+                        isWindowWithIDFloating: { _ in return false },
+                        windowForID: { id in return windows.first { $0.id() == id } }
+                    )
+                    let assignments = layout.frameAssignments(windowSet, on: screen)!
+                    let expectedFrames = [
+                        CGRect(x: 1000, y: 0, width: 1000, height: 1000),
+                        CGRect(x: 0, y: 0, width: 1000, height: 500),
+                        CGRect(x: 0, y: 500, width: 1000, height: 500)
+                    ]
+                    expect(assignments.frames()).to(equal(expectedFrames), description: assignments.description(withExpectedFrames: expectedFrames))
+                }
+
                 it("lays out a window the tree never heard of") {
                     let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
                     TestScreen.availableScreens = [screen]
