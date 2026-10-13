@@ -43,7 +43,9 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [ ] `window-overflow: minimize | float`: what happens to a window over `window-max-count` (or, later, over a full side column). `float` floats the new window and leaves the tiles alone
   - [ ] `max-column-rows: 3` for side columns
   - [ ] Fix the `debug windows` crash
-  - [ ] Make `--log` write to a file (it's accepted, but nothing reaches the system log)
+  - [ ] **Next up:** Explain this window: a palette command that says whether the focused window is tiled or floating, and why (`floating` list, title rule, secondary window, small size, window limit). Includes making `--log` write to a file (it's accepted, but nothing reaches the system log)
+  - [ ] After that: a HUD when an app refuses its tile (its window stays bigger than the tile)
+  - [ ] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (the app still reports upstream's 0.24.3)
   - [ ] Idea: a Grid layout (1 → full, 2 → halves, up to 4×2, in window order)
 
 ## Configuration
@@ -114,7 +116,8 @@ Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` o
 1. **One time per Mac:** in Keychain Access, create a self-signed certificate (Certificate Assistant → Create a Certificate…, type **Code Signing**) named `Amethyst Local Signing`, and set it to Always Trust for code signing. The Accessibility permission sticks to this identity across rebuilds.
 2. `scripts/build.sh` builds the Release app, installs `/Applications/hw-Amethyst.app` and launches it. Grant it Accessibility on first launch.
 3. `scripts/release.sh` runs the tests, builds and installs as above, and saves that build as a draft GitHub release (a signed zip, visible only to the repository owner).
-4. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
+4. Before merging a change to window tracking, focus or floating, run the [manual tests](docs/manual-tests.md): the cases unit tests can't reach.
+5. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
 
 Don't use the fastlane lane: it signs for a Developer ID team this fork doesn't have. Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
 
