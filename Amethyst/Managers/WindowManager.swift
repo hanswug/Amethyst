@@ -101,6 +101,9 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         addWorkspaceNotificationObserver(NSWorkspace.didHideApplicationNotification, selector: #selector(applicationDidHide(_:)))
         addWorkspaceNotificationObserver(NSWorkspace.didUnhideApplicationNotification, selector: #selector(applicationDidUnhide(_:)))
         addWorkspaceNotificationObserver(NSWorkspace.activeSpaceDidChangeNotification, selector: #selector(activeSpaceDidChange(_:)))
+        // Some apps don't post their own accessibility activation notification. Without a reflow,
+        // layouts that track focus (BSP) miss a click into another app.
+        addWorkspaceNotificationObserver(NSWorkspace.didActivateApplicationNotification, selector: #selector(applicationActivated(_:)))
 
         NotificationCenter.default.addObserver(
             self,
@@ -289,7 +292,8 @@ extension WindowManager {
     }
 
     fileprivate func remove(application: AnyApplication<Application>) {
-        for window in application.windows() {
+        // Use the windows we track, not the app's: its window list is a stale cache, and a quit app can't be asked.
+        for window in windows.windows(forApplicationWithPID: application.pid()) {
             remove(window: window)
         }
         applications.removeValue(forKey: application.pid())

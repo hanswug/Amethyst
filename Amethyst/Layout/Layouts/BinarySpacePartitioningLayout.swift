@@ -86,17 +86,19 @@ class TreeNode<Window: WindowType>: Codable {
         }
 
         guard let parent = node.parent else {
+            // The root was the only window: the tree is empty now.
+            node.windowID = nil
             return
         }
 
         guard let grandparent = parent.parent else {
-            if node == parent.left {
-                parent.windowID = parent.right?.windowID
-            } else {
-                parent.windowID = parent.left?.windowID
-            }
-            parent.left = nil
-            parent.right = nil
+            // The root takes over the sibling, which may be a whole subtree.
+            let sibling = node == parent.left ? parent.right : parent.left
+            parent.windowID = sibling?.windowID
+            parent.left = sibling?.left
+            parent.right = sibling?.right
+            parent.left?.parent = parent
+            parent.right?.parent = parent
             return
         }
 
@@ -210,6 +212,46 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
         }
     }
 
+    /// Splits the last focused window, or adds at the end when it isn't in the tree.
+    private func insertWindowID(_ windowID: WindowID) {
+        if let insertionPoint = lastKnownFocusedWindowID, windowID != insertionPoint, rootNode.findWindowID(insertionPoint) != nil {
+            log.info("insert \(windowID) at point: \(insertionPoint)")
+            rootNode.insertWindowID(windowID, atPoint: insertionPoint)
+        } else {
+            log.info("insert \(windowID) at end")
+            rootNode.insertWindowIDAtEnd(windowID)
+        }
+    }
+
+    /**
+     Makes the tree hold exactly the windows being laid out.
+
+     The tree is kept up to date by window events, but some never reach it: hiding an app, or closing or moving a window
+     while another Space is showing. A stale leaf would leave an empty hole and squeeze the real windows; a window the
+     tree never heard of would not be laid out at all.
+
+     It also picks up the focused window: clicking a window of another app sends no focus event, so the next new
+     window would otherwise split whichever window had focus before.
+     */
+    private func syncTree(with windows: [LayoutWindow<Window>]) {
+        let windowIDs = Set(windows.map { $0.id })
+        rootNode.orderedWindowIDs()
+            .filter { !windowIDs.contains($0) }
+            .forEach { rootNode.removeWindowID($0) }
+
+        if rootNode.left != nil || rootNode.right != nil {
+            windows
+                .filter { rootNode.findWindowID($0.id) == nil }
+                .forEach { insertWindowID($0.id) }
+        } else {
+            constructInitialTreeWithWindows(windows)
+        }
+
+        if let focusedWindow = windows.first(where: { $0.isFocused }) {
+            lastKnownFocusedWindowID = focusedWindow.id
+        }
+    }
+
     override func updateWithChange(_ windowChange: Change<Window>) {
         switch windowChange {
         case let .add(window):
@@ -218,13 +260,7 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
                 return
             }
 
-            if let insertionPoint = lastKnownFocusedWindowID, window.id() != insertionPoint, rootNode.findWindowID(insertionPoint) != nil {
-                log.info("insert \(window) - \(window.id()) at point: \(insertionPoint)")
-                rootNode.insertWindowID(window.id(), atPoint: insertionPoint)
-            } else {
-                log.info("insert \(window) - \(window.id()) at end")
-                rootNode.insertWindowIDAtEnd(window.id())
-            }
+            insertWindowID(window.id())
 
             if window.isFocused() {
                 lastKnownFocusedWindowID = window.id()
@@ -305,9 +341,7 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
             return []
         }
 
-        if rootNode.left == nil && rootNode.right == nil {
-            constructInitialTreeWithWindows(windows)
-        }
+        syncTree(with: windows)
 
         let windowIDMap: [WindowID: LayoutWindow<Window>] = windows.reduce([:]) { (windowMap, window) -> [WindowID: LayoutWindow<Window>] in
             var mutableWindowMap = windowMap
