@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
-# Publishes the current fork/main build as a GitHub release: a zip of
+# Saves the current fork/main build as a draft GitHub release: a zip of
 # hw-Amethyst.app signed with the local self-signed certificate (not
-# notarised). For now this is how hw-Amethyst gets onto other Macs without
-# building there.
+# notarised). Drafts are visible only to the repository owner; this is how
+# hw-Amethyst gets onto Hans's other Macs without building there.
+#
+# A draft creates no git tag, so earlier releases are read through gh.
 #
 # Runs the tests, then scripts/build.sh (which also installs and relaunches
 # the app here), so the zip is exactly what runs on this Mac.
@@ -29,7 +31,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
     echo "error: the working tree has uncommitted changes." >&2
     exit 1
 fi
-git fetch --quiet --tags origin "$BRANCH"
+git fetch --quiet origin "$BRANCH"
 if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/${BRANCH}")" ]]; then
     echo "error: ${BRANCH} isn't in sync with origin; push or pull first." >&2
     exit 1
@@ -38,15 +40,26 @@ gh auth status >/dev/null 2>&1 || { echo "error: gh isn't logged in (gh auth log
 # The fork, not upstream: gh would otherwise pick the parent repository.
 REPO="$(gh repo view "$(git remote get-url origin)" --json nameWithOwner --jq .nameWithOwner)"
 
-# One tag per day, with .2, .3, … for further releases that day.
+# Earlier releases, drafts included, newest first.
+RELEASES="$(gh release list --repo "$REPO" --limit 200 --json tagName,createdAt \
+    --jq 'sort_by(.createdAt) | reverse | .[].tagName' | grep "^${TAG_PREFIX}" || true)"
+
+# One name per day, with .2, .3, … for further releases that day.
 DATE="$(date +%Y.%m.%d)"
 TAG="${TAG_PREFIX}${DATE}"
 n=2
-while git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; do
+while grep -qxF "$TAG" <<< "$RELEASES"; do
     TAG="${TAG_PREFIX}${DATE}.${n}"
     n=$((n + 1))
 done
-PREVIOUS_TAG="$(git tag --list "${TAG_PREFIX}*" --sort=-creatordate | head -n 1)"
+
+# The commit the previous release was built from, for the list of changes.
+PREVIOUS_SHA=""
+PREVIOUS_TAG="$(head -n 1 <<< "$RELEASES")"
+if [[ -n "$PREVIOUS_TAG" ]]; then
+    PREVIOUS_SHA="$(gh release view "$PREVIOUS_TAG" --repo "$REPO" --json targetCommitish --jq .targetCommitish)"
+    git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null || PREVIOUS_SHA=""
+fi
 
 echo "==> Running the tests"
 scripts/test.sh
@@ -60,8 +73,8 @@ ditto "$PRODUCT" "${STAGING}/${APP_NAME}.app"
 ZIP="${STAGING}/${APP_NAME}-${TAG#"$TAG_PREFIX"}.zip"
 ditto -c -k --keepParent "${STAGING}/${APP_NAME}.app" "$ZIP"
 
-if [[ -n "$PREVIOUS_TAG" ]]; then
-    CHANGES="$(git log --no-merges --format='- %s' "${PREVIOUS_TAG}..HEAD")"
+if [[ -n "$PREVIOUS_SHA" ]]; then
+    CHANGES="$(git log --no-merges --format='- %s' "${PREVIOUS_SHA}..HEAD")"
 else
     CHANGES="- First release."
 fi
@@ -82,12 +95,12 @@ Signed with a self-signed certificate, not notarised, so macOS blocks the first 
 4. The config lives at \`~/.config/hw-amethyst/amethyst.yml\`; start from [hw-amethyst.sample.yml](https://github.com/${REPO}/blob/${BRANCH}/hw-amethyst.sample.yml).
 EOF
 
-echo "==> Publishing ${TAG}"
-gh release create "$TAG" "$ZIP" \
+echo "==> Saving draft release ${TAG}"
+URL="$(gh release create "$TAG" "$ZIP" \
     --repo "$REPO" \
+    --draft \
     --target "$(git rev-parse HEAD)" \
     --title "${APP_NAME} ${DATE//./-}" \
-    --notes-file "$NOTES_FILE"
-git fetch --quiet origin "refs/tags/${TAG}:refs/tags/${TAG}"
+    --notes-file "$NOTES_FILE")"
 
-echo "==> Done: https://github.com/${REPO}/releases/tag/${TAG}"
+echo "==> Done (draft, visible only to you): ${URL}"

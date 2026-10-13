@@ -8,7 +8,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - **No hidden state.** A window is either visible or deliberately gone; nothing is parked where you have to remember it.
 - **One display and one Space at a time.** Each Space and each display is tiled on its own, so using several still works, but there are no commands to move windows between them. Dedicated apps (Raycast, for example) do that well, and moving a window to another Space needs simulated mouse drags because macOS has no public API for it.
 
-**Releases** on GitHub are, for now, mainly a workaround to install and test hw-Amethyst on my other Macs without building it there. They are zips signed with a self-signed certificate, not notarised: shipping a build that opens without a warning needs a paid Apple Developer ID. macOS blocks the first launch; allow it once in System Settings → Privacy & Security → Open Anyway. You can also build it yourself (see [Build and install](#build-and-install)) or take any of the ideas for your own setup.
+**There are no public releases.** Builds are signed with a self-signed certificate, not notarised (that needs a paid Apple Developer ID). I keep them as draft releases, visible only to me, to install hw-Amethyst on my other Macs without building there. You can build it yourself (see [Build and install](#build-and-install)) or take any of the ideas for your own setup.
 
 ## What it does
 
@@ -113,7 +113,7 @@ Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` o
 
 1. **One time per Mac:** in Keychain Access, create a self-signed certificate (Certificate Assistant → Create a Certificate…, type **Code Signing**) named `Amethyst Local Signing`, and set it to Always Trust for code signing. The Accessibility permission sticks to this identity across rebuilds.
 2. `scripts/build.sh` builds the Release app, installs `/Applications/hw-Amethyst.app` and launches it. Grant it Accessibility on first launch.
-3. `scripts/release.sh` runs the tests, builds and installs as above, and publishes that build as a GitHub release (a signed zip).
+3. `scripts/release.sh` runs the tests, builds and installs as above, and saves that build as a draft GitHub release (a signed zip, visible only to the repository owner).
 4. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
 
 Don't use the fastlane lane: it signs for a Developer ID team this fork doesn't have. Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
