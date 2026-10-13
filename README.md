@@ -16,6 +16,7 @@ It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or
 - **Command URL:** `open -g "amethyst://command/<command-key>"` runs any command, bound or not, from scripts or launchers. Unknown keys are ignored.
 - **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly, and the last mode survives restarts. The built-in display stays unpadded.
 - **Floating secondary windows:** for apps in `floating-secondary-windows`, the first window on a Space tiles. That app's other windows (Settings, dialogs, Open panels) float, with no title rules.
+- **Keeps up with app switches:** every switch to another app re-lays out the screen, also for apps that don't announce it through Accessibility. Quitting an app frees all its tiles.
 - **Feedback:** the current layout's name next to the menu bar icon, and a short on-screen message (HUD) when the layout, padding mode, window max count or main pane count changes.
 - **Not included:** auto-updates, commands for several displays, throwing windows to other Spaces (Raycast does that; each Space tiles whatever lands on it), and default key bindings.
 
@@ -36,6 +37,8 @@ It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or
   - [ ] Float a 9th window instead of minimising the oldest
   - [ ] `max-column-rows: 3` for side columns
   - [ ] Fix the `debug windows` crash
+  - [ ] Make `--log` write to a file (it's accepted, but nothing reaches the system log)
+  - [ ] Idea: a Grid layout (1 → full, 2 → halves, up to 4×2, in window order)
 
 ## Configuration
 
@@ -91,7 +94,7 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 
 ### BSP in hw-Amethyst
 
-Binary Space Partitioning keeps a tree of windows, and hw-Amethyst fixes a few ways it went wrong:
+Binary Space Partitioning keeps a tree of windows: a new window splits the focused one in half, and a closed window's space goes to the window it was split from. Sizes follow the order windows were opened in; nothing rebalances. hw-Amethyst fixes a few ways it strayed from that design:
 
 - **The tree follows the windows actually on screen.** Hidden, closed or moved windows no longer leave an empty tile, and a window the tree missed still gets one. A hidden app's windows come back at the focused window, not at their old spot.
 - **A new window splits the window you last focused**, also when you got there by clicking into another app.
