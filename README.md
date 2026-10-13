@@ -34,7 +34,7 @@ It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or
 - [ ] Rotate / mirror layouts (e.g. for the Ark in portrait)
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
-  - [ ] Float a 9th window instead of minimising the oldest
+  - [ ] `window-overflow: minimize | float`: what happens to a window over `window-max-count` (or, later, over a full side column). `float` floats the new window and leaves the tiles alone
   - [ ] `max-column-rows: 3` for side columns
   - [ ] Fix the `debug windows` crash
   - [ ] Make `--log` write to a file (it's accepted, but nothing reaches the system log)
