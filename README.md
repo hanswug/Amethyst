@@ -46,7 +46,6 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [ ] **Next up:** Explain this window: a palette command that says whether the focused window is tiled or floating, and why (`floating` list, title rule, secondary window, small size, window limit). Includes making `--log` write to a file (it's accepted, but nothing reaches the system log)
   - [ ] After that: a HUD when an app refuses its tile (its window stays bigger than the tile)
   - [ ] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (the app still reports upstream's 0.24.3)
-  - [ ] Idea: a Grid layout (1 → full, 2 → halves, up to 4×2, in window order)
 
 ## Configuration
 
