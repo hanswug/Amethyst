@@ -2,7 +2,13 @@
 
 A personal tiling window manager for macOS, built on [Amethyst](https://github.com/ianyh/Amethyst) by Ian Ynda-Hummel.
 
-It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or a laptop panel), at most about 8 windows, keyboard first. There are no releases; it's built and signed locally on each Mac.
+It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide.
+
+- **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory. Directional focus, swap and warp are planned.
+- **No hidden state.** A window is either visible or deliberately gone; nothing is parked where you have to remember it.
+- **One display and one Space at a time.** Each Space and each display is tiled on its own, so using several still works, but there are no commands to move windows between them. Dedicated apps (Raycast, for example) do that well, and moving a window to another Space needs simulated mouse drags because macOS has no public API for it.
+
+**Releases** on GitHub are, for now, mainly a workaround to install and test hw-Amethyst on my other Macs without building it there. They are zips signed with a self-signed certificate, not notarised: shipping a build that opens without a warning needs a paid Apple Developer ID. macOS blocks the first launch; allow it once in System Settings → Privacy & Security → Open Anyway. You can also build it yourself (see [Build and install](#build-and-install)) or take any of the ideas for your own setup.
 
 ## What it does
 
@@ -18,7 +24,7 @@ It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or
 - **Floating secondary windows:** for apps in `floating-secondary-windows`, the first window on a Space tiles. That app's other windows (Settings, dialogs, Open panels) float, with no title rules.
 - **Keeps up with app switches:** every switch to another app re-lays out the screen, also for apps that don't announce it through Accessibility. Quitting an app frees all its tiles.
 - **Feedback:** the current layout's name next to the menu bar icon, and a short on-screen message (HUD) when the layout, padding mode, window max count or main pane count changes.
-- **Not included:** auto-updates, commands for several displays, throwing windows to other Spaces (Raycast does that; each Space tiles whatever lands on it), and default key bindings.
+- **Not included:** auto-updates and default key bindings; moving windows between displays or Spaces (see above).
 
 ## Status
 
@@ -107,7 +113,8 @@ Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` o
 
 1. **One time per Mac:** in Keychain Access, create a self-signed certificate (Certificate Assistant → Create a Certificate…, type **Code Signing**) named `Amethyst Local Signing`, and set it to Always Trust for code signing. The Accessibility permission sticks to this identity across rebuilds.
 2. `scripts/build.sh` builds the Release app, installs `/Applications/hw-Amethyst.app` and launches it. Grant it Accessibility on first launch.
-3. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
+3. `scripts/release.sh` runs the tests, builds and installs as above, and publishes that build as a GitHub release (a signed zip).
+4. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
 
 Don't use the fastlane lane: it signs for a Developer ID team this fork doesn't have. Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
 
