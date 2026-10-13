@@ -27,6 +27,7 @@ It's designed for one setup: one display at a time (a 55" Samsung Odyssey Ark or
 - [x] Command URL
 - [x] Config file only: no preferences window, no built-in keys, layout name in the menu bar
 - [x] Command palette, with current counts and count HUDs
+- [x] BSP fixes (see [Layouts](#bsp-in-hw-amethyst))
 - [ ] Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east)
 - [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
 - [ ] Rotate / mirror layouts (e.g. for the Ark in portrait)
@@ -87,6 +88,15 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Floating | `floating` | Nothing is tiled |
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
 | Custom | file name | JavaScript layouts in `~/Library/Application Support/Amethyst/Layouts/*.js`; see [docs/custom-layouts.md](docs/custom-layouts.md) |
+
+### BSP in hw-Amethyst
+
+Binary Space Partitioning keeps a tree of windows, and hw-Amethyst fixes a few ways it went wrong:
+
+- **The tree follows the windows actually on screen.** Hidden, closed or moved windows no longer leave an empty tile, and a window the tree missed still gets one. A hidden app's windows come back at the focused window, not at their old spot.
+- **A new window splits the window you last focused**, also when you got there by clicking into another app.
+- **Closing one of the first windows no longer reshuffles the layout:** the windows next to it take over its space.
+- **Quitting an app frees all its tiles**, including windows opened after hw-Amethyst started. This applies to every layout.
 
 Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one.
 

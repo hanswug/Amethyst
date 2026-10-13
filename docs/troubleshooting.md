@@ -14,6 +14,12 @@ floating-is-blacklist: true   # the apps in `floating` float, everything else ti
 
 With `false`, the list is inverted: only the apps in `floating` tile.
 
+### A reopened window floats where it used to be
+
+macOS reopens a window at the size it had when the app quit. With `float-small-windows: true`, a window that opens smaller than `small-window-size` in both width and height floats. A small tile, such as a deep BSP split, can therefore come back as a floating window that no layout moves, and **Reevaluate windows** leaves it floating.
+
+Fixes: set `float-small-windows: false` (hw-Amethyst's sample config does), change `small-window-size`, or toggle float on that window.
+
 ## One application isn't working!
 
 ### "Assign To All Desktops"
