@@ -54,7 +54,7 @@ The first file that exists is used:
 | `disable-padding-on-builtin-display` | `true` to apply no screen padding on a built-in display (default `false`). |
 | `restore-layouts-on-launch` | `true` to keep layout state across restarts (default `true`). |
 | `debug-layout-info` | `true` to add debug information to the layout HUD (default `false`). |
-| `hide-menu-bar-icon` | `true` to hide the menu bar icon (default `false`). |
+| `hide-menu-bar-icon` | `true` to hide the menu bar icon, and with it the current layout's name shown next to it (default `false`). |
 
 ## Commands
 
