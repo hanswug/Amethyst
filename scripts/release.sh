@@ -35,7 +35,8 @@ if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/${BRANCH}")" ]]; then
     exit 1
 fi
 gh auth status >/dev/null 2>&1 || { echo "error: gh isn't logged in (gh auth login)." >&2; exit 1; }
-REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+# The fork, not upstream: gh would otherwise pick the parent repository.
+REPO="$(gh repo view "$(git remote get-url origin)" --json nameWithOwner --jq .nameWithOwner)"
 
 # One tag per day, with .2, .3, … for further releases that day.
 DATE="$(date +%Y.%m.%d)"
