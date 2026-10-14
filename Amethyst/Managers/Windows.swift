@@ -51,6 +51,45 @@ struct SecondaryWindowAnchors<WindowID: Hashable> {
     }
 }
 
+/// A window as saved when Ametrine quits. Other applications keep running across a relaunch, so pid and window number find it again.
+struct SavedWindowID: Codable, Hashable {
+    let pid: pid_t
+    let windowID: CGWindowID
+}
+
+/**
+ The window order saved when Ametrine quit, applied while windows arrive after a relaunch, so the main pane keeps its window.
+
+ Windows arrive in no particular order (by application, with retries), so each saved window is inserted among those already there by its saved position. Windows that weren't saved (opened while Ametrine wasn't running) go after the saved ones.
+ */
+struct RestoredWindowOrder<Key: Hashable> {
+    private let ranks: [Key: Int]
+    private var pending: Set<Key>
+
+    init(_ order: [Key]) {
+        ranks = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
+        pending = Set(order)
+    }
+
+    /// Every saved window has arrived.
+    var isDone: Bool {
+        return pending.isEmpty
+    }
+
+    /// Where an arriving saved window goes among the windows already there, or `nil` for a window that wasn't saved.
+    func insertionIndex(for key: Key, among existing: [Key]) -> Int? {
+        guard pending.contains(key), let rank = ranks[key] else {
+            return nil
+        }
+
+        return existing.firstIndex { (ranks[$0] ?? Int.max) > rank } ?? existing.count
+    }
+
+    mutating func arrived(_ key: Key) {
+        pending.remove(key)
+    }
+}
+
 extension WindowManager {
     class Windows {
         private(set) var windows: [Window] = []
@@ -65,6 +104,8 @@ extension WindowManager {
         private var additionOrder: [Window.WindowID: Int] = [:]
         private var nextAdditionOrder = 0
         var secondaryWindowAnchors = SecondaryWindowAnchors<Window.WindowID>()
+        /// The order to restore after a relaunch, until every saved window has arrived or it's given up on.
+        private var restoredOrder: RestoredWindowOrder<SavedWindowID>?
 
         // MARK: Window Filters
 
@@ -132,6 +173,13 @@ extension WindowManager {
 
         func add(window: Window, atFront shouldInsertAtFront: Bool) {
             recordAddition(of: window)
+
+            if var order = restoredOrder, let index = order.insertionIndex(for: savedID(of: window), among: windows.map(savedID(of:))) {
+                windows.insert(window, at: index)
+                order.arrived(savedID(of: window))
+                restoredOrder = order.isDone ? nil : order
+                return
+            }
             if shouldInsertAtFront {
                 if let currentFocusedSpace = CGSpacesInfo<Window>.currentFocusedSpace(),
                    let firstActiveWindow = activeWindowOnCurrentScreen(atIndex: 0) {
@@ -233,6 +281,26 @@ extension WindowManager {
             windows[otherWindowIndex] = window
 
             return true
+        }
+
+        // MARK: Restoring the Order
+
+        private func savedID(of window: Window) -> SavedWindowID {
+            return SavedWindowID(pid: window.pid(), windowID: window.cgID())
+        }
+
+        /// The window order to save when Ametrine quits.
+        var savedOrder: [SavedWindowID] {
+            return windows.map(savedID(of:))
+        }
+
+        func restoreOrder(_ order: [SavedWindowID]) {
+            restoredOrder = order.isEmpty ? nil : RestoredWindowOrder(order)
+        }
+
+        /// Windows arriving from now on are added as usual.
+        func stopRestoringOrder() {
+            restoredOrder = nil
         }
 
         // MARK: Focus History
