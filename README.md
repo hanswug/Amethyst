@@ -4,7 +4,7 @@ A personal tiling window manager for macOS, built on [Amethyst](https://github.c
 
 It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide.
 
-- **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory. Directional focus, swap and warp are planned.
+- **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory. Directional focus and swap are in; warp is planned.
 - **No hidden state.** A window is either visible or deliberately gone; nothing is parked where you have to remember it.
 - **One display and one Space at a time.** Each Space and each display is tiled on its own, so using several still works, but there are no commands to move windows between them. Dedicated apps (Raycast, for example) do that well, and moving a window to another Space needs simulated mouse drags because macOS has no public API for it.
 
@@ -36,7 +36,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Command palette, with current counts and count HUDs
 - [x] BSP fixes (see [Layouts](#bsp-in-ametrine))
 - [x] Renamed from hw-Amethyst to Ametrine (3.0.0), with a purple-to-gold icon
-- [ ] Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east)
+- [x] Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east)
 - [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
 - [ ] Focus border: a border around the focused window (width and colour in the config, `toggle-focus-border`), hidden in Fullscreen

@@ -1,4 +1,4 @@
-# Hans's Ametrine config, snapshot of 2026-10-13. Copy to ~/.config/ametrine/ametrine.yml.
+# Hans's Ametrine config, snapshot of 2026-10-14. Copy to ~/.config/ametrine/ametrine.yml.
 # Ametrine configuration: the only source of settings and key bindings.
 # Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml).
 # Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
@@ -100,15 +100,16 @@ decrease-main:
 #   mod: <NONE>
 #   key: <NONE>
 
+# Previous/next retired for directional focus and swap (an Alt-Tab app covers previous/next).
 # Focus the next window in the list going counter-clockwise.
 focus-ccw:
-  mod: mod1
-  key: h
+  mod: <NONE>
+  key: <NONE>
 
 # Focus the next window in the list going clockwise.
 focus-cw:
-  mod: mod1
-  key: l
+  mod: <NONE>
+  key: <NONE>
 
 # Focus the main window in the list.
 focus-main:
@@ -117,18 +118,52 @@ focus-main:
 
 # Swap the position of the currently focused window with the next window in the list going counter-clockwise.
 swap-ccw:
-  mod: mod2
-  key: h
+  mod: <NONE>
+  key: <NONE>
 
 # Swap the position of the currently focused window with the next window in the list going clockwise.
 swap-cw:
-  mod: mod2
-  key: l
+  mod: <NONE>
+  key: <NONE>
 
 # Swap the position of the currently focused window with the main window in the list.
 swap-main:
   mod: mod2
   key: m
+
+# Focus the tiled window in that direction (only visible windows; Fullscreen: west/east cycle).
+focus-west:
+  mod: mod1
+  key: h
+
+focus-south:
+  mod: mod1
+  key: j
+
+focus-north:
+  mod: mod1
+  key: k
+
+focus-east:
+  mod: mod1
+  key: l
+
+# Swap the focused window with the tiled window in that direction.
+swap-west:
+  mod: mod2
+  key: h
+
+swap-south:
+  mod: mod2
+  key: j
+
+swap-north:
+  mod: mod2
+  key: k
+
+swap-east:
+  mod: mod2
+  key: l
 
 # Select wide layout
 #select-wide-layout:
