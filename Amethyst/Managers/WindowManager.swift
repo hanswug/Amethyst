@@ -62,6 +62,7 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     private var applicationObservations: [pid_t: UndeterminedApplication] = [:]
     private var screens: Screens
     private let windows = Windows()
+    private let focusBorder = FocusBorder()
     private var lastReflowTime = Date()
     private var lastFocusDate: Date?
     /// Windows claimed as secondary-window anchors before being tracked, with when; see `claimSecondaryWindowAnchors(among:)`.
@@ -135,6 +136,7 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     }
 
     @objc func applicationActivated(_ sender: AnyObject) {
+        updateFocusBorder()
         guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
             return
         }
@@ -200,6 +202,12 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
 
         pendingTabDetection.removeAll()
         earlyFocusedWindows.removeAll()
+
+        // Focus settles a moment after the Space changes.
+        updateFocusBorder()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.updateFocusBorder()
+        }
 
         for runningApplication in NSWorkspace.shared.runningApplications {
             let pid = runningApplication.processIdentifier
@@ -415,6 +423,17 @@ extension WindowManager {
     func displayWindowCountHUD() {
         let countText = userConfiguration.windowMaxCount().map(String.init) ?? "unlimited"
         displayWindowLimitHUD(title: "Window max count · \(countText)")
+    }
+
+    /// Shows a focus border setting on every screen, with `enables-layout-hud`.
+    func displayFocusBorderHUD(title: String) {
+        guard userConfiguration.enablesLayoutHUD() else {
+            return
+        }
+
+        for screenManager in screens.screenManagers {
+            screenManager.displayCustomHUD(title: title)
+        }
     }
 
     /// Shows a window limit setting (the count, the overflow policy or size) on every screen, with `enables-window-count-hud`.
@@ -925,6 +944,7 @@ extension WindowManager {
         // latest time that a reflow took place.
         mouseStateKeeper.handleReflowEvent()
         lastReflowTime = Date()
+        updateFocusBorder()
     }
 
     func doMouseFollowsFocus(focusedWindow: Window) {
@@ -1002,9 +1022,12 @@ extension WindowManager: ApplicationObservationDelegate {
 
     func application(_ application: AnyApplication<Application>, didRemoveWindow window: Window) {
         remove(window: window)
+        updateFocusBorder()
     }
 
     func application(_ application: AnyApplication<Application>, didFocusWindow window: Window) {
+        defer { updateFocusBorder() }
+
         guard let screen = window.screen() else {
             return
         }
@@ -1037,6 +1060,8 @@ extension WindowManager: ApplicationObservationDelegate {
     }
 
     func application(_ application: AnyApplication<Application>, didMoveWindow window: Window) {
+        moveFocusBorder(with: window)
+
         guard userConfiguration.mouseSwapsWindows() else {
             return
         }
@@ -1067,6 +1092,8 @@ extension WindowManager: ApplicationObservationDelegate {
     }
 
     func application(_ application: AnyApplication<Application>, didResizeWindow window: Window) {
+        moveFocusBorder(with: window)
+
         guard userConfiguration.mouseResizesWindows() else {
             return
         }
@@ -1291,6 +1318,46 @@ extension WindowManager {
         return info.descriptions.compactMap { description in
             (description[kCGWindowNumber as String] as? NSNumber).flatMap { idsByCGID[CGWindowID($0.uint32Value)] }
         }
+    }
+}
+
+// MARK: Focus Border
+extension WindowManager {
+    /// Puts the focus border around the focused window, or hides it: when it's off, for windows Ametrine doesn't manage,
+    /// in native full screen, and for tiled windows in the Fullscreen layout.
+    func updateFocusBorder() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.updateFocusBorder() }
+            return
+        }
+
+        guard userConfiguration.focusBorder(),
+              let window = Window.currentlyFocused(),
+              windows.isWindowTracked(window),
+              !windows.isWindowHidden(window),
+              let screen = window.screen(),
+              CGSpacesInfo<Window>.currentSpaceForScreen(screen)?.type == CGSSpaceTypeUser,
+              windows.isWindowFloating(window) || !isFullscreenLayout(on: screen)
+        else {
+            focusBorder.hide()
+            return
+        }
+
+        focusBorder.show(around: window.frame(), above: window.cgID(), appearance: userConfiguration.focusBorderAppearance())
+    }
+
+    /// Keeps the border on its window while the window moves or resizes.
+    private func moveFocusBorder(with window: Window) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.moveFocusBorder(with: window) }
+            return
+        }
+
+        guard window.cgID() == focusBorder.currentWindowID else {
+            return
+        }
+
+        focusBorder.move(to: window.frame())
     }
 }
 

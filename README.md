@@ -25,6 +25,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly, and the last mode survives restarts. The built-in display stays unpadded.
 - **Floating secondary windows:** for apps in `floating-secondary-windows`, the first window on a Space tiles. That app's other windows (Settings, dialogs, Open panels) float, with no title rules.
 - **Keeps up with app switches:** every switch to another app re-lays out the screen, also for apps that don't announce it through Accessibility. Quitting an app frees all its tiles.
+- **Focus border** (`focus-border: true`): a ring just outside the focused window, never over it. `glow` (default) is a thin ring with a soft halo like the macOS focus ring, in the system accent colour; `solid` and `gradient` (purple to gold) are the alternatives. Width, colour and corner radius are in the config. No border on tiled windows in the Fullscreen layout or in native full screen. `toggle-focus-border` and `cycle-focus-border-style` switch it until Reload Config.
 - **Feedback:** the current layout's name next to the menu bar icon, and a short on-screen message (HUD) when the layout, padding mode, window max count or main pane count changes.
 - **Not included:** auto-updates and default key bindings; moving windows between displays or Spaces (see above).
 
@@ -41,7 +42,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
-- [ ] Focus border: a border around the focused window (width and colour in the config, `toggle-focus-border`), hidden in Fullscreen
+- [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette

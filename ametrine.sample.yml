@@ -223,6 +223,16 @@ explain-window:
   mod: <NONE>
   key: <NONE>
 
+# Turn the focus border on or off until Reload Config.
+toggle-focus-border:
+  mod: <NONE>
+  key: <NONE>
+
+# Switch the focus border style (glow, solid, gradient) until Reload Config.
+cycle-focus-border-style:
+  mod: <NONE>
+  key: <NONE>
+
 # Display the layout HUD with the current layout on each screen.
 display-current-layout:
   mod: mod1
@@ -312,6 +322,19 @@ enables-window-count-hud: true
 # true to show a short message when a tiled window stays bigger than its tile (an app's minimum size),
 # once per window and tile size (default true).
 enables-refused-tile-hud: true
+
+# A border around the focused window (default false). Hidden for tiled windows in Fullscreen and in native full screen.
+focus-border: true
+# glow (soft, like the macOS focus ring), solid or gradient (default glow). cycle-focus-border-style switches live.
+focus-border-style: glow
+# Points: the ring width for solid and gradient, how far the glow reaches (default 5).
+focus-border-width: 5
+# accent (the system accent colour), "#RRGGBB" or "#AARRGGBB" (default accent). JankyBorders used "#FF453A".
+focus-border-color: accent
+# The two gradient colours, top left to bottom right (default purple to gold).
+focus-border-gradient: ["#9B5DE5", "#F4B942"]
+# Corner radius in points (default 12).
+focus-border-radius: 12
 
 # The smallest height that a window can be sized to regardless of its layout frame (in px, default 0).
 window-minimum-height: 0

@@ -27,6 +27,11 @@ class HotKeyManagerTests: QuickSpec {
                 expect(directional.compactMap { CommandKey(rawValue: $0) }.count).to(equal(8))
             }
 
+            it("lists the focus border commands") {
+                let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
+                expect(keys).to(contain([CommandKey.toggleFocusBorder.rawValue, CommandKey.cycleFocusBorderStyle.rawValue]))
+            }
+
             it("lists the custom layout commands only when there are custom layouts") {
                 let without = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: []).map { $0[1] }
                 let with = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: ["my-layout"]).map { $0[1] }

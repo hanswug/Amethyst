@@ -107,6 +107,12 @@ enum ConfigurationKey: String {
     case layoutHUDOnSpaceChange = "enables-layout-hud-on-space-change"
     case windowCountHUD = "enables-window-count-hud"
     case refusedTileHUD = "enables-refused-tile-hud"
+    case focusBorder = "focus-border"
+    case focusBorderStyle = "focus-border-style"
+    case focusBorderWidth = "focus-border-width"
+    case focusBorderColor = "focus-border-color"
+    case focusBorderGradient = "focus-border-gradient"
+    case focusBorderRadius = "focus-border-radius"
     case useCanaryBuild = "use-canary-build"
     case newWindowsToMain = "new-windows-to-main"
     case followSpaceThrownWindows = "follow-space-thrown-windows"
@@ -168,6 +174,8 @@ enum CommandKey: String {
     case setMainPaneCount = "set-main-pane-count"
     case toggleWindowOverflow = "toggle-window-overflow"
     case toggleWindowOverflowSize = "toggle-window-overflow-size"
+    case toggleFocusBorder = "toggle-focus-border"
+    case cycleFocusBorderStyle = "cycle-focus-border-style"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -380,6 +388,12 @@ class UserConfiguration: NSObject {
 
         if let overflow = storage.object(forKey: .windowOverflow), WindowOverflow(rawValue: "\(overflow)") == nil {
             log.warning("Unknown window-overflow \(overflow); using minimize")
+        }
+        if let style = storage.object(forKey: .focusBorderStyle), FocusBorderStyle(rawValue: "\(style)") == nil {
+            log.warning("Unknown focus-border-style \(style); using glow")
+        }
+        if let color = storage.object(forKey: .focusBorderColor), FocusBorderColor("\(color)") == nil {
+            log.warning("Unknown focus-border-color \(color); using accent")
         }
         if let size = storage.object(forKey: .windowOverflowSize), WindowOverflowSize(rawValue: "\(size)") == nil {
             log.warning("Unknown window-overflow-size \(size); using reasonable")
@@ -768,6 +782,48 @@ class UserConfiguration: NSObject {
 
     func enablesRefusedTileHUD() -> Bool {
         return storage.bool(forKey: .refusedTileHUD)
+    }
+
+    func focusBorder() -> Bool {
+        return storage.bool(forKey: .focusBorder)
+    }
+
+    /// Turns the focus border on or off until the configuration is loaded again, and returns the new state.
+    @discardableResult func toggleFocusBorder() -> Bool {
+        let enabled = !focusBorder()
+        storage.set(enabled, forKey: .focusBorder)
+        return enabled
+    }
+
+    func focusBorderStyle() -> FocusBorderStyle {
+        return (storage.object(forKey: .focusBorderStyle) as? String).flatMap(FocusBorderStyle.init(rawValue:)) ?? .glow
+    }
+
+    /// Switches to the next focus border style until the configuration is loaded again, and returns it.
+    @discardableResult func cycleFocusBorderStyle() -> FocusBorderStyle {
+        let style = focusBorderStyle().next
+        storage.set(style.rawValue, forKey: .focusBorderStyle)
+        return style
+    }
+
+    func focusBorderAppearance() -> FocusBorderAppearance {
+        func number(_ key: ConfigurationKey, default defaultValue: CGFloat) -> CGFloat {
+            guard let value = (storage.object(forKey: key) as? NSNumber).map({ CGFloat($0.doubleValue) }), value >= 0 else {
+                return defaultValue
+            }
+            return value
+        }
+
+        let color = (storage.object(forKey: .focusBorderColor) as? String).flatMap(FocusBorderColor.init) ?? .accent
+        let gradient = (storage.stringArray(forKey: .focusBorderGradient) ?? []).compactMap(FocusBorderColor.init)
+
+        return FocusBorderAppearance(
+            style: focusBorderStyle(),
+            width: max(1, number(.focusBorderWidth, default: 5)),
+            radius: number(.focusBorderRadius, default: 12),
+            color: color,
+            gradient: gradient.count >= 2 ? gradient : FocusBorderAppearance.defaultGradient
+        )
     }
 
     func useCanaryBuild() -> Bool {
