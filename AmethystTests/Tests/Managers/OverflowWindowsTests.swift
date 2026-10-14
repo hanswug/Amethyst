@@ -72,6 +72,14 @@ class OverflowWindowsTests: QuickSpec {
                 expect(OverflowWindows.frame(size: size, centeredIn: area, cascade: 2)).to(equal(CGRect(x: 1480, y: 1100, width: 1000, height: 800)))
             }
 
+            it("keeps the slot's centre when re-centring on the size an app accepted") {
+                let accepted = CGSize(width: 1200, height: 900)
+                let target = OverflowWindows.frame(size: size, centeredIn: area, cascade: 1)
+                let corrected = OverflowWindows.frame(size: accepted, centeredIn: area, cascade: 1)
+                expect(corrected.midX).to(equal(target.midX))
+                expect(corrected.midY).to(equal(target.midY))
+            }
+
             it("keeps the window inside the area") {
                 let large = CGSize(width: 2500, height: 1400)
                 expect(OverflowWindows.frame(size: large, centeredIn: area, cascade: 5)).to(equal(CGRect(x: 700, y: 760, width: 2500, height: 1400)))
