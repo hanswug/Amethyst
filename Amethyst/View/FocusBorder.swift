@@ -130,10 +130,7 @@ final class FocusBorder {
 
     init() {
         clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown]) { [weak self] _ in
-            // After the click's own raise has landed.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self?.raiseAboveWindow()
-            }
+            self?.raiseAgainShortly()
         }
     }
 
@@ -151,11 +148,29 @@ final class FocusBorder {
         panel.order(.above, relativeTo: Int(currentWindowID))
     }
 
+    /// The app's own raise can land after the border was ordered: after a click, and after a focus change while the app
+    /// activates (CotEditor with a selection). Ordering again a moment later puts the border back on top, if it's still on that window.
+    private func raiseAgainShortly() {
+        guard let windowID = currentWindowID else {
+            return
+        }
+
+        for delay in [0.05, 0.3] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard self?.currentWindowID == windowID else {
+                    return
+                }
+                self?.raiseAboveWindow()
+            }
+        }
+    }
+
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
         currentWindowID = windowID
         move(to: windowFrame, force: true)
         panel.order(.above, relativeTo: Int(windowID))
+        raiseAgainShortly()
     }
 
     /// Follows the window while it moves or resizes.
