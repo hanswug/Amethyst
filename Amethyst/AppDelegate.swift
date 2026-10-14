@@ -28,8 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var layoutsMenuItem: NSMenuItem?
     private var paddingMenuItem: NSMenuItem?
 
-    private lazy var commandPalette = CommandPaletteController { [weak self] commandKey in
-        self?.hotKeyManager?.runCommand(commandKey)
+    private lazy var commandPalette = CommandPaletteController { [weak self] commandKey, value in
+        self?.hotKeyManager?.runCommand(commandKey, value: value)
     }
 
     /// Command URLs that arrived before the commands were set up, e.g. the one that launched the app.
@@ -135,12 +135,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let windowMaxCount = UserConfiguration.shared.windowMaxCount().map { "now \($0)" } ?? "now unlimited"
         var notes = [
             CommandKey.increaseWindowMaxCount.rawValue: windowMaxCount,
-            CommandKey.decreaseWindowMaxCount.rawValue: windowMaxCount
+            CommandKey.decreaseWindowMaxCount.rawValue: windowMaxCount,
+            CommandKey.setWindowMaxCount.rawValue: windowMaxCount
         ]
 
         if let panedLayout = windowManager?.focusedScreenManager()?.currentLayout as? PanedLayout {
             notes[CommandKey.increaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
             notes[CommandKey.decreaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
+            notes[CommandKey.setMainPaneCount.rawValue] = "now \(panedLayout.mainPaneCount)"
         }
 
         return notes
@@ -153,7 +155,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        guard hotKeyManager?.runCommand(commandKey) == true else {
+        guard hotKeyManager?.runCommand(commandKey, value: CommandURL.value(from: url)) == true else {
             log.warning("Ignoring URL for unknown command: \(commandKey)")
             return
         }

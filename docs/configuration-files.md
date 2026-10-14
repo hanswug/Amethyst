@@ -73,6 +73,7 @@ cycle-layout:
 
 - **No built-in keys.** Leaving a command out, setting it to `false`, or binding it to `<NONE>` leaves it unbound.
 - **Unbound still runs.** Every command, bound or not, can be run from the command palette or with `open -g "amethyst://command/<command-key>"`.
+- **Commands that take a number** (`set-window-max-count`, `set-main-pane-count`) have no key. In the palette, picking one turns the search field into a number field: type the number and press Enter (Esc goes back to the list). By URL, pass the number as `value`, e.g. `open -g "amethyst://command/set-window-max-count?value=8"`; a missing or invalid value is logged and ignored.
 
 ### Command keys
 
@@ -85,8 +86,10 @@ cycle-layout:
 | `expand-main` | Expand the main pane by `window-resize-step`. Not every layout responds. |
 | `increase-main` | Add a window to the main pane, and show the new count. Only layouts with a main pane respond. |
 | `decrease-main` | Remove a window from the main pane, and show the new count. Only layouts with a main pane respond. |
+| `set-main-pane-count` | Set the number of windows in the main pane (1–99), and show it. Palette and URL only. Only layouts with an adjustable main pane respond. |
 | `increase-window-max-count` | Raise `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |
 | `decrease-window-max-count` | Lower `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |
+| `set-window-max-count` | Set `window-max-count` (0–99, `0` = unlimited) until Reload Config, and show it if `enables-window-count-hud` is on. Palette and URL only. |
 | `focus-ccw` | Focus the next window counter-clockwise. |
 | `focus-cw` | Focus the next window clockwise. |
 | `focus-main` | Focus the main window. |

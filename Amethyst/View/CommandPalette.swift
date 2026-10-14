@@ -6,11 +6,19 @@
 import Cocoa
 import Foundation
 
-/// One command in the palette: its display name, its command key, and its current shortcut, if bound.
+/// What a command that takes a number asks for in the palette's number mode.
+struct CommandPaletteValue: Equatable {
+    /// The search field's placeholder, e.g. `Window max count · now 8 · 0 = unlimited`.
+    let prompt: String
+    let range: ClosedRange<Int>
+}
+
+/// One command in the palette: its display name, its command key, its current shortcut, if bound, and the number it takes, if any.
 struct CommandPaletteEntry: Equatable {
     let name: String
     let commandKey: String
     let shortcut: String?
+    var value: CommandPaletteValue?
 }
 
 enum CommandPalette {
@@ -43,8 +51,22 @@ enum CommandPalette {
                 return entry
             }
 
-            return CommandPaletteEntry(name: "\(entry.name) (\(note))", commandKey: entry.commandKey, shortcut: entry.shortcut)
+            return CommandPaletteEntry(name: "\(entry.name) (\(note))", commandKey: entry.commandKey, shortcut: entry.shortcut, value: entry.value)
         }
+    }
+
+    /// The digits of a text, in order: what number mode keeps of what was typed or pasted.
+    static func digits(_ text: String) -> String {
+        return String(text.filter { ("0"..."9").contains($0) })
+    }
+
+    /// The number a text of digits stands for, if it's within the range.
+    static func number(_ text: String, in range: ClosedRange<Int>) -> Int? {
+        guard !text.isEmpty, digits(text) == text, let number = Int(text), range.contains(number) else {
+            return nil
+        }
+
+        return number
     }
 
     /// The entries matching every word of the query in their name or command key, ignoring case. An empty query matches everything.
@@ -112,10 +134,12 @@ private class CommandPaletteCellView: NSTableCellView {
 }
 
 /// The command palette: type to filter, ↑/↓ to select, Enter runs, Esc or a click elsewhere closes.
+/// A command that takes a number switches to number mode: type the number and press Enter; Esc goes back to the list.
 class CommandPaletteController: NSObject {
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("CommandPaletteCell")
+    private static let placeholder = "Run a command"
 
-    private let run: (String) -> Void
+    private let run: (String, String?) -> Void
     private let panel = CommandPalettePanel(
         contentRect: NSRect(x: 0, y: 0, width: 600, height: 380),
         styleMask: [.borderless, .nonactivatingPanel],
@@ -127,13 +151,15 @@ class CommandPaletteController: NSObject {
 
     private var entries: [CommandPaletteEntry] = []
     private var matches: [CommandPaletteEntry] = []
+    /// The command whose number is being typed, in number mode.
+    private var valueEntry: CommandPaletteEntry?
 
     var isVisible: Bool {
         return panel.isVisible
     }
 
-    /// `run` gets the command key of the command picked, after the palette has closed.
-    init(run: @escaping (String) -> Void) {
+    /// `run` gets the command key of the command picked and the number typed for it, if it takes one, after the palette has closed.
+    init(run: @escaping (String, String?) -> Void) {
         self.run = run
         super.init()
         setUpPanel()
@@ -141,6 +167,8 @@ class CommandPaletteController: NSObject {
 
     func show(entries: [CommandPaletteEntry]) {
         self.entries = entries
+        valueEntry = nil
+        searchField.placeholderString = CommandPaletteController.placeholder
         searchField.stringValue = ""
         updateMatches()
 
@@ -173,7 +201,7 @@ class CommandPaletteController: NSObject {
         background.layer?.masksToBounds = true
         panel.contentView = background
 
-        searchField.placeholderString = "Run a command"
+        searchField.placeholderString = CommandPaletteController.placeholder
         searchField.font = NSFont.systemFont(ofSize: 22)
         searchField.isBordered = false
         searchField.drawsBackground = false
@@ -237,13 +265,50 @@ class CommandPaletteController: NSObject {
     }
 
     private func runCommand(at row: Int) {
+        if let valueEntry {
+            runValueCommand(valueEntry)
+            return
+        }
+
         guard matches.indices.contains(row) else {
             return
         }
 
-        let commandKey = matches[row].commandKey
+        let entry = matches[row]
+        if let value = entry.value {
+            enterNumberMode(for: entry, prompt: value.prompt)
+            return
+        }
+
         close()
-        run(commandKey)
+        run(entry.commandKey, nil)
+    }
+
+    private func enterNumberMode(for entry: CommandPaletteEntry, prompt: String) {
+        valueEntry = entry
+        searchField.stringValue = ""
+        searchField.placeholderString = prompt
+        matches = [entry]
+        tableView.reloadData()
+        select(row: 0)
+    }
+
+    private func leaveNumberMode() {
+        valueEntry = nil
+        searchField.stringValue = ""
+        searchField.placeholderString = CommandPaletteController.placeholder
+        updateMatches()
+    }
+
+    private func runValueCommand(_ entry: CommandPaletteEntry) {
+        let text = searchField.stringValue
+        guard let range = entry.value?.range, CommandPalette.number(text, in: range) != nil else {
+            NSSound.beep()
+            return
+        }
+
+        close()
+        run(entry.commandKey, text)
     }
 
     @objc private func runClickedRow() {
@@ -259,6 +324,14 @@ extension CommandPaletteController: NSWindowDelegate {
 
 extension CommandPaletteController: NSTextFieldDelegate {
     func controlTextDidChange(_ obj: Notification) {
+        guard valueEntry == nil else {
+            let digits = CommandPalette.digits(searchField.stringValue)
+            if digits != searchField.stringValue {
+                searchField.stringValue = digits
+            }
+            return
+        }
+
         updateMatches()
     }
 
@@ -271,7 +344,11 @@ extension CommandPaletteController: NSTextFieldDelegate {
         case #selector(NSResponder.insertNewline(_:)):
             runCommand(at: tableView.selectedRow)
         case #selector(NSResponder.cancelOperation(_:)):
-            close()
+            if valueEntry != nil {
+                leaveNumberMode()
+            } else {
+                close()
+            }
         default:
             return false
         }

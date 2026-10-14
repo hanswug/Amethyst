@@ -41,6 +41,22 @@ enum CommandURL {
 
         return String(components[0])
     }
+
+    /// The `value` query item of a command URL, e.g. `8` in `amethyst://command/set-window-max-count?value=8`.
+    static func value(from url: URL) -> String? {
+        return URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "value" }?.value
+    }
+}
+
+/// A command that takes a number, from the command palette's number mode or a command URL's `value`. It has no hotkey form.
+struct ValueCommand {
+    let name: String
+    let range: ClosedRange<Int>
+    /// Where the palette lists it: after this command.
+    let listedAfter: String
+    /// The palette's placeholder in number mode, with the current value.
+    let prompt: () -> String
+    let handler: (Int) -> Void
 }
 
 class HotKeyManager<Application: ApplicationType>: NSObject {
@@ -48,6 +64,9 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
 
     /// Every command set up in `setUpWithWindowManager`, bound to a key or not, by command key.
     private(set) var commandHandlers: [String: HotKeyHandler] = [:]
+
+    /// The commands that take a number, by command key. They aren't in `commandHandlers`, so no key binds them.
+    private(set) var valueCommands: [String: ValueCommand] = [:]
 
     private(set) lazy var stringToKeyCodes: [String: [AMKeyCode]] = {
         return self.constructKeyCodeMap()
@@ -140,6 +159,25 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
             screenManager?.displayMainPaneCountHUD()
         }
+
+        valueCommands[CommandKey.setMainPaneCount.rawValue] = ValueCommand(
+            name: "Set main pane count",
+            range: 1...99,
+            listedAfter: CommandKey.decreaseMain.rawValue,
+            prompt: {
+                let panedLayout = windowManager.focusedScreenManager()?.currentLayout as? PanedLayout
+                return "Main pane count" + (panedLayout.map { " · now \($0.mainPaneCount)" } ?? "")
+            },
+            handler: { count in
+                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+                screenManager?.updateCurrentLayout { layout in
+                    if let panedLayout = layout as? PanedLayout {
+                        panedLayout.setMainPaneCount(count)
+                    }
+                }
+                screenManager?.displayMainPaneCountHUD()
+            }
+        )
 
         // Commands 1–4 only do something in custom layouts, so they're offered only when there are any.
         if !LayoutType<Application.Window>.customLayoutKeys().isEmpty {
@@ -263,6 +301,23 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
+        valueCommands[CommandKey.setWindowMaxCount.rawValue] = ValueCommand(
+            name: "Set window max count",
+            range: 0...99,
+            listedAfter: CommandKey.decreaseWindowMaxCount.rawValue,
+            prompt: {
+                let current = self.userConfiguration.windowMaxCount().map(String.init) ?? "unlimited"
+                return "Window max count · now \(current) · 0 = unlimited"
+            },
+            handler: { count in
+                self.userConfiguration.setWindowMaxCount(count)
+                windowManager.markAllScreensForReflow()
+                DispatchQueue.main.async {
+                    windowManager.displayWindowCountHUD()
+                }
+            }
+        )
+
         LayoutType<Application.Window>.availableLayoutStrings().forEach { (layoutKey, _) in
             self.constructCommandWithCommandKey(UserConfiguration.constructLayoutKeyString(layoutKey)) {
                 let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
@@ -374,7 +429,19 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
     }
 
     /// Runs a command the same way its hotkey would. Returns `false` if there is no command with that key.
-    @discardableResult func runCommand(_ commandKey: String) -> Bool {
+    /// A command that takes a number runs only with a valid `value`; otherwise it's logged and skipped.
+    @discardableResult func runCommand(_ commandKey: String, value: String? = nil) -> Bool {
+        if let valueCommand = valueCommands[commandKey] {
+            guard let number = CommandPalette.number(value ?? "", in: valueCommand.range) else {
+                let range = "\(valueCommand.range.lowerBound)–\(valueCommand.range.upperBound)"
+                log.warning("Ignoring \(commandKey) with value \(value ?? "none"): expected a number in \(range)")
+                return true
+            }
+
+            userConfiguration.commandHandler(running: { valueCommand.handler(number) })()
+            return true
+        }
+
         guard let handler = commandHandlers[commandKey] else {
             return false
         }
@@ -390,9 +457,23 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             availableLayoutKeys: LayoutType<Application.Window>.availableLayoutStrings().map { $0.key },
             configuredLayoutKeys: userConfiguration.layoutKeys()
         )
-        let listed = Set(commandHandlers.keys).subtracting(hiddenLayoutCommands)
-        let entries = CommandPalette.entries(from: HotKeyManager.hotKeyNameToDefaultsKey(), registered: listed) { commandKey in
+        let listed = Set(commandHandlers.keys).union(valueCommands.keys).subtracting(hiddenLayoutCommands)
+        var namesAndKeys = HotKeyManager.hotKeyNameToDefaultsKey()
+        for (commandKey, valueCommand) in valueCommands.sorted(by: { $0.key < $1.key }) {
+            let index = namesAndKeys.firstIndex { $0.last == valueCommand.listedAfter }.map { $0 + 1 } ?? namesAndKeys.endIndex
+            namesAndKeys.insert([valueCommand.name, commandKey], at: index)
+        }
+
+        let entries = CommandPalette.entries(from: namesAndKeys, registered: listed) { commandKey in
             KeyboardShortcuts.getShortcut(for: KeyboardShortcuts.Name(commandKey))?.description
+        }.map { entry -> CommandPaletteEntry in
+            guard let valueCommand = valueCommands[entry.commandKey] else {
+                return entry
+            }
+
+            var entry = entry
+            entry.value = CommandPaletteValue(prompt: valueCommand.prompt(), range: valueCommand.range)
+            return entry
         }
         return CommandPalette.annotating(entries, notes: notes)
     }
