@@ -1,4 +1,4 @@
-# Hans's hw-Amethyst config, snapshot of 2026-10-11. Copy to ~/.config/hw-amethyst/amethyst.yml.
+# Hans's hw-Amethyst config, snapshot of 2026-10-13. Copy to ~/.config/hw-amethyst/amethyst.yml.
 # hw-Amethyst configuration: the only source of settings and key bindings.
 # Location: ~/.config/hw-amethyst/amethyst.yml (or ~/.hw-amethyst.yml).
 # Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
@@ -23,7 +23,7 @@ layouts:
   # - floating
   # - widescreen-tall
   # - widescreen-tall-right
-  # - bsp
+  - bsp
 
 # First mod (default option + shift).
 mod1:
@@ -173,10 +173,20 @@ select-column-layout:
   mod: <NONE>
   key: <NONE>
 
+# Select bsp layout.
+select-bsp-layout:
+  mod: <NONE>
+  key: <NONE>
+
 # Toggle the floating state of the currently focused window; i.e., if it was floating make it tiled and if it was tiled make it floating.
 toggle-float:
   mod: mod1
   key: t
+
+# Show in a HUD whether the focused window is tiled, floating or not managed, and why.
+explain-window:
+  mod: <NONE>
+  key: <NONE>
 
 # Display the layout HUD with the current layout on each screen.
 display-current-layout:
@@ -229,11 +239,44 @@ smart-window-margins: false
 window-margin-size: 8
 
 # The max number of windows that may be visible on a screen at one time before
-# additional windows are minimized. A value of 0 disables the feature.
-window-max-count: 8
+# additional windows are minimized or float (see window-overflow). A value of 0 disables the feature.
+window-max-count: 0
 
-# true to show the new window max count on screen after increasing or decreasing it (default false).
+# What happens to windows over window-max-count: minimize (the oldest window outside the main pane
+# is minimised) or float (the newest windows float, centred, and the tiles stay as they are) (default minimize).
+window-overflow: minimize
+
+# The size of a window floated over the limit: reasonable (the share of the screen below) or
+# fixed (window-overflow-width x window-overflow-height) (default reasonable).
+window-overflow-size: reasonable
+
+# The reasonable size, in percent of the screen's usable width and height (1-100, defaults 60 and 70).
+window-overflow-reasonable-width: 60
+window-overflow-reasonable-height: 70
+
+# The fixed size in points, never bigger than the screen (0 = not set; fixed then uses reasonable).
+window-overflow-width: 0
+window-overflow-height: 0
+
+# Switch window-overflow between minimize and float until Reload Config.
+toggle-window-overflow:
+  mod: <NONE>
+  key: <NONE>
+
+# Switch window-overflow-size between reasonable and fixed until Reload Config.
+toggle-window-overflow-size:
+  mod: <NONE>
+  key: <NONE>
+
+# set-window-max-count and set-main-pane-count take a number and have no key: run them from the
+# command palette or with amethyst://command/set-window-max-count?value=<n>.
+
+# true to show the new window max count (and window-overflow settings) on screen after changing them (default false).
 enables-window-count-hud: true
+
+# true to show a short message when a tiled window stays bigger than its tile (an app's minimum size),
+# once per window and tile size (default true).
+enables-refused-tile-hud: true
 
 # The smallest height that a window can be sized to regardless of its layout frame (in px, default 0).
 window-minimum-height: 0
