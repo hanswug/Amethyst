@@ -50,6 +50,27 @@ enum OverflowWindows {
         return CGRect(origin: origin, size: size)
     }
 
+    /// How close a window's centre must be to a cascade slot's to take it.
+    static let slotTolerance: CGFloat = 4
+
+    /**
+     The first cascade slot from `start` that no window floating over the limit takes yet: slot 0 is the area's centre, each further one 30 pt down and
+     right. Slots are matched by centre, so windows of any size fit them, and a slot frees up when its window closes, tiles or is moved away.
+     */
+    static func cascadeIndex(occupiedCenters: [CGPoint], in area: CGRect, start: Int = 0) -> Int {
+        let isOccupied = { (index: Int) -> Bool in
+            let offset = CGFloat(index) * cascadeStep
+            let center = CGPoint(x: area.midX + offset, y: area.midY + offset)
+            return occupiedCenters.contains { abs($0.x - center.x) <= slotTolerance && abs($0.y - center.y) <= slotTolerance }
+        }
+
+        var index = start
+        while isOccupied(index) && index < start + occupiedCenters.count {
+            index += 1
+        }
+        return index
+    }
+
     /// The overflow window size in words, for the palette and the HUD.
     static func sizeDescription(mode: WindowOverflowSize, fixedSize: CGSize?) -> String {
         guard mode == .fixed, let fixedSize else {

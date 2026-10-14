@@ -78,6 +78,33 @@ class OverflowWindowsTests: QuickSpec {
             }
         }
 
+        describe("cascading") {
+            let area = CGRect(x: 0, y: 0, width: 3000, height: 2000)
+            let slot0 = CGPoint(x: 1500, y: 1000)
+            let slot1 = CGPoint(x: 1530, y: 1030)
+
+            it("starts at the centre") {
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [], in: area)).to(equal(0))
+            }
+
+            it("takes the next free slot") {
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [slot0], in: area)).to(equal(1))
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [slot0, slot1], in: area)).to(equal(2))
+            }
+
+            it("reuses a slot that freed up") {
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [slot1], in: area)).to(equal(0))
+            }
+
+            it("matches slots by centre, whatever the window's size, within a few points") {
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [CGPoint(x: 1503, y: 998)], in: area)).to(equal(1))
+            }
+
+            it("ignores windows moved off their slot") {
+                expect(OverflowWindows.cascadeIndex(occupiedCenters: [CGPoint(x: 900, y: 400)], in: area)).to(equal(0))
+            }
+        }
+
         describe("explaining") {
             it("names the window limit") {
                 expect(WindowExplanation.reasonText(.windowLimit, floating: true, allowList: false)).to(equal("over the window limit (window-overflow: float)"))

@@ -25,7 +25,7 @@ window-overflow-height: 1100
 
 * **`minimize`** (default): the oldest window outside the main pane is minimised (see Behavior below).
 * **`float`**: the newest windows over the limit float, and the tiles stay as they are. "Newest" is the order windows were opened, not their place in the layout, so a window swapped to the end isn't mistaken for the new one.
-  * A floated window is centred in the screen's usable area (padding mode included) at 60% × 70%, or at the `fixed` size. Apps with a minimum size stay bigger and are centred anyway. Several at once cascade 30 pt down and right.
+  * A floated window is centred in the screen's usable area (padding mode included) at 60% × 70%, or at the `fixed` size. Apps with a minimum size stay bigger and are centred anyway. Each further overflow window still open goes 30 pt down and right of the last; a slot frees up when its window closes or tiles.
   * Lowering the limit follows the same rule: the newest windows over it float.
   * It stays floating when a tile frees up; `toggle-float` tiles it again.
   * **Explain this window** says "over the window limit".

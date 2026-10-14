@@ -1292,14 +1292,21 @@ extension WindowManager: ScreenManagerDelegate {
         let area = screen.adjustedFrame()
         let size = OverflowWindows.size(in: area, mode: userConfiguration.windowOverflowSize(), fixedSize: userConfiguration.windowOverflowFixedSize())
 
-        for (index, window) in overflow.enumerated() {
+        // Windows floated over the limit earlier keep their cascade slots.
+        var occupiedCenters = windows.windows(onScreen: screen)
+            .filter { windows.isWindowFloating($0) && windows.placementReason(for: $0) == .windowLimit }
+            .map { CGPoint(x: $0.frame().midX, y: $0.frame().midY) }
+
+        for window in overflow {
             setFloating(true, forWindow: window, reason: .windowLimit)
             distributeEventToScreen(screen, change: .remove(window: window))
 
             // Size first and centre what the app accepted: apps with a minimum size stay bigger.
             window.setFrame(CGRect(origin: window.frame().origin, size: size), withThreshold: CGSize(width: 1, height: 1))
-            let frame = OverflowWindows.frame(size: window.frame().size, centeredIn: area, cascade: index)
+            let cascade = OverflowWindows.cascadeIndex(occupiedCenters: occupiedCenters, in: area)
+            let frame = OverflowWindows.frame(size: window.frame().size, centeredIn: area, cascade: cascade)
             window.setFrame(frame, withThreshold: CGSize(width: 1, height: 1))
+            occupiedCenters.append(CGPoint(x: frame.midX, y: frame.midY))
         }
     }
 
