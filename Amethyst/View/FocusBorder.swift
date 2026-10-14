@@ -125,6 +125,32 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
+    /// A click raises the clicked window above the border without a focus change; this puts the border back on top.
+    private var clickMonitor: Any?
+
+    init() {
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown]) { [weak self] _ in
+            // After the click's own raise has landed.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self?.raiseAboveWindow()
+            }
+        }
+    }
+
+    deinit {
+        if let clickMonitor {
+            NSEvent.removeMonitor(clickMonitor)
+        }
+    }
+
+    private func raiseAboveWindow() {
+        guard let currentWindowID else {
+            return
+        }
+
+        panel.order(.above, relativeTo: Int(currentWindowID))
+    }
+
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
         currentWindowID = windowID
