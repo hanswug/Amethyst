@@ -112,11 +112,11 @@ extension WindowManager {
             }
         }
 
-        func markScreenForReflow(_ screen: Screen) {
+        func markScreenForReflow(_ screen: Screen, afterFocusChange: Bool = false) {
             screenManagers
                 .filter { $0.screen?.screenID() == screen.screenID() }
                 .forEach { screenManager in
-                    screenManager.setNeedsReflow()
+                    screenManager.setNeedsReflow(afterFocusChange: afterFocusChange)
                 }
         }
 

@@ -204,14 +204,32 @@ struct FrameAssignment<Window: WindowType> {
     func impliedMainPaneRatio(windowFrame: CGRect) -> CGFloat {
         let oldDimension = resizeRules.scaledDimension(frame, negatePadding: false)
         let newDimension = resizeRules.scaledDimension(windowFrame, negatePadding: true)
-        let implied =  (newDimension / oldDimension) / resizeRules.scaleFactor
+        // A zero-size pane would divide by zero.
+        guard oldDimension > 0, resizeRules.scaleFactor > 0, resizeRules.scaleFactor.isFinite else {
+            return resizeRules.isMain ? 1 : 0
+        }
+        let implied = (newDimension / oldDimension) / resizeRules.scaleFactor
         return resizeRules.isMain ? implied : 1 - implied
+    }
+
+    /// Whether a window is already where an assignment would put it, within a point; then setting it again only costs Accessibility calls.
+    static func isInPlace(_ currentFrame: CGRect, _ targetFrame: CGRect, tolerance: CGFloat = 1) -> Bool {
+        return abs(currentFrame.minX - targetFrame.minX) <= tolerance
+            && abs(currentFrame.minY - targetFrame.minY) <= tolerance
+            && abs(currentFrame.width - targetFrame.width) <= tolerance
+            && abs(currentFrame.height - targetFrame.height) <= tolerance
     }
 
     /// Perform the actual application of the frame to the window
     func perform(withWindow window: Window) {
         var finalFrame = self.finalFrame
         var finalOrigin = finalFrame.origin
+
+        // Every focus change and app switch reflows, and most windows are already in place. Setting a frame costs several
+        // Accessibility calls even when nothing changes (a slow app makes each one wait), so leave those windows alone.
+        guard !FrameAssignment.isInPlace(window.frame(), finalFrame) else {
+            return
+        }
 
         // If this is the focused window then we need to shift it to be on screen regardless of size
         // We call this "window peeking" (this line here to aid in text search)

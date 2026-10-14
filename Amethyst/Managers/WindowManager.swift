@@ -168,7 +168,7 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
             return
         }
-        markScreenForReflow(screen)
+        markScreenForReflow(screen, afterFocusChange: true)
 //        doMouseFollowsFocus(focusedWindow: focusedWindow)
     }
 
@@ -434,8 +434,8 @@ extension WindowManager {
         screens.distributeEventToAllScreens(change: change)
     }
 
-    func markScreenForReflow(_ screen: Screen) {
-        screens.markScreenForReflow(screen)
+    func markScreenForReflow(_ screen: Screen, afterFocusChange: Bool = false) {
+        screens.markScreenForReflow(screen, afterFocusChange: afterFocusChange)
     }
 
     func markAllScreensForReflow() {
@@ -1067,7 +1067,7 @@ extension WindowManager: ApplicationObservationDelegate {
         } else if windows.isWindowTracked(window) {
             windows.recordFocus(of: window)
             distributeEventToScreen(screen, change: .focusChanged(window: window))
-            markScreenForReflow(screen)
+            markScreenForReflow(screen, afterFocusChange: true)
         } else {
             // Focus notification arrived before the creation notification.
             // Record this so swapInTab can call completeTabDetection immediately
