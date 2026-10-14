@@ -45,13 +45,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    /// `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`, which Console.app also lists, keeping at most three 5 MB files.
+    /// `--log` writes to `~/Library/Logs/Ametrine/Ametrine.log`, which Console.app also lists, keeping at most three 5 MB files.
     private static func logFileDestination() -> FileDestination {
         let logsDirectory = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Logs/hw-Amethyst", isDirectory: true)
+            .appendingPathComponent("Library/Logs/Ametrine", isDirectory: true)
         try? FileManager.default.createDirectory(at: logsDirectory, withIntermediateDirectories: true)
 
-        let destination = FileDestination(logFileURL: logsDirectory.appendingPathComponent("hw-Amethyst.log"))
+        let destination = FileDestination(logFileURL: logsDirectory.appendingPathComponent("Ametrine.log"))
         destination.minLevel = .debug
         destination.logFileMaxSize = 5 * 1024 * 1024
         destination.logFileAmount = 3

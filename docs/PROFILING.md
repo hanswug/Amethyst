@@ -31,7 +31,7 @@ Time Profiler only samples threads that are **running**. When Amethyst waits on 
 ## When the slowdown happens again
 
 1. As soon as it feels slow, run `scripts/profile.sh 5m` and keep doing whatever triggered it.
-   - It attaches Time Profiler to the running `hw-Amethyst` and saves the trace to `build/profiles/`.
+   - It attaches Time Profiler to the running `Ametrine` and saves the trace to `build/profiles/`.
    - It then prints CPU per thread and per minute, the top self and inclusive frames, and the potential hangs (`scripts/analyze-time-profile.py`).
 2. Read the result:
    - **High CPU in `observerCallback` / `ApplicationObservation.handle`, especially `didMoveWindow`/resize:** an app is flooding notifications. Find it with step 3.
@@ -39,7 +39,7 @@ Time Profiler only samples threads that are **running**. When Amethyst waits on 
    - **High CPU in `activeWindows(onScreen:)` / `windowSet(forWindowsOnScreen:)`:** the per-reflow window filtering is the cost. That's a candidate for caching screen membership.
    - **Nothing in Amethyst:** look elsewhere (WindowServer, the app itself), e.g. Activity Monitor or Instruments "All Processes".
 3. Per-app notification count (only if step 2 points at a flood):
-   - Quit hw-Amethyst and start it with logging, written to a file: `open --stdout build/profiles/amethyst.log --stderr build/profiles/amethyst.log -a /Applications/hw-Amethyst.app --args test --log`. (A bare `--log` is rejected by the argument parser; `test` is the entry point that skips it. Launching through `open` keeps it a normal app launch; started directly from a terminal it may not pick up every app.)
+   - Quit Ametrine and start it with logging, written to a file: `open --stdout build/profiles/amethyst.log --stderr build/profiles/amethyst.log -a /Applications/Ametrine.app --args test --log`. (A bare `--log` is rejected by the argument parser; `test` is the entry point that skips it. Launching through `open` keeps it a normal app launch; started directly from a terminal it may not pick up every app.)
    - Reproduce, then count `Received notification for window:` lines grouped by window ID.
    - Map the IDs to apps with the window list, e.g. `.../Contents/MacOS/Amethyst debug windows --include-unmanaged`.
    - That CLI currently crashes; see below.

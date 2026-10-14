@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # Saves the current fork/main build as a draft GitHub release: a zip of
-# hw-Amethyst.app signed with the local self-signed certificate (not
+# Ametrine.app signed with the local self-signed certificate (not
 # notarised). Drafts are visible only to the repository owner; this is how
-# hw-Amethyst gets onto Hans's other Macs without building there.
+# Ametrine gets onto Hans's other Macs without building there.
 #
 # Usage: scripts/release.sh major|minor|patch|current [--dry-run]
 #
@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-APP_NAME="hw-Amethyst"
+APP_NAME="Ametrine"
 BRANCH="fork/main"
 TAG_PREFIX="v"
 # Releases before version numbers were named hw-YYYY.MM.DD.
@@ -161,7 +161,7 @@ Signed with a self-signed certificate, not notarised, so macOS blocks the first 
 1. Unzip and move \`${APP_NAME}.app\` to /Applications. Quit upstream Amethyst if it's running; never run both at once.
 2. Open ${APP_NAME}. When macOS blocks it, go to System Settings → Privacy & Security and click **Open Anyway**.
 3. Grant Accessibility when asked. On a Mac where a differently signed ${APP_NAME} had it, remove the old entry and grant it again.
-4. The config lives at \`~/.config/hw-amethyst/amethyst.yml\`; start from [hw-amethyst.sample.yml](https://github.com/${REPO}/blob/${BRANCH}/hw-amethyst.sample.yml).
+4. The config lives at \`~/.config/ametrine/ametrine.yml\`; start from [ametrine.sample.yml](https://github.com/${REPO}/blob/${BRANCH}/ametrine.sample.yml).
 EOF
 
 echo "==> Saving draft release ${TAG}"

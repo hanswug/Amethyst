@@ -1,9 +1,9 @@
-# Hans's hw-Amethyst config, snapshot of 2026-10-13. Copy to ~/.config/hw-amethyst/amethyst.yml.
-# hw-Amethyst configuration: the only source of settings and key bindings.
-# Location: ~/.config/hw-amethyst/amethyst.yml (or ~/.hw-amethyst.yml).
+# Hans's Ametrine config, snapshot of 2026-10-13. Copy to ~/.config/ametrine/ametrine.yml.
+# Ametrine configuration: the only source of settings and key bindings.
+# Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml).
 # Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
 # A command is bound only if this file binds it. Settings left out get built-in defaults.
-# Reference: docs/configuration-files.md in the hw-Amethyst repo.
+# Reference: docs/configuration-files.md in the Ametrine repo.
 
 # layouts - Ordered list of layouts to use by layout key (default tall, wide, fullscreen, and column).
 layouts:
@@ -161,7 +161,7 @@ select-tall-layout:
   key: '5'
 
 # The following commands used to be bound by built-in defaults and were never chosen explicitly,
-# so they are unbound (<NONE>). hw-Amethyst binds only what this file binds; set mod/key to bind one.
+# so they are unbound (<NONE>). Ametrine binds only what this file binds; set mod/key to bind one.
 
 # Select wide layout.
 select-wide-layout:
@@ -218,8 +218,8 @@ toggle-focus-follows-mouse:
  mod: <NONE>
  key: <NONE>
 
-# Automatically quit and reopen Amethyst.
-relaunch-amethyst:
+# Automatically quit and reopen Ametrine.
+relaunch-ametrine:
  mod: <NONE>
  key: <NONE>
 
@@ -269,7 +269,7 @@ toggle-window-overflow-size:
   key: <NONE>
 
 # set-window-max-count and set-main-pane-count take a number and have no key: run them from the
-# command palette or with amethyst://command/set-window-max-count?value=<n>.
+# command palette or with ametrine://command/set-window-max-count?value=<n>.
 
 # true to show the new window max count (and window-overflow settings) on screen after changing them (default false).
 enables-window-count-hud: true
@@ -304,7 +304,7 @@ floating: [
 # Boolean flag determining behavior of the floating list. true if the applications should be floating and all others tiled. false if the applications should be tiled and all others floating (default true).
 floating-is-blacklist: true
 
-# hw-Amethyst: apps whose first window on a space tiles (the "anchor") while
+# Ametrine: apps whose first window on a space tiles (the "anchor") while
 # their other windows (Settings, plugin browsers, Open dialogs…) float.
 floating-secondary-windows:
   - md.obsidian
@@ -359,7 +359,7 @@ screen-padding-top: 0   # padding modes below replace the old 540
 # Padding to apply between windows and the bottom edge of the screen (in px, default 0).
 screen-padding-bottom: 0
 
-# --- hw-Amethyst: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
+# --- Ametrine: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
 # Super+0 cycles full → wide → 27. The selected mode survives restarts;
 # padding-mode only applies until a mode has been selected.
 mod4:
@@ -380,7 +380,7 @@ cycle-padding-mode:
   mod: mod4
   key: "0"
 
-# --- hw-Amethyst: command palette ---
+# --- Ametrine: command palette ---
 # Super+Y lists every command with its shortcut; type to filter, Enter runs, Esc closes.
 show-command-palette:
   mod: mod4

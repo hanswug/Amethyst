@@ -11,7 +11,7 @@
 set -euo pipefail
 
 DURATION="${1:-10m}"
-APP_PATH="/Applications/hw-Amethyst.app"
+APP_PATH="/Applications/Ametrine.app"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${REPO_ROOT}/build/profiles"

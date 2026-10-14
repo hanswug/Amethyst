@@ -1,19 +1,19 @@
 # Configuration file
 
-hw-Amethyst is configured only through its config file. There is no preferences window.
+Ametrine is configured only through its config file. There is no preferences window.
 
 ## Where it lives
 
 The first file that exists is used:
 
-1. `~/.hw-amethyst.yml`
-2. `~/.config/hw-amethyst/amethyst.yml` (or `$XDG_CONFIG_HOME/hw-amethyst/amethyst.yml`)
-3. `~/.hw-amethyst` (JSON)
+1. `~/.ametrine.yml`
+2. `~/.config/ametrine/ametrine.yml` (or `$XDG_CONFIG_HOME/ametrine/ametrine.yml`)
+3. `~/.ametrine` (JSON)
 
-- **Missing or broken file:** if there's no file, or it can't be read, hw-Amethyst shows an alert with the path and quits.
+- **Missing or broken file:** if there's no file, or it can't be read, Ametrine shows an alert with the path and quits.
 - **Menu:** **Edit Config…** opens the file in its default editor. **Reload Config** relaunches the app so changes apply.
 - **Defaults:** settings the file leaves out get the built-in defaults below, on every load.
-- **Examples:** the [README](../README.md#configuration) has a short one; [hw-amethyst.sample.yml](../hw-amethyst.sample.yml) is a complete, real config.
+- **Examples:** the [README](../README.md#configuration) has a short one; [ametrine.sample.yml](../ametrine.sample.yml) is a complete, real config.
 
 ## Settings
 
@@ -77,8 +77,8 @@ cycle-layout:
 | `key` | The key: a character (quote digits and symbols, e.g. `"0"`), or `space`, `enter`, `up`, `down`, `left`, `right`, `delete`. |
 
 - **No built-in keys.** Leaving a command out, setting it to `false`, or binding it to `<NONE>` leaves it unbound.
-- **Unbound still runs.** Every command, bound or not, can be run from the command palette or with `open -g "amethyst://command/<command-key>"`.
-- **Commands that take a number** (`set-window-max-count`, `set-main-pane-count`) have no key. In the palette, picking one turns the search field into a number field: type the number and press Enter (Esc goes back to the list). By URL, pass the number as `value`, e.g. `open -g "amethyst://command/set-window-max-count?value=8"`; a missing or invalid value is logged and ignored.
+- **Unbound still runs.** Every command, bound or not, can be run from the command palette or with `open -g "ametrine://command/<command-key>"`.
+- **Commands that take a number** (`set-window-max-count`, `set-main-pane-count`) have no key. In the palette, picking one turns the search field into a number field: type the number and press Enter (Esc goes back to the list). By URL, pass the number as `value`, e.g. `open -g "ametrine://command/set-window-max-count?value=8"`; a missing or invalid value is logged and ignored.
 
 ### Command keys
 
@@ -115,5 +115,5 @@ cycle-layout:
 | `cycle-padding-mode-backward` | Switch to the previous padding mode (wraps around). |
 | `select-<name>-padding-mode` | Switch to that padding mode, e.g. `select-wide-padding-mode`. |
 | `show-command-palette` | Open (or close) the command palette. |
-| `relaunch-amethyst` | Quit and reopen hw-Amethyst (also what Reload Config does). |
+| `relaunch-ametrine` | Quit and reopen Ametrine (also what Reload Config does). |
 | `command1` … `command4` | General-purpose commands for custom layouts. They exist only when at least one custom layout is installed. |

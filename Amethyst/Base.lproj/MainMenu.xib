@@ -32,7 +32,7 @@
                         <items/>
                     </menu>
                 </menuItem>
-                <menuItem title="Start Amethyst on Login" id="549">
+                <menuItem title="Start Ametrine on Login" id="549">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleStartAtLogin:" target="494" id="550"/>
@@ -58,7 +58,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="553"/>
-                <menuItem title="Quit Amethyst" keyEquivalent="q" id="545">
+                <menuItem title="Quit Ametrine" keyEquivalent="q" id="545">
                     <connections>
                         <action selector="terminate:" target="-3" id="546"/>
                     </connections>

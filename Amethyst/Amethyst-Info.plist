@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>AMConfigName</key>
-	<string>hw-amethyst</string>
+	<string>ametrine</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -13,19 +13,19 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>hw-Amethyst</string>
+	<string>Ametrine</string>
 	<key>CFBundleName</key>
-	<string>hw-Amethyst</string>
+	<string>Ametrine</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>Amethyst command</string>
+			<string>Ametrine command</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>amethyst</string>
+				<string>ametrine</string>
 			</array>
 		</dict>
 	</array>

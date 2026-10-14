@@ -17,7 +17,7 @@ extension FileManager {
             create: true
         )
         let layoutsDirectory = applicationSupportDirectory
-            .appendingPathComponent("Amethyst", isDirectory: true)
+            .appendingPathComponent("Ametrine", isDirectory: true)
             .appendingPathComponent("Layouts", isDirectory: true)
 
         if !FileManager.default.fileExists(atPath: layoutsDirectory.path, isDirectory: nil) {

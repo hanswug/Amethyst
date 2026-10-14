@@ -20,11 +20,11 @@ struct Amethyst: ParsableCommand {
 
 struct App: ParsableCommand {
     static var configuration: CommandConfiguration = CommandConfiguration(
-        abstract: "Run the Amethyst application."
+        abstract: "Run the Ametrine application."
     )
 
     // Read by AppDelegate from CommandLine.arguments; declared here so the parser accepts it.
-    @Flag(name: .customLong("log"), help: "Log to ~/Library/Logs/hw-Amethyst/hw-Amethyst.log.")
+    @Flag(name: .customLong("log"), help: "Log to ~/Library/Logs/Ametrine/Ametrine.log.")
     var logging = false
 
     mutating func run() throws {
