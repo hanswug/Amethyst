@@ -218,8 +218,8 @@ toggle-focus-follows-mouse:
  mod: <NONE>
  key: <NONE>
 
-# Automatically quit and reopen Amethyst.
-relaunch-amethyst:
+# Automatically quit and reopen Ametrine.
+relaunch-ametrine:
  mod: <NONE>
  key: <NONE>
 

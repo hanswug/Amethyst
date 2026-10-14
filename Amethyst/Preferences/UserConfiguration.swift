@@ -149,7 +149,7 @@ enum CommandKey: String {
     case disableTiling = "disable-tiling"
     case reevaluateWindows = "reevaluate-windows"
     case toggleFocusFollowsMouse = "toggle-focus-follows-mouse"
-    case relaunchAmethyst = "relaunch-amethyst"
+    case relaunchAmetrine = "relaunch-ametrine"
     case increaseWindowMaxCount = "increase-window-max-count"
     case decreaseWindowMaxCount = "decrease-window-max-count"
     case cyclePaddingModeForward = "cycle-padding-mode"

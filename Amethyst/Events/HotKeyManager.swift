@@ -281,7 +281,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             self.userConfiguration.toggleFocusFollowsMouse()
         }
 
-        constructCommandWithCommandKey(CommandKey.relaunchAmethyst.rawValue) { [weak appDelegate] in
+        constructCommandWithCommandKey(CommandKey.relaunchAmetrine.rawValue) { [weak appDelegate] in
             appDelegate?.relaunch(self)
         }
 
@@ -573,7 +573,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             hotKeyNameToDefaultsKey.append([commandName, commandKey])
         }
 
-        hotKeyNameToDefaultsKey.append(["Relaunch Ametrine", CommandKey.relaunchAmethyst.rawValue])
+        hotKeyNameToDefaultsKey.append(["Relaunch Ametrine", CommandKey.relaunchAmetrine.rawValue])
         hotKeyNameToDefaultsKey.append(["Show command palette", CommandKey.showCommandPalette.rawValue])
 
         return hotKeyNameToDefaultsKey

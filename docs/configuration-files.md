@@ -115,5 +115,5 @@ cycle-layout:
 | `cycle-padding-mode-backward` | Switch to the previous padding mode (wraps around). |
 | `select-<name>-padding-mode` | Switch to that padding mode, e.g. `select-wide-padding-mode`. |
 | `show-command-palette` | Open (or close) the command palette. |
-| `relaunch-amethyst` | Quit and reopen Ametrine (also what Reload Config does). |
+| `relaunch-ametrine` | Quit and reopen Ametrine (also what Reload Config does). |
 | `command1` … `command4` | General-purpose commands for custom layouts. They exist only when at least one custom layout is installed. |
