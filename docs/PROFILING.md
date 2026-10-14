@@ -48,4 +48,4 @@ In zsh, `log` is a shell built-in; use `/usr/bin/log` for macOS's unified log. A
 
 ## Known issue found while profiling
 
-`Amethyst debug windows` exits with SIGTRAP (status 133) in `Windows.run()`, in the fork and in upstream 0.24.3 alike. It's likely the force-unwrap `AXWindow(element: window)!` in `Amethyst/Debug/WindowsInfo.swift`. It isn't fixed in phase 0; it's a small upstream PR candidate.
+`Amethyst debug windows` used to exit with SIGTRAP (status 133) in `Windows.run()`, in the fork and in upstream 0.24.3 alike: Finder lists the desktop (an `AXScrollArea`) among its windows, and the force-unwrap `AXWindow(element: window)!` in `Amethyst/Debug/WindowsInfo.swift` failed on it. Fixed in hw-Amethyst 2.4.x: such elements print as `<not a window: role …>`. The command runs in the calling process, so the terminal needs Accessibility permission; without it, it says so and exits.
