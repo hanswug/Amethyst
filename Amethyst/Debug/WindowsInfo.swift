@@ -37,15 +37,29 @@ struct Windows: ParsableCommand {
     var redactWindowTitles = false
 
     mutating func run() throws {
+        // The command runs in the calling process (e.g. a terminal), which needs Accessibility of its own; without it every attribute reads empty.
+        guard AXIsProcessTrusted() else {
+            FileHandle.standardError.write(Data(
+                "error: the app running this command (e.g. your terminal) needs Accessibility permission: System Settings → Privacy & Security → Accessibility\n".utf8
+            ))
+            throw ExitCode.failure
+        }
+
         let applications = NSWorkspace.shared.runningApplications
         for application in applications where includeUnmanaged || application.isManageable == .manageable {
             let app = SIApplication(runningApplication: application)
             print("\(app.title() ?? "<no title>") (pid \(app.pid()))")
             for window in app.windows() {
-                let axWindow = AXWindow(element: window)!
+                // Some apps list elements that aren't windows; one of them mustn't end the listing.
+                guard let axWindow = AXWindow(element: window) else {
+                    print("\t<not a window: role \(window.string(forKey: kAXRoleAttribute as CFString) ?? "unknown")>\n")
+                    continue
+                }
+
                 print(axWindow.debugInfo(redactTitles: redactWindowTitles))
                 print("")
             }
+            fflush(stdout)
         }
     }
 }
