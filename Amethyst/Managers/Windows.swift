@@ -90,6 +90,24 @@ struct RestoredWindowOrder<Key: Hashable> {
     }
 }
 
+/// The window each Space last had in main (what `swap-main` from main swaps back to), saved when Ametrine quit and reconnected as windows arrive.
+struct PendingLastMainWindows<Key: Hashable> {
+    private var spacesByWindow: [Key: [CGSSpaceID]]
+
+    init(_ windowsBySpace: [CGSSpaceID: Key]) {
+        spacesByWindow = Dictionary(grouping: windowsBySpace.keys) { windowsBySpace[$0]! }
+    }
+
+    var isEmpty: Bool {
+        return spacesByWindow.isEmpty
+    }
+
+    /// The Spaces the arriving window was the last main window of; each window is handed back once.
+    mutating func takeSpaces(for key: Key) -> [CGSSpaceID] {
+        return spacesByWindow.removeValue(forKey: key) ?? []
+    }
+}
+
 extension WindowManager {
     class Windows {
         private(set) var windows: [Window] = []
@@ -106,6 +124,7 @@ extension WindowManager {
         var secondaryWindowAnchors = SecondaryWindowAnchors<Window.WindowID>()
         /// The order to restore after a relaunch, until every saved window has arrived or it's given up on.
         private var restoredOrder: RestoredWindowOrder<SavedWindowID>?
+        private var pendingLastMainWindows: PendingLastMainWindows<SavedWindowID>?
 
         // MARK: Window Filters
 
@@ -173,6 +192,7 @@ extension WindowManager {
 
         func add(window: Window, atFront shouldInsertAtFront: Bool) {
             recordAddition(of: window)
+            reconnectLastMain(window)
 
             if var order = restoredOrder, let index = order.insertionIndex(for: savedID(of: window), among: windows.map(savedID(of:))) {
                 windows.insert(window, at: index)
@@ -298,9 +318,30 @@ extension WindowManager {
             restoredOrder = order.isEmpty ? nil : RestoredWindowOrder(order)
         }
 
+        /// The last main window per Space to save when Ametrine quits.
+        var savedLastMainWindows: [CGSSpaceID: SavedWindowID] {
+            return lastMainWindows.compactMapValues { $0.map(savedID(of:)) }
+        }
+
+        func restoreLastMainWindows(_ saved: [CGSSpaceID: SavedWindowID]) {
+            pendingLastMainWindows = saved.isEmpty ? nil : PendingLastMainWindows(saved)
+        }
+
+        private func reconnectLastMain(_ window: Window) {
+            guard var pending = pendingLastMainWindows else {
+                return
+            }
+
+            for space in pending.takeSpaces(for: savedID(of: window)) {
+                lastMainWindows[space] = window
+            }
+            pendingLastMainWindows = pending.isEmpty ? nil : pending
+        }
+
         /// Windows arriving from now on are added as usual.
         func stopRestoringOrder() {
             restoredOrder = nil
+            pendingLastMainWindows = nil
         }
 
         // MARK: Focus History

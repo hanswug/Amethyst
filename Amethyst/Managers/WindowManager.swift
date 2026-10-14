@@ -55,6 +55,8 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         case screens
         /// The window order, so a relaunch keeps who's in the main pane.
         case windowOrder
+        /// Each Space's last main window, so `swap-main` from main can swap back after a relaunch.
+        case lastMainWindows
     }
 
     /// How long after launch saved windows may still arrive in their saved place (applications answer slowly, with retries).
@@ -98,8 +100,13 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         self.focusTransitionCoordinator = FocusTransitionCoordinator<WindowManager<Application>>(userConfiguration: userConfiguration)
         super.init()
 
-        // Saved before the order was saved: windows are added as they arrive.
+        // Saved before these were saved: windows are added as they arrive, with no last main window.
         windows.restoreOrder(try values.decodeIfPresent([SavedWindowID].self, forKey: .windowOrder) ?? [])
+        let savedLastMainWindows = try values.decodeIfPresent([String: SavedWindowID].self, forKey: .lastMainWindows) ?? [:]
+        windows.restoreLastMainWindows(Dictionary(
+            savedLastMainWindows.compactMap { key, window in CGSSpaceID(key).map { ($0, window) } },
+            uniquingKeysWith: { first, _ in first }
+        ))
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.windowOrderRestoreTimeout) { [weak self] in
             self?.windows.stopRestoringOrder()
         }
@@ -111,6 +118,9 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(screens, forKey: .screens)
         try values.encode(windows.savedOrder, forKey: .windowOrder)
+        // JSON object keys are strings.
+        let lastMainWindows = Dictionary(uniqueKeysWithValues: windows.savedLastMainWindows.map { (String($0.key), $0.value) })
+        try values.encode(lastMainWindows, forKey: .lastMainWindows)
     }
 
     private func initialize() {
