@@ -48,6 +48,12 @@ The first file that exists is used:
 | `enables-layout-hud-on-space-change` | `true` to show the layout name when moving to another Space (default `true`). |
 | `enables-window-count-hud` | `true` to show the new window max count on screen after increasing or decreasing it (default `false`). |
 | `enables-refused-tile-hud` | `true` to show a short message when a tiled window stays bigger than its tile (an app's minimum size), once per window and tile size (default `true`). |
+| `focus-border` | `true` to draw a border around the focused window (default `false`). Only windows Ametrine manages, tiled or floating; none for tiled windows in the Fullscreen layout or in native full screen. It sits just outside the window, in the margin, and never covers the window itself. |
+| `focus-border-style` | `glow` (a thin ring with a soft glow, like the macOS focus ring), `solid` or `gradient` (default `glow`). |
+| `focus-border-width` | Points: the ring width for `solid` and `gradient`, and how far the glow reaches (default `5`). |
+| `focus-border-color` | `accent` (the system accent colour, following System Settings), `"#RRGGBB"` or `"#AARRGGBB"` (default `accent`). Quote hex colours in YAML. |
+| `focus-border-gradient` | The two colours of the `gradient` style, top left to bottom right (default `["#9B5DE5", "#F4B942"]`, purple to gold). |
+| `focus-border-radius` | Corner radius in points (default `12`). macOS doesn't expose each window's own radius, so one value applies to all. |
 | `new-windows-to-main` | `true` to insert new windows in the first position, `false` for the last (default `false`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
 | `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |
@@ -96,6 +102,8 @@ cycle-layout:
 | `decrease-window-max-count` | Lower `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |
 | `toggle-window-overflow` | Switch `window-overflow` between `minimize` and `float` until Reload Config, and show it if `enables-window-count-hud` is on. Windows already minimised or floated stay so. |
 | `toggle-window-overflow-size` | Switch `window-overflow-size` between `reasonable` and `fixed` until Reload Config (stays `reasonable` without a configured size), and show it if `enables-window-count-hud` is on. |
+| `toggle-focus-border` | Turn `focus-border` on or off until Reload Config, and show it if `enables-layout-hud` is on. |
+| `cycle-focus-border-style` | Switch `focus-border-style` to the next style (glow, solid, gradient) until Reload Config, and show it if `enables-layout-hud` is on. |
 | `set-window-max-count` | Set `window-max-count` (0–99, `0` = unlimited) until Reload Config, and show it if `enables-window-count-hud` is on. Palette and URL only. |
 | `focus-ccw` | Focus the next window counter-clockwise. |
 | `focus-cw` | Focus the next window clockwise. |

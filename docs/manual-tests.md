@@ -25,6 +25,11 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 | From a floating Settings window, focus west | The nearest tile to the west gets focus. |
 | Fullscreen: focus west/east, then north/south | West/east cycle through all windows with wrap-around; north/south do nothing. |
 | Swap east from main | Main and its neighbour trade places; focus and the cursor stay on the moved window. |
+| With `focus-border: true`, move focus by key, then by clicking | The border follows; Ametrine never takes focus. |
+| Drag and resize the focused window | The border follows it. |
+| Open a floating Settings window | It gets the border; the tile behind loses it. |
+| Switch to the Fullscreen layout, then open a native full-screen app | No border in either. |
+| ⌘H the focused app; switch Space | The border moves to the newly focused window (or disappears). |
 
 ## Floating
 
