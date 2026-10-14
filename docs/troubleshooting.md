@@ -4,6 +4,21 @@
 
 Here are some common problems and their solutions.
 
+### Why does this window tile (or float)?
+
+Run **Explain this window** from the command palette (or bind `explain-window`, or `open -g "amethyst://command/explain-window"`). A HUD says whether the focused window is tiled, floating or not managed, and why: a `floating` entry or title rule, `floating-secondary-windows`, `float-small-windows`, a manual `toggle-float`, the Floating layout, or tiling being off. Tiled windows also show how many windows tile against `window-max-count`.
+
+### Logging
+
+Launch with `--log` to write a log file, including one line per tile/float decision with its reason:
+
+```sh
+open -a hw-Amethyst --args --log
+tail -f ~/Library/Logs/hw-Amethyst/hw-Amethyst.log
+```
+
+The file also shows up in Console.app under Log Reports. It keeps at most three files of 5 MB.
+
 ### "Always float"
 
 hw-Amethyst can float every application except the ones listed. When this mode is on by accident, it looks as if nothing is working. It's set by `floating-is-blacklist` in the config file:

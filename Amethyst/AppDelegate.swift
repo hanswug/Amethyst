@@ -45,15 +45,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
+    /// `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`, which Console.app also lists, keeping at most three 5 MB files.
+    private static func logFileDestination() -> FileDestination {
+        let logsDirectory = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Logs/hw-Amethyst", isDirectory: true)
+        try? FileManager.default.createDirectory(at: logsDirectory, withIntermediateDirectories: true)
+
+        let destination = FileDestination(logFileURL: logsDirectory.appendingPathComponent("hw-Amethyst.log"))
+        destination.minLevel = .debug
+        destination.logFileMaxSize = 5 * 1024 * 1024
+        destination.logFileAmount = 3
+        return destination
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         #if DEBUG
             log.addDestination(ConsoleDestination())
         #endif
 
         if CommandLine.arguments.contains("--log") {
-            let destination = ConsoleDestination()
-            destination.useNSLog = true
-            log.addDestination(destination)
+            log.addDestination(AppDelegate.logFileDestination())
         }
 
         log.info("Logging is enabled")

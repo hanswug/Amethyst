@@ -58,6 +58,7 @@ extension WindowManager {
         private var activeIDCache: Set<CGWindowID> = Set()
         private var deactivatedPIDs: Set<pid_t> = Set()
         private var floatingMap: [Window.WindowID: Bool] = [:]
+        private var placementReasons: [Window.WindowID: PlacementReason] = [:]
         var secondaryWindowAnchors = SecondaryWindowAnchors<Window.WindowID>()
 
         // MARK: Window Filters
@@ -144,6 +145,8 @@ extension WindowManager {
                 }
             }
 
+            placementReasons.removeValue(forKey: window.id())
+
             guard let windowIndex = windows.firstIndex(where: { $0.id() == window.id() }) else {
                 return
             }
@@ -218,8 +221,14 @@ extension WindowManager {
             return floatingMap[window.id()] ?? false
         }
 
-        func setFloating(_ floating: Bool, forWindow window: Window) {
+        /// Why the window tiles or floats, as recorded by `setFloating(_:forWindow:reason:)`.
+        func placementReason(for window: Window) -> PlacementReason? {
+            return placementReasons[window.id()]
+        }
+
+        func setFloating(_ floating: Bool, forWindow window: Window, reason: PlacementReason) {
             floatingMap[window.id()] = floating
+            placementReasons[window.id()] = reason
         }
 
         func activateApplication(withPID pid: pid_t) {

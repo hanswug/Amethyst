@@ -214,6 +214,10 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             windowManager.toggleFloatForFocusedWindow()
         }
 
+        constructCommandWithCommandKey(CommandKey.explainWindow.rawValue) {
+            windowManager.explainFocusedWindow()
+        }
+
         constructCommandWithCommandKey(CommandKey.toggleTiling.rawValue) {
             self.userConfiguration.tilingEnabled = !self.userConfiguration.tilingEnabled
             windowManager.markAllScreensForReflow()
@@ -442,6 +446,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Force windows to be reevaluated", CommandKey.reevaluateWindows.rawValue])
 
         hotKeyNameToDefaultsKey.append(["Toggle float for focused window", CommandKey.toggleFloat.rawValue])
+        hotKeyNameToDefaultsKey.append(["Explain this window", CommandKey.explainWindow.rawValue])
         hotKeyNameToDefaultsKey.append(["Display current layout", CommandKey.displayCurrentLayout.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle focus follows mouse", CommandKey.toggleFocusFollowsMouse.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle global tiling", CommandKey.toggleTiling.rawValue])

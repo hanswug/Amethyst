@@ -410,7 +410,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         layoutNameWindowController.close()
     }
 
-    func displayCustomHUD(title: String, description: String = "") {
+    func displayCustomHUD(title: String, description: String = "", duration: TimeInterval = 0.6) {
         guard let screen = screen else {
             return
         }
@@ -421,7 +421,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
         defer {
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(hideLayoutHUD(_:)), object: nil)
-            perform(#selector(hideLayoutHUD(_:)), with: nil, afterDelay: 0.6)
+            perform(#selector(hideLayoutHUD(_:)), with: nil, afterDelay: duration)
         }
 
         guard let layoutNameWindow = layoutNameWindowController.window as? LayoutNameWindow else {
