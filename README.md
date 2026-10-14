@@ -42,6 +42,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns
+  - [ ] Maybe: `toggle-new-windows-to-main` in the palette (as upstream added in 5cfe2fe), switching `new-windows-to-main` until Reload Config, with its HUD following `enables-layout-hud`
   - [ ] Fix the `debug windows` crash
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`
   - [x] Set window max count and main pane count from the palette: pick the command, type a number (`0` = unlimited for the window count), Enter. Also `amethyst://command/set-window-max-count?value=<n>`
