@@ -51,4 +51,6 @@ Many apps (Safari, for example) have a minimum window size. When the layout give
 
 It is still tiled: it moves when the layout changes, and focus and swap commands reach it. `toggle-float` would float it for real. This is expected: hw-Amethyst can't make an app smaller than the app allows.
 
+hw-Amethyst says so when it happens: a HUD such as `Safari doesn't fit its tile · needs 700 × 420 · tile 520 × 420`, once per window and tile size (it shows again if the tile changes to another size the window doesn't fit). `enables-refused-tile-hud: false` turns the HUD off; launched with `--log`, the log still records each case.
+
 What helps: fewer windows on that screen, or a layout that gives it a bigger tile (the main pane, Two Pane). The planned `max-column-rows` setting is meant to keep side columns above most apps' minimum height.

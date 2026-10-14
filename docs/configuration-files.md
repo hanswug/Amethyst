@@ -43,6 +43,7 @@ The first file that exists is used:
 | `enables-layout-hud` | `true` to show a short on-screen message when the layout, padding mode or main pane count changes (default `true`). |
 | `enables-layout-hud-on-space-change` | `true` to show the layout name when moving to another Space (default `true`). |
 | `enables-window-count-hud` | `true` to show the new window max count on screen after increasing or decreasing it (default `false`). |
+| `enables-refused-tile-hud` | `true` to show a short message when a tiled window stays bigger than its tile (an app's minimum size), once per window and tile size (default `true`). |
 | `new-windows-to-main` | `true` to insert new windows in the first position, `false` for the last (default `false`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
 | `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |

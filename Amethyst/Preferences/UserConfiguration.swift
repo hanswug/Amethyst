@@ -88,6 +88,7 @@ enum ConfigurationKey: String {
     case layoutHUD = "enables-layout-hud"
     case layoutHUDOnSpaceChange = "enables-layout-hud-on-space-change"
     case windowCountHUD = "enables-window-count-hud"
+    case refusedTileHUD = "enables-refused-tile-hud"
     case useCanaryBuild = "use-canary-build"
     case newWindowsToMain = "new-windows-to-main"
     case followSpaceThrownWindows = "follow-space-thrown-windows"
@@ -720,6 +721,10 @@ class UserConfiguration: NSObject {
 
     func enablesWindowCountHUD() -> Bool {
         return storage.bool(forKey: .windowCountHUD)
+    }
+
+    func enablesRefusedTileHUD() -> Bool {
+        return storage.bool(forKey: .refusedTileHUD)
     }
 
     func useCanaryBuild() -> Bool {
