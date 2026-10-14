@@ -59,6 +59,9 @@ extension WindowManager {
         private var deactivatedPIDs: Set<pid_t> = Set()
         private var floatingMap: [Window.WindowID: Bool] = [:]
         private var placementReasons: [Window.WindowID: PlacementReason] = [:]
+        /// When each window was added, increasing, for `window-overflow: float` (the newest windows float).
+        private var additionOrder: [Window.WindowID: Int] = [:]
+        private var nextAdditionOrder = 0
         var secondaryWindowAnchors = SecondaryWindowAnchors<Window.WindowID>()
 
         // MARK: Window Filters
@@ -114,7 +117,19 @@ extension WindowManager {
 
         // MARK: Adding and Removing
 
+        private func recordAddition(of window: Window) {
+            additionOrder[window.id()] = nextAdditionOrder
+            nextAdditionOrder += 1
+        }
+
+        /// The newest of the windows over the limit, oldest of them first.
+        func newestWindows(_ windows: [Window], over limit: Int) -> [Window] {
+            let byID = Dictionary(windows.map { ($0.id(), $0) }, uniquingKeysWith: { first, _ in first })
+            return OverflowWindows.newest(windows.map { $0.id() }, order: additionOrder, over: limit).compactMap { byID[$0] }
+        }
+
         func add(window: Window, atFront shouldInsertAtFront: Bool) {
+            recordAddition(of: window)
             if shouldInsertAtFront {
                 if let currentFocusedSpace = CGSpacesInfo<Window>.currentFocusedSpace(),
                    let firstActiveWindow = activeWindowOnCurrentScreen(atIndex: 0) {
@@ -132,6 +147,8 @@ extension WindowManager {
                 return false
             }
 
+            recordAddition(of: window)
+
             windows.insert(window, at: otherWindowIndex)
 
             return true
@@ -146,6 +163,7 @@ extension WindowManager {
             }
 
             placementReasons.removeValue(forKey: window.id())
+            additionOrder.removeValue(forKey: window.id())
 
             guard let windowIndex = windows.firstIndex(where: { $0.id() == window.id() }) else {
                 return
@@ -155,6 +173,15 @@ extension WindowManager {
         }
 
         @discardableResult func replace(window: Window, withWindow otherWindow: Window) -> Bool {
+            // A tab taking another tab's place is as old as that one.
+            if additionOrder[window.id()] == nil {
+                if let otherOrder = additionOrder[otherWindow.id()] {
+                    additionOrder[window.id()] = otherOrder
+                } else {
+                    recordAddition(of: window)
+                }
+            }
+
             if let currentFocusedSpace = CGSpacesInfo<Window>.currentFocusedSpace(),
                let firstActiveWindow = activeWindowOnCurrentScreen(atIndex: 0) {
                 if firstActiveWindow == window || firstActiveWindow == otherWindow {

@@ -38,6 +38,8 @@
 		401BC8BA1CE9319500F89B3F /* FocusFollowsMouseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8B91CE9319500F89B3F /* FocusFollowsMouseManager.swift */; };
 		401C35AF2241BBDD0019ED07 /* ReflowOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35AE2241BBDD0019ED07 /* ReflowOperation.swift */; };
 		A3E1C0DE5EC0000000000032 /* RefusedTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000031 /* RefusedTiles.swift */; };
+		A3E1C0DE5EC0000000000042 /* OverflowWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000041 /* OverflowWindows.swift */; };
+		A3E1C0DE5EC0000000000044 /* OverflowWindowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000043 /* OverflowWindowsTests.swift */; };
 		A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */; };
 		401C35B12244626E0019ED07 /* ApplicationObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B02244626E0019ED07 /* ApplicationObservation.swift */; };
 		401C35B32244650F0019ED07 /* MouseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B22244650F0019ED07 /* MouseState.swift */; };
@@ -166,6 +168,8 @@
 		401BC8B91CE9319500F89B3F /* FocusFollowsMouseManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FocusFollowsMouseManager.swift; sourceTree = "<group>"; };
 		401C35AE2241BBDD0019ED07 /* ReflowOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflowOperation.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000031 /* RefusedTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefusedTiles.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000041 /* OverflowWindows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowWindows.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000043 /* OverflowWindowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowWindowsTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefusedTilesTests.swift; sourceTree = "<group>"; };
 		401C35B02244626E0019ED07 /* ApplicationObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationObservation.swift; sourceTree = "<group>"; };
 		401C35B22244650F0019ED07 /* MouseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseState.swift; sourceTree = "<group>"; };
@@ -501,6 +505,7 @@
 				A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */,
 				A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */,
 				A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */,
+				A3E1C0DE5EC0000000000043 /* OverflowWindowsTests.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -544,6 +549,7 @@
 				4029C4F01C112478001E4788 /* Layout.swift */,
 				401C35AE2241BBDD0019ED07 /* ReflowOperation.swift */,
 				A3E1C0DE5EC0000000000031 /* RefusedTiles.swift */,
+				A3E1C0DE5EC0000000000041 /* OverflowWindows.swift */,
 			);
 			path = Layout;
 			sourceTree = "<group>";
@@ -783,6 +789,7 @@
 				A3E1C0DE5EC0000000000022 /* WindowPlacement.swift in Sources */,
 				401C35AF2241BBDD0019ED07 /* ReflowOperation.swift in Sources */,
 				A3E1C0DE5EC0000000000032 /* RefusedTiles.swift in Sources */,
+				A3E1C0DE5EC0000000000042 /* OverflowWindows.swift in Sources */,
 				401BC8B41CE9250800F89B3F /* HotKeyRegistrar.swift in Sources */,
 				40637073224EF9B20081299D /* Change.swift in Sources */,
 				40CEF4301C2B8D21004C3297 /* ScreenManager.swift in Sources */,
@@ -845,6 +852,7 @@
 				A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */,
 				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */,
+				A3E1C0DE5EC0000000000044 /* OverflowWindowsTests.swift in Sources */,
 				40D491DB23367630007E0CCB /* FrameAssignmentVerification.swift in Sources */,
 				40AB5BED23AC3CF800E29346 /* ThreeColumnLayoutTests.swift in Sources */,
 				40AB5BE923AB0A2B00E29346 /* TallRightLayoutTests.swift in Sources */,

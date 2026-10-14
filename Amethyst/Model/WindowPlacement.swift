@@ -29,6 +29,8 @@ enum PlacementReason: Equatable {
     case secondaryWindowSpaceUnknown
     /// `toggle-float`.
     case toggled
+    /// `window-overflow: float`: the window was among the newest over `window-max-count`.
+    case windowLimit
 }
 
 /// A float decision of the regular rules (`floating`, `float-small-windows`) together with its reason.
@@ -123,6 +125,8 @@ enum WindowExplanation {
             return "secondary window, space unknown (floating-secondary-windows)"
         case .toggled?:
             return floating ? "floated by hand (toggle-float)" : "tiled by hand (toggle-float)"
+        case .windowLimit?:
+            return "over the window limit (window-overflow: float)"
         case nil:
             return "reason not recorded"
         }

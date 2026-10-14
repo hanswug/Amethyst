@@ -136,7 +136,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var notes = [
             CommandKey.increaseWindowMaxCount.rawValue: windowMaxCount,
             CommandKey.decreaseWindowMaxCount.rawValue: windowMaxCount,
-            CommandKey.setWindowMaxCount.rawValue: windowMaxCount
+            CommandKey.setWindowMaxCount.rawValue: windowMaxCount,
+            CommandKey.toggleWindowOverflow.rawValue: "now \(UserConfiguration.shared.windowOverflow().rawValue)",
+            CommandKey.toggleWindowOverflowSize.rawValue: "now " + OverflowWindows.sizeDescription(
+                mode: UserConfiguration.shared.windowOverflowSize(),
+                fixedSize: UserConfiguration.shared.windowOverflowFixedSize(),
+                share: UserConfiguration.shared.windowOverflowReasonableShare()
+            )
         ]
 
         if let panedLayout = windowManager?.focusedScreenManager()?.currentLayout as? PanedLayout {

@@ -413,6 +413,70 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("window overflow") {
+            it("minimises unless the configuration says float") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.windowOverflow()).to(equal(.minimize))
+
+                storage.set("float", forKey: .windowOverflow)
+                expect(configuration.windowOverflow()).to(equal(.float))
+
+                storage.set("hide", forKey: .windowOverflow)
+                expect(configuration.windowOverflow()).to(equal(.minimize))
+            }
+
+            it("toggles between minimize and float") {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+
+                expect(configuration.toggleWindowOverflow()).to(equal(.float))
+                expect(configuration.windowOverflow()).to(equal(.float))
+                expect(configuration.toggleWindowOverflow()).to(equal(.minimize))
+            }
+
+            it("toggles the size only when a size is configured") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.windowOverflowFixedSize()).to(beNil())
+                expect(configuration.toggleWindowOverflowSize()).to(equal(.reasonable))
+
+                storage.set(Float(1600), forKey: .windowOverflowWidth)
+                storage.set(Float(1100), forKey: .windowOverflowHeight)
+                expect(configuration.windowOverflowFixedSize()).to(equal(CGSize(width: 1600, height: 1100)))
+                expect(configuration.toggleWindowOverflowSize()).to(equal(.fixed))
+                expect(configuration.toggleWindowOverflowSize()).to(equal(.reasonable))
+            }
+
+            it("reads the reasonable share as percentages, falling back to 60% × 70%") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.6, height: 0.7)))
+
+                storage.set(Float(50), forKey: .windowOverflowReasonableWidth)
+                storage.set(Float(80), forKey: .windowOverflowReasonableHeight)
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.5, height: 0.8)))
+
+                storage.set(Float(0), forKey: .windowOverflowReasonableWidth)
+                storage.set(Float(120), forKey: .windowOverflowReasonableHeight)
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.6, height: 0.7)))
+            }
+
+            it("reads the size mode from the configuration") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                storage.set("fixed", forKey: .windowOverflowSize)
+                expect(configuration.windowOverflowSize()).to(equal(.reasonable))
+
+                storage.set(Float(1600), forKey: .windowOverflowWidth)
+                storage.set(Float(1100), forKey: .windowOverflowHeight)
+                expect(configuration.windowOverflowSize()).to(equal(.fixed))
+            }
+        }
+
         describe("focus follows mouse") {
             it("toggles") {
                 let storage = TestConfigurationStorage()

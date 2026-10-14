@@ -19,6 +19,8 @@ struct LayoutMenuItemInfo {
 protocol ScreenManagerDelegate: AnyObject {
     associatedtype Window: WindowType
     func applyWindowLimit(forScreenManager screenManager: ScreenManager<Self>, minimizingIn range: (_ windowCount: Int) -> Range<Int>)
+    /// `window-overflow: float`: floats the newest tiled windows on the screen over the limit.
+    func floatOverflowWindows(forScreenManager screenManager: ScreenManager<Self>, limit: Int)
     func activeWindowSet(forScreenManager screenManager: ScreenManager<Self>, on screen: Window.Screen) -> WindowSet<Window>
     func onReflowInitiation()
     func onReflowCompletion()
@@ -220,6 +222,15 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         guard UserConfiguration.shared.tilingEnabled, let windowLimit = UserConfiguration.shared.windowMaxCount() else {
             return
         }
+
+        if UserConfiguration.shared.windowOverflow() == .float {
+            // In the Floating layout every window floats already.
+            if !(currentLayout is FloatingLayout<Window>) {
+                delegate?.floatOverflowWindows(forScreenManager: self, limit: windowLimit)
+            }
+            return
+        }
+
         let shouldInsertAtFront = UserConfiguration.shared.sendNewWindowsToMainPane()
         delegate?.applyWindowLimit(forScreenManager: self, minimizingIn: { windowCount in
             if windowLimit > windowCount {

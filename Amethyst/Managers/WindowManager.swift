@@ -413,15 +413,18 @@ extension WindowManager {
     }
 
     func displayWindowCountHUD() {
+        let countText = userConfiguration.windowMaxCount().map(String.init) ?? "unlimited"
+        displayWindowLimitHUD(title: "Window max count · \(countText)")
+    }
+
+    /// Shows a window limit setting (the count, the overflow policy or size) on every screen, with `enables-window-count-hud`.
+    func displayWindowLimitHUD(title: String, description: String = "") {
         guard userConfiguration.enablesWindowCountHUD() else {
             return
         }
 
         for screenManager in screens.screenManagers {
-            let currentCount = userConfiguration.windowMaxCount() ?? 0
-            let countText = currentCount == 0 ? "unlimited" : "\(currentCount)"
-            let title = "Window max count · \(countText)"
-            screenManager.displayCustomHUD(title: title)
+            screenManager.displayCustomHUD(title: title, description: description)
         }
     }
 
@@ -1274,6 +1277,78 @@ extension WindowManager: ScreenManagerDelegate {
         windows[range(windows.count)].forEach {
             $0.minimize()
         }
+    }
+
+    func floatOverflowWindows(forScreenManager screenManager: ScreenManager<WindowManager<Application>>, limit: Int) {
+        guard let screen = screenManager.screen else {
+            return
+        }
+
+        let overflow = windows.newestWindows(activeWindows(on: screen), over: limit)
+        guard !overflow.isEmpty else {
+            return
+        }
+
+        let area = screen.adjustedFrame()
+        let size = OverflowWindows.size(
+            in: area,
+            mode: userConfiguration.windowOverflowSize(),
+            fixedSize: userConfiguration.windowOverflowFixedSize(),
+            share: userConfiguration.windowOverflowReasonableShare()
+        )
+
+        // Windows floated over the limit earlier keep their cascade slots.
+        var occupiedCenters = windows.windows(onScreen: screen)
+            .filter { windows.isWindowFloating($0) && windows.placementReason(for: $0) == .windowLimit }
+            .map { CGPoint(x: $0.frame().midX, y: $0.frame().midY) }
+
+        for window in overflow {
+            setFloating(true, forWindow: window, reason: .windowLimit)
+            distributeEventToScreen(screen, change: .remove(window: window))
+
+            let cascade = OverflowWindows.cascadeIndex(occupiedCenters: occupiedCenters, in: area)
+            let placed = placeOverflowWindow(window, size: size, area: area, cascade: cascade)
+            occupiedCenters.append(CGPoint(x: placed.midX, y: placed.midY))
+
+            // Some apps restore their own frame a moment after opening a window; place it once more if one did.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self,
+                      self.windows.isWindowFloating(window),
+                      self.windows.placementReason(for: window) == .windowLimit else {
+                    return
+                }
+
+                let frame = window.frame()
+                guard abs(frame.midX - placed.midX) > OverflowWindows.slotTolerance
+                    || abs(frame.midY - placed.midY) > OverflowWindows.slotTolerance
+                    || abs(frame.width - placed.width) > OverflowWindows.slotTolerance
+                    || abs(frame.height - placed.height) > OverflowWindows.slotTolerance else {
+                    return
+                }
+
+                log.debug("Placing overflow window again; its app moved it: \(window)")
+                self.placeOverflowWindow(window, size: size, area: area, cascade: cascade)
+            }
+        }
+    }
+
+    /**
+     Centres an overflow window in its cascade slot at the given size, in one step so the size is set where it fits (macOS shrinks a window resized
+     near the screen edge), then re-centres on the size the app accepted (apps with a minimum size stay bigger). Returns the frame it ended up with.
+     */
+    @discardableResult private func placeOverflowWindow(_ window: Window, size: CGSize, area: CGRect, cascade: Int) -> CGRect {
+        let threshold = CGSize(width: 1, height: 1)
+        let target = OverflowWindows.frame(size: size, centeredIn: area, cascade: cascade)
+        window.setFrame(target, withThreshold: threshold)
+
+        let actualSize = window.frame().size
+        guard abs(actualSize.width - size.width) > 1 || abs(actualSize.height - size.height) > 1 else {
+            return target
+        }
+
+        let corrected = OverflowWindows.frame(size: actualSize, centeredIn: area, cascade: cascade)
+        window.setFrame(corrected, withThreshold: threshold)
+        return corrected
     }
 
     func activeWindowSet(forScreenManager screenManager: ScreenManager<WindowManager<Application>>, on screen: Screen) -> WindowSet<Window> {
