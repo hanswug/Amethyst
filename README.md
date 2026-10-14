@@ -44,7 +44,8 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [ ] `max-column-rows: 3` for side columns
   - [ ] Fix the `debug windows` crash
   - [ ] **Next up:** Explain this window: a palette command that says whether the focused window is tiled or floating, and why (`floating` list, title rule, secondary window, small size, window limit). Includes making `--log` write to a file (it's accepted, but nothing reaches the system log)
-  - [ ] After that: a HUD when an app refuses its tile (its window stays bigger than the tile)
+  - [ ] Then: Set window max count from the palette: pick the command, type a number (`0` = unlimited), Enter. Lasts until Reload Config, like increase/decrease; also `amethyst://command/set-window-max-count?value=<n>`. Set main pane count works the same way
+  - [ ] After Explain this window: a HUD when an app refuses its tile (its window stays bigger than the tile)
   - [ ] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (the app still reports upstream's 0.24.3)
 
 ## Configuration
