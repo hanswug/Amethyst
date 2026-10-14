@@ -332,7 +332,7 @@ extension WindowManager {
             guard windows.window(withID: focusedWindow.id()) != nil else {
                 return
             }
-            windows.setFloating(false, forWindow: focusedWindow)
+            setFloating(false, forWindow: focusedWindow, reason: .toggled)
             claimSecondaryWindowAnchorIfFree(focusedWindow)
             distributeEventToScreen(screen, change: windowChange)
             markScreenForReflow(screen)
@@ -340,11 +340,54 @@ extension WindowManager {
         }
 
         let windowChange: Change = windows.isWindowFloating(focusedWindow) ? .add(window: focusedWindow) : .remove(window: focusedWindow)
-        windows.setFloating(!windows.isWindowFloating(focusedWindow), forWindow: focusedWindow)
+        setFloating(!windows.isWindowFloating(focusedWindow), forWindow: focusedWindow, reason: .toggled)
         // Floating the anchor keeps it the anchor; tiling a secondary only makes it the anchor if there is none.
         claimSecondaryWindowAnchorIfFree(focusedWindow)
         distributeEventToScreen(screen, change: windowChange)
         markScreenForReflow(screen)
+    }
+
+    /// Shows in a HUD whether the focused window tiles, floats or isn't managed, and why, and logs it.
+    func explainFocusedWindow() {
+        let focusedWindow = Window.currentlyFocused()
+        let text = focusedWindow.map { WindowExplanation.text(for: explanationInput(for: $0)) } ?? (title: "No focused window", description: "")
+
+        if let focusedWindow {
+            let applicationName = NSRunningApplication(processIdentifier: focusedWindow.pid())?.localizedName ?? "pid \(focusedWindow.pid())"
+            log.info("Explain window: \(applicationName) \"\(focusedWindow.title() ?? "")\" · \(text.title) · \(text.description)")
+        }
+
+        DispatchQueue.main.async {
+            let screenManager = self.focusedScreenManager() ?? self.screens.screenManagers.first
+            screenManager?.displayCustomHUD(title: text.title, description: text.description, duration: 3)
+        }
+    }
+
+    private func explanationInput(for window: Window) -> WindowExplanation.Input {
+        guard window.shouldBeManaged() else {
+            return WindowExplanation.Input(state: .notStandard)
+        }
+
+        guard windows.isWindowTracked(window) else {
+            return WindowExplanation.Input(state: .notTracked)
+        }
+
+        var input = WindowExplanation.Input(
+            state: windows.isWindowFloating(window) ? .floating : .tiled,
+            reason: windows.placementReason(for: window)
+        )
+        input.floatingIsAllowList = !userConfiguration.floatingBundleIdentifiersIsBlacklist()
+        input.tilingEnabled = userConfiguration.tilingEnabled
+        input.isSecondaryWindowAnchor = windows.secondaryWindowAnchors.slot(anchoredBy: window.id()) != nil
+        input.windowMaxCount = userConfiguration.windowMaxCount()
+
+        if let screen = window.screen() {
+            input.tiledCount = windows.activeWindows(onScreen: screen).count
+            let screenManager = screens.screenManagers.first { $0.screen?.screenID() == screen.screenID() }
+            input.isFloatingLayout = screenManager?.currentLayout?.layoutKey == FloatingLayout<Window>.layoutKey
+        }
+
+        return input
     }
 
     func distributeEventToScreen(_ screen: Screen, change: Change<Window>) {
@@ -530,19 +573,26 @@ extension WindowManager {
     }
 
     private func determineFloatForWindow(_ window: Window, application: AnyApplication<Application>, force: Bool) throws {
-        if try floatsAsSecondaryWindow(window, force: force) {
-            windows.setFloating(true, forWindow: window)
+        if let reason = try secondaryWindowFloatReason(window, force: force) {
+            setFloating(true, forWindow: window, reason: reason)
             return
         }
 
-        switch application.defaultFloatForWindow(window) {
+        switch application.floatDecisionForWindow(window) {
         case .unreliable where !force:
             throw TrackingError.unreliableFloating
-        case .reliable(.floating), .unreliable(.floating):
-            windows.setFloating(true, forWindow: window)
-        case .reliable(.notFloating), .unreliable(.notFloating):
-            windows.setFloating(false, forWindow: window)
+        case let .reliable(decision), let .unreliable(decision):
+            setFloating(decision.float == .floating, forWindow: window, reason: decision.reason)
         }
+    }
+
+    /// Sets whether a window floats and records why, for `explain-window` and the log.
+    private func setFloating(_ floating: Bool, forWindow window: Window, reason: PlacementReason) {
+        windows.setFloating(floating, forWindow: window, reason: reason)
+
+        let applicationName = NSRunningApplication(processIdentifier: window.pid())?.localizedName ?? "pid \(window.pid())"
+        let reasonText = WindowExplanation.reasonText(reason, floating: floating, allowList: !userConfiguration.floatingBundleIdentifiersIsBlacklist())
+        log.info("\(floating ? "Floating" : "Tiled"): \(applicationName) \"\(window.title() ?? "")\" · \(reasonText)")
     }
 
     /// The `floating-secondary-windows` slot of a window, or `nil` if its application isn't listed or its space is unknown.
@@ -557,12 +607,12 @@ extension WindowManager {
     }
 
     /**
-     Whether a window floats because of `floating-secondary-windows`: its application is listed and already has a live anchor on the window's space. This only ever forces floating; otherwise the regular floating rules decide.
+     Why a window floats because of `floating-secondary-windows`, or `nil` if it doesn't: it does when its application is listed and already has a live anchor on the window's space. This only ever forces floating; otherwise the regular floating rules decide.
      */
-    private func floatsAsSecondaryWindow(_ window: Window, force: Bool) throws -> Bool {
+    private func secondaryWindowFloatReason(_ window: Window, force: Bool) throws -> PlacementReason? {
         guard let runningApplication = NSRunningApplication(processIdentifier: window.pid()),
               userConfiguration.floatsSecondaryWindows(of: runningApplication) else {
-            return false
+            return nil
         }
 
         guard let slot = secondaryWindowSlot(for: window) else {
@@ -571,32 +621,32 @@ extension WindowManager {
             guard force else {
                 throw TrackingError.unreliableFloating
             }
-            return true
+            return .secondaryWindowSpaceUnknown
         }
 
         guard let anchorID = windows.secondaryWindowAnchors.anchor(for: slot), anchorID != window.id() else {
-            return false
+            return nil
         }
 
         if let anchor = windows.window(withID: anchorID) {
             // Closed windows can stay tracked (not every app reports them destroyed), so ask whether it still exists.
             guard windowExists(anchor) else {
                 releaseSecondaryWindowAnchor(anchor)
-                return windows.secondaryWindowAnchors.anchor(for: slot) != nil
+                return windows.secondaryWindowAnchors.anchor(for: slot) != nil ? .secondaryWindow : nil
             }
-            return true
+            return .secondaryWindow
         }
 
         // An anchor claimed up front by `claimSecondaryWindowAnchors(among:)` that isn't tracked yet. Tracking takes at most a
         // few seconds of retries; one that never gets tracked (e.g. an invisible window) must not keep the slot.
         if let untracked = untrackedSecondaryWindowAnchors[anchorID],
            windowExists(untracked.window), Date().timeIntervalSince(untracked.claimed) < 6 {
-            return true
+            return .secondaryWindow
         }
 
         windows.secondaryWindowAnchors.release(anchorID)
         untrackedSecondaryWindowAnchors.removeValue(forKey: anchorID)
-        return false
+        return nil
     }
 
     /**

@@ -28,6 +28,8 @@
 		401BC89A1CE8C6AE00F89B3F /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8991CE8C6AE00F89B3F /* HotKeyManager.swift */; };
 		401BC8A61CE8E65D00F89B3F /* LayoutNameWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */; };
 		A3E1C0DE5EC0000000000012 /* CommandPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000011 /* CommandPalette.swift */; };
+		A3E1C0DE5EC0000000000022 /* WindowPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000021 /* WindowPlacement.swift */; };
+		A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */; };
 		401BC8A81CE8E94000F89B3F /* WindowsInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8A71CE8E94000F89B3F /* WindowsInformation.swift */; };
 		A3E1C0DE5EC0000000000016 /* AppArgumentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000015 /* AppArgumentsTests.swift */; };
 		401BC8AE1CE8FD4700F89B3F /* UserConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BC8AD1CE8FD4700F89B3F /* UserConfigurationTests.swift */; };
@@ -150,6 +152,8 @@
 		401BC8991CE8C6AE00F89B3F /* HotKeyManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HotKeyManager.swift; path = ../Events/HotKeyManager.swift; sourceTree = "<group>"; };
 		401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LayoutNameWindow.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000011 /* CommandPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPalette.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000021 /* WindowPlacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPlacement.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowExplanationTests.swift; sourceTree = "<group>"; };
 		401BC8A71CE8E94000F89B3F /* WindowsInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowsInformation.swift; sourceTree = "<group>"; };
 		401BC8A91CE8F49200F89B3F /* Amethyst-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Amethyst-Bridging-Header.h"; sourceTree = "<group>"; };
 		401BC8AC1CE8FD4600F89B3F /* AmethystTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AmethystTests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -458,6 +462,7 @@
 				40578C18232D9CC0006553A0 /* Screen.swift */,
 				400A5E9C2327350C00F0A2C3 /* Space.swift */,
 				4046EFCE2236019400113067 /* Window.swift */,
+				A3E1C0DE5EC0000000000021 /* WindowPlacement.swift */,
 				401BC8A71CE8E94000F89B3F /* WindowsInformation.swift */,
 				40583E1229AEF70B008602BB /* ApplicationEventHandler.swift */,
 			);
@@ -490,6 +495,7 @@
 				40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */,
 				A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */,
 				A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */,
+				A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -768,6 +774,7 @@
 				F46629C4272AD7A30040C275 /* FourColumnLayout.swift in Sources */,
 				401BC8A61CE8E65D00F89B3F /* LayoutNameWindow.swift in Sources */,
 				A3E1C0DE5EC0000000000012 /* CommandPalette.swift in Sources */,
+				A3E1C0DE5EC0000000000022 /* WindowPlacement.swift in Sources */,
 				401C35AF2241BBDD0019ED07 /* ReflowOperation.swift in Sources */,
 				401BC8B41CE9250800F89B3F /* HotKeyRegistrar.swift in Sources */,
 				40637073224EF9B20081299D /* Change.swift in Sources */,
@@ -829,6 +836,7 @@
 				40EC47F423F3A30100048B4F /* ScreenManagerTests.swift in Sources */,
 				A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */,
 				A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */,
+				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				40D491DB23367630007E0CCB /* FrameAssignmentVerification.swift in Sources */,
 				40AB5BED23AC3CF800E29346 /* ThreeColumnLayoutTests.swift in Sources */,
 				40AB5BE923AB0A2B00E29346 /* TallRightLayoutTests.swift in Sources */,

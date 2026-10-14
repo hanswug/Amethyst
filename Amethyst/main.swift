@@ -24,7 +24,7 @@ struct App: ParsableCommand {
     )
 
     // Read by AppDelegate from CommandLine.arguments; declared here so the parser accepts it.
-    @Flag(name: .customLong("log"), help: "Log to the system log.")
+    @Flag(name: .customLong("log"), help: "Log to ~/Library/Logs/hw-Amethyst/hw-Amethyst.log.")
     var logging = false
 
     mutating func run() throws {

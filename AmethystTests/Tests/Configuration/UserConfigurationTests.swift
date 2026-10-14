@@ -351,6 +351,53 @@ class UserConfigurationTests: QuickSpec {
                     expect(configuration.runningApplication(bundleIdentifiable, byDefaultFloatsForTitle: nil)).to(equal(.reliable(.floating)))
                 }
             }
+
+            context("float decision reasons") {
+                let bundleIdentifiable = TestBundleIdentifiable()
+                bundleIdentifiable.bundleIdentifier = "test.test.Test"
+
+                it("names the listed application") {
+                    let storage = TestConfigurationStorage()
+                    let configuration = UserConfiguration(storage: storage)
+
+                    storage.set(true, forKey: .floatingBundleIdentifiersIsBlacklist)
+                    configuration.setFloatingBundles([FloatingBundle(id: "test.test.*", windowTitles: [])])
+
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Main")).to(equal(.reliable(FloatDecision(float: .floating, reason: .listed(id: "test.test.*")))))
+
+                    storage.set(false, forKey: .floatingBundleIdentifiersIsBlacklist)
+
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Main")).to(equal(.reliable(FloatDecision(float: .notFloating, reason: .listed(id: "test.test.*")))))
+                }
+
+                it("names the matching title pattern") {
+                    let storage = TestConfigurationStorage()
+                    let configuration = UserConfiguration(storage: storage)
+
+                    storage.set(true, forKey: .floatingBundleIdentifiersIsBlacklist)
+                    configuration.setFloatingBundles([FloatingBundle(id: "test.test.Test", windowTitles: ["^Other$", "^Settings$"])])
+
+                    let settingsReason = PlacementReason.titleMatched(pattern: "^Settings$", id: "test.test.Test")
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Settings")).to(equal(.reliable(FloatDecision(float: .floating, reason: settingsReason))))
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Main")).to(equal(.reliable(FloatDecision(float: .notFloating, reason: .titleNotMatched(id: "test.test.Test")))))
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: nil)).to(equal(.unreliable(FloatDecision(float: .notFloating, reason: .titleNotMatched(id: "test.test.Test")))))
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "")).to(equal(.unreliable(FloatDecision(float: .notFloating, reason: .titleNotMatched(id: "test.test.Test")))))
+                }
+
+                it("says when the application isn't listed") {
+                    let storage = TestConfigurationStorage()
+                    let configuration = UserConfiguration(storage: storage)
+
+                    storage.set(true, forKey: .floatingBundleIdentifiersIsBlacklist)
+                    configuration.setFloatingBundles([FloatingBundle(id: "other.app", windowTitles: [])])
+
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Main")).to(equal(.reliable(FloatDecision(float: .notFloating, reason: .notListed))))
+
+                    storage.set(false, forKey: .floatingBundleIdentifiersIsBlacklist)
+
+                    expect(configuration.floatDecision(for: bundleIdentifiable, title: "Main")).to(equal(.reliable(FloatDecision(float: .floating, reason: .notListed))))
+                }
+            }
         }
 
         describe("focus follows mouse") {

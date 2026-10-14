@@ -136,6 +136,7 @@ enum CommandKey: String {
     case cyclePaddingModeForward = "cycle-padding-mode"
     case cyclePaddingModeBackward = "cycle-padding-mode-backward"
     case showCommandPalette = "show-command-palette"
+    case explainWindow = "explain-window"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -596,6 +597,11 @@ class UserConfiguration: NSObject {
     }
 
     func runningApplication(_ runningApplication: BundleIdentifiable, byDefaultFloatsForTitle title: String?) -> Reliable<DefaultFloat> {
+        return floatDecision(for: runningApplication, title: title).map { $0.float }
+    }
+
+    /// Whether the `floating` list floats a window of the application with the given title, and which part of the list decided it.
+    func floatDecision(for runningApplication: BundleIdentifiable, title: String?) -> Reliable<FloatDecision> {
         let useIdentifiersAsBlacklist = floatingBundleIdentifiersIsBlacklist()
 
         // If the application is in the floating list we need to continue to check title
@@ -603,45 +609,39 @@ class UserConfiguration: NSObject {
         //   - Blacklist means not floating
         //   - Whitelist menas floating
         guard let floatingBundle = runningApplicationFloatingBundle(runningApplication) else {
-            return .reliable(DefaultFloat.from(!useIdentifiersAsBlacklist))
+            return .reliable(FloatDecision(float: DefaultFloat.from(!useIdentifiersAsBlacklist), reason: .notListed))
         }
 
         // If the window list is empty then all windows are included in the list
         //   - Blacklist means floating
         //   - Whitelist means not floating
         if floatingBundle.windowTitles.isEmpty {
-            return .reliable(DefaultFloat.from(useIdentifiersAsBlacklist))
-        }
-
-        // If the title is `nil` then we cannot make a determination so we fall back to the default. However, we have to treat this value as unreliable as the window could have just been created and be in the process of loading.
-        guard let title = title else {
-            return .unreliable(DefaultFloat.from(!useIdentifiersAsBlacklist))
-        }
-
-        // If the title matches it is included
-        //   - Blacklist means floating
-        //   - Whitelist means not floating
-        if floatingBundle.windowTitles.contains(where: { windowTitle in
-            if title.range(of: windowTitle, options: .regularExpression) != nil {
-                return true
-            } else {
-                return false
-            }
-        }) {
-            return .reliable(DefaultFloat.from(useIdentifiersAsBlacklist))
+            return .reliable(FloatDecision(float: DefaultFloat.from(useIdentifiersAsBlacklist), reason: .listed(id: floatingBundle.id)))
         }
 
         // Otherwise the window is not included
         //   - Blacklist means not floating
         //   - Whitelist means floating
-        let defaultFloat = DefaultFloat.from(!useIdentifiersAsBlacklist)
+        let notIncluded = FloatDecision(float: DefaultFloat.from(!useIdentifiersAsBlacklist), reason: .titleNotMatched(id: floatingBundle.id))
+
+        // If the title is `nil` then we cannot make a determination so we fall back to the default. However, we have to treat this value as unreliable as the window could have just been created and be in the process of loading.
+        guard let title = title else {
+            return .unreliable(notIncluded)
+        }
+
+        // If the title matches it is included
+        //   - Blacklist means floating
+        //   - Whitelist means not floating
+        if let pattern = floatingBundle.windowTitles.first(where: { title.range(of: $0, options: .regularExpression) != nil }) {
+            return .reliable(FloatDecision(float: DefaultFloat.from(useIdentifiersAsBlacklist), reason: .titleMatched(pattern: pattern, id: floatingBundle.id)))
+        }
 
         // If the title is empty the window could have just been created and in the process of loading. Our float determination could still be correct, but to account for the potential change we mark it as unreliable.
         if title.isEmpty {
-            return .unreliable(defaultFloat)
+            return .unreliable(notIncluded)
         }
 
-        return .reliable(defaultFloat)
+        return .reliable(notIncluded)
     }
 
     func runningApplicationFloatingBundle(_ runningApplication: BundleIdentifiable) -> FloatingBundle? {

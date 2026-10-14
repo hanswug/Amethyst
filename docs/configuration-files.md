@@ -94,6 +94,7 @@ cycle-layout:
 | `swap-cw` | Swap the focused window with the next one clockwise. |
 | `swap-main` | Swap the focused window with the main window. |
 | `toggle-float` | Toggle floating for the focused window. |
+| `explain-window` | Show in a HUD whether the focused window is tiled, floating or not managed, and why. |
 | `display-current-layout` | Show the layout HUD with the current layout. |
 | `toggle-tiling` | Turn tiling on or off. |
 | `enable-tiling` | Turn tiling on. |

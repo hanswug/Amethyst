@@ -38,7 +38,7 @@ protocol ApplicationType: Equatable {
     func pid() -> pid_t
 
     /**
-     Determines whether a window should float by default.
+     Determines whether a window should float by default, and why.
      
      - Parameters:
          - window: The window to test.
@@ -46,7 +46,7 @@ protocol ApplicationType: Equatable {
      - Note:
      We can receive an unreliable result. It is up to the caller to determine whether or not that result is good enough.
      */
-    func defaultFloatForWindow(_ window: Window) -> Reliable<DefaultFloat>
+    func floatDecisionForWindow(_ window: Window) -> Reliable<FloatDecision>
 
     /// Clears the internal cache of application windows.
     func dropWindowsCache()
@@ -98,6 +98,13 @@ protocol ApplicationType: Equatable {
     func unobserve(notification: String, window: Window)
 }
 
+extension ApplicationType {
+    /// Whether a window should float by default, without the reason. See `floatDecisionForWindow(_:)`.
+    func defaultFloatForWindow(_ window: Window) -> Reliable<DefaultFloat> {
+        return floatDecisionForWindow(window).map { $0.float }
+    }
+}
+
 /**
  Type-erased concerete application for managing applications.
  
@@ -142,8 +149,8 @@ class AnyApplication<Application: ApplicationType>: ApplicationType {
         return internalApplication.pid()
     }
 
-    func defaultFloatForWindow(_ window: Window) -> Reliable<DefaultFloat> {
-        return internalApplication.defaultFloatForWindow(window)
+    func floatDecisionForWindow(_ window: Window) -> Reliable<FloatDecision> {
+        return internalApplication.floatDecisionForWindow(window)
     }
 
     func dropWindowsCache() {
@@ -205,16 +212,16 @@ extension SIApplication: ApplicationType {
         unobserveNotification(notification as CFString, with: window)
     }
 
-    func defaultFloatForWindow(_ window: Window) -> Reliable<DefaultFloat> {
+    func floatDecisionForWindow(_ window: Window) -> Reliable<FloatDecision> {
         if window.shouldFloat() {
-            return .reliable(.floating)
+            return .reliable(FloatDecision(float: .floating, reason: .smallWindow(threshold: Int(UserConfiguration.shared.smallWindowSize()))))
         }
 
         guard let runningApplication = NSRunningApplication(processIdentifier: pid()) else {
-            return .reliable(.floating)
+            return .reliable(FloatDecision(float: .floating, reason: .noRunningApplication))
         }
 
-        return UserConfiguration.shared.runningApplication(runningApplication, byDefaultFloatsForTitle: window.title())
+        return UserConfiguration.shared.floatDecision(for: runningApplication, title: window.title())
     }
 
     private func observe(notification: String, with accessibilityElement: SIAccessibilityElement, handler: @escaping SIAXNotificationHandler) -> AXError {
