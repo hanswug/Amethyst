@@ -244,7 +244,7 @@ window-max-count: 0
 
 # What happens to windows over window-max-count: minimize (the oldest window outside the main pane
 # is minimised) or float (the newest windows float, centred, and the tiles stay as they are) (default minimize).
-window-overflow: minimize
+window-overflow: float
 
 # The size of a window floated over the limit: reasonable (the share of the screen below) or
 # fixed (window-overflow-width x window-overflow-height) (default reasonable).
