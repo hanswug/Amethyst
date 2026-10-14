@@ -42,6 +42,9 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     private(set) var lastFocusedWindow: Window?
     private let userConfiguration: UserConfiguration
 
+    /// The tiles windows on this screen refuse (stay bigger than), so each is reported once per tile size.
+    private var refusedTiles = RefusedTileTracker<Window.WindowID>()
+
     private let reflowOperationDispatchQueue = DispatchQueue(
         label: "ScreenManager.reflowOperationQueue",
         qos: .utility,
@@ -279,6 +282,11 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
                 return
             }
 
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                // Some apps settle their size a moment after it's set.
+                self?.checkTileFits(frameAssignments)
+            }
+
             DispatchQueue.main.async {
                 self?.delegate?.onReflowCompletion()
                 // TODO: fix mff
@@ -408,6 +416,38 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
     @objc func hideLayoutHUD(_ sender: AnyObject) {
         layoutNameWindowController.close()
+    }
+
+    /// Reports tiled windows that stayed bigger than their tile after a layout pass: logged always, and shown in a HUD with `enables-refused-tile-hud`.
+    private func checkTileFits(_ frameAssignments: [FrameAssignmentOperation<Window>]) {
+        let fits = frameAssignments.compactMap { operation -> TileFit<Window.WindowID>? in
+            let layoutWindow = operation.frameAssignment.window
+            guard !operation.isCancelled,
+                  let window = operation.windowSet.window(for: layoutWindow),
+                  operation.windowSet.isWindowActive(layoutWindow),
+                  !operation.windowSet.isWindowFloating(layoutWindow) else {
+                return nil
+            }
+
+            let applicationName = NSRunningApplication(processIdentifier: window.pid())?.localizedName ?? "pid \(window.pid())"
+            return TileFit(windowID: layoutWindow.id, applicationName: applicationName, tile: operation.frameAssignment.finalFrame.size, actual: window.frame().size)
+        }
+
+        let refusals = refusedTiles.update(fits)
+        guard !refusals.isEmpty else {
+            return
+        }
+
+        for refusal in refusals {
+            log.info("Refused tile: \(refusal.applicationName) needs \(RefusedTileHUD.size(refusal.actual)), tile \(RefusedTileHUD.size(refusal.tile))")
+        }
+
+        guard userConfiguration.enablesRefusedTileHUD() else {
+            return
+        }
+
+        let text = RefusedTileHUD.text(for: refusals)
+        displayCustomHUD(title: text.title, description: text.description, duration: 2)
     }
 
     func displayCustomHUD(title: String, description: String = "", duration: TimeInterval = 0.6) {

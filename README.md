@@ -45,7 +45,7 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [ ] Fix the `debug windows` crash
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`
   - [x] Set window max count and main pane count from the palette: pick the command, type a number (`0` = unlimited for the window count), Enter. Also `amethyst://command/set-window-max-count?value=<n>`
-  - [ ] **Next up:** a HUD when an app refuses its tile (its window stays bigger than the tile)
+  - [x] A HUD when an app refuses its tile (its window stays bigger than the tile), once per window and tile size; `enables-refused-tile-hud`
   - [ ] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (the app still reports upstream's 0.24.3)
 
 ## Configuration

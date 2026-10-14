@@ -93,6 +93,10 @@ struct WindowSet<Window: WindowType> {
         return isWindowWithIDFloating(window.id)
     }
 
+    func window(for layoutWindow: LayoutWindow<Window>) -> Window? {
+        return windowForID(layoutWindow.id)
+    }
+
     func perform(frameAssignment: FrameAssignment<Window>) {
         guard let window = windowForID(frameAssignment.window.id) else {
             return
