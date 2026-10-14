@@ -10,6 +10,7 @@
 import Nimble
 import Quick
 import Silica
+import XCTest
 
 private final class TestDelegate: ScreenManagerDelegate {
     typealias Window = TestWindow
@@ -34,6 +35,38 @@ private final class TestDelegate: ScreenManagerDelegate {
 class ScreenManagerTests: QuickSpec {
     override func spec() {
         describe("coding") {
+            describe("the selected layout per Space") {
+                let layoutsBySpaceUUID: [String: [Layout<TestWindow>]] = [
+                    "space-a": [FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>(), TallLayout<TestWindow>()],
+                    "space-b": [FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>(), TallLayout<TestWindow>()]
+                ]
+
+                it("is saved by layout key and restored as the same index") {
+                    let keys = ScreenManager<TestDelegate>.layoutKeys(byIndex: ["space-a": 1, "space-b": 2], layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(keys).to(equal(["space-a": ThreeColumnMiddleLayout<TestWindow>.layoutKey, "space-b": TallLayout<TestWindow>.layoutKey]))
+
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(byKey: keys, layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(indices).to(equal(["space-a": 1, "space-b": 2]))
+                }
+
+                it("follows the layout when layouts: is reordered") {
+                    let reordered: [String: [Layout<TestWindow>]] = ["space-a": [TallLayout<TestWindow>(), FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>()]]
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(byKey: ["space-a": ThreeColumnMiddleLayout<TestWindow>.layoutKey], layoutsBySpaceUUID: reordered)
+                    expect(indices).to(equal(["space-a": 2]))
+                }
+
+                it("drops a layout no longer listed, and unknown Spaces or indices") {
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(
+                        byKey: ["space-a": "bsp", "space-c": TallLayout<TestWindow>.layoutKey],
+                        layoutsBySpaceUUID: layoutsBySpaceUUID
+                    )
+                    expect(indices).to(beEmpty())
+
+                    let keys = ScreenManager<TestDelegate>.layoutKeys(byIndex: ["space-a": 7, "space-c": 0], layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(keys).to(beEmpty())
+                }
+            }
+
             it("decodes layouts") {
                 let configuration = UserConfiguration(storage: TestConfigurationStorage())
                 configuration.setLayoutKeys(LayoutType<TestWindow>.standardLayoutClasses().map { $0.layoutKey })
@@ -188,5 +221,41 @@ class ScreenManagerTests: QuickSpec {
                 }
             }
         }
+    }
+}
+
+/// A relaunch decodes the saved state, then the first Space update picks the layout. `@MainActor` because a screen manager
+/// owns the layout HUD's window controller (Quick's specs run off the main thread).
+class ScreenManagerRestoreTests: XCTestCase {
+    private struct SavedState: Encodable {
+        let layoutsBySpaceUUID: [String: [[String: Data]]]
+        let currentLayoutKeyBySpaceUUID: [String: String]?
+    }
+
+    @MainActor func testARelaunchComesBackOnTheSelectedLayout() throws {
+        let configuration = UserConfiguration.shared
+        let previousLayoutKeys = configuration.layoutKeys()
+        let layouts: [Layout<TestWindow>] = [FullscreenLayout(), ThreeColumnMiddleLayout(), TallLayout()]
+        configuration.setLayoutKeys(layouts.map { $0.layoutKey })
+        defer { configuration.setLayoutKeys(previousLayoutKeys) }
+
+        // The main Space's UUID is often empty.
+        let space = Space(id: 1, type: CGSSpaceTypeUser, uuid: "")
+        let encoder = JSONEncoder()
+        let encodedLayouts = try layouts.map { ["key": $0.layoutKey.data(using: .utf8)!, "data": try LayoutType.encoded(layout: $0)] }
+
+        func relaunched(withSelection selection: [String: String]?) throws -> ScreenManager<TestDelegate> {
+            let saved = try encoder.encode(SavedState(layoutsBySpaceUUID: [space.uuid: encodedLayouts], currentLayoutKeyBySpaceUUID: selection))
+            let screenManager = try JSONDecoder().decode(ScreenManager<TestDelegate>.self, from: saved)
+            screenManager.updateSpace(to: space)
+            return screenManager
+        }
+
+        let restored = try relaunched(withSelection: [space.uuid: ThreeColumnMiddleLayout<TestWindow>.layoutKey])
+        XCTAssertEqual(restored.currentLayout?.layoutKey, ThreeColumnMiddleLayout<TestWindow>.layoutKey)
+
+        // Saved before the selection was saved: the first layout, as before.
+        let older = try relaunched(withSelection: nil)
+        XCTAssertEqual(older.currentLayout?.layoutKey, FullscreenLayout<TestWindow>.layoutKey)
     }
 }

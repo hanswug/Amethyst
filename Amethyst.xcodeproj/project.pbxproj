@@ -124,6 +124,7 @@
 		A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */; };
 		A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */; };
 		A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */; };
+		A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */; };
 		A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */; };
 		40EFFB4A2F0226EF00EDD929 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 40EFFB492F0226EF00EDD929 /* Silica */; };
 		4493EAA22139D9F000AA9623 /* ThreeColumnLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */; };
@@ -255,6 +256,7 @@
 		A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondaryWindowAnchorsTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigationTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorderTests.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoredWindowOrderTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteTests.swift; sourceTree = "<group>"; };
 		4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreeColumnLayout.swift; sourceTree = "<group>"; };
 		AA4AF40C26717DA900D2AE1B /* TwoPaneLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoPaneLayout.swift; sourceTree = "<group>"; };
@@ -513,6 +515,7 @@
 				A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */,
 				A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */,
 				A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */,
+				A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */,
 				A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */,
 				A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */,
 				A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */,
@@ -865,6 +868,7 @@
 				A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */,
 				A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */,
 				A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */,
+				A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */,
 				A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */,
 				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */,

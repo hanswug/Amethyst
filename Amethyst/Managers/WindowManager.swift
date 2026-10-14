@@ -53,7 +53,12 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
 
     enum CodingKeys: String, CodingKey {
         case screens
+        /// The window order, so a relaunch keeps who's in the main pane.
+        case windowOrder
     }
+
+    /// How long after launch saved windows may still arrive in their saved place (applications answer slowly, with retries).
+    private static var windowOrderRestoreTimeout: TimeInterval { 10 }
 
     let windowTransitionCoordinator: WindowTransitionCoordinator<WindowManager<Application>>
     let focusTransitionCoordinator: FocusTransitionCoordinator<WindowManager<Application>>
@@ -92,7 +97,20 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         self.windowTransitionCoordinator = WindowTransitionCoordinator<WindowManager<Application>>()
         self.focusTransitionCoordinator = FocusTransitionCoordinator<WindowManager<Application>>(userConfiguration: userConfiguration)
         super.init()
+
+        // Saved before the order was saved: windows are added as they arrive.
+        windows.restoreOrder(try values.decodeIfPresent([SavedWindowID].self, forKey: .windowOrder) ?? [])
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.windowOrderRestoreTimeout) { [weak self] in
+            self?.windows.stopRestoringOrder()
+        }
+
         initialize()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(screens, forKey: .screens)
+        try values.encode(windows.savedOrder, forKey: .windowOrder)
     }
 
     private func initialize() {
