@@ -242,6 +242,22 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             windowManager.windowTransitionCoordinator.swapFocusedWindowToMain()
         }
 
+        for (commandKey, direction) in [
+            (CommandKey.focusWest, Direction.west), (.focusEast, .east), (.focusNorth, .north), (.focusSouth, .south)
+        ] {
+            constructCommandWithCommandKey(commandKey.rawValue) {
+                windowManager.focusTransitionCoordinator.moveFocus(direction)
+            }
+        }
+
+        for (commandKey, direction) in [
+            (CommandKey.swapWest, Direction.west), (.swapEast, .east), (.swapNorth, .north), (.swapSouth, .south)
+        ] {
+            constructCommandWithCommandKey(commandKey.rawValue) {
+                windowManager.windowTransitionCoordinator.swapFocusedWindow(direction)
+            }
+        }
+
         constructCommandWithCommandKey(CommandKey.displayCurrentLayout.rawValue) {
             DispatchQueue.main.async {
                 windowManager.displayCurrentLayout()
@@ -548,6 +564,14 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Swap focused window counter clockwise", CommandKey.swapCCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window clockwise", CommandKey.swapCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window with main window", CommandKey.swapMain.rawValue])
+        hotKeyNameToDefaultsKey.append(["Move focus west", CommandKey.focusWest.rawValue])
+        hotKeyNameToDefaultsKey.append(["Move focus east", CommandKey.focusEast.rawValue])
+        hotKeyNameToDefaultsKey.append(["Move focus north", CommandKey.focusNorth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Move focus south", CommandKey.focusSouth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Swap focused window west", CommandKey.swapWest.rawValue])
+        hotKeyNameToDefaultsKey.append(["Swap focused window east", CommandKey.swapEast.rawValue])
+        hotKeyNameToDefaultsKey.append(["Swap focused window north", CommandKey.swapNorth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Swap focused window south", CommandKey.swapSouth.rawValue])
         hotKeyNameToDefaultsKey.append(["Force windows to be reevaluated", CommandKey.reevaluateWindows.rawValue])
 
         hotKeyNameToDefaultsKey.append(["Toggle float for focused window", CommandKey.toggleFloat.rawValue])

@@ -19,6 +19,14 @@ class HotKeyManagerTests: QuickSpec {
                 expect(keys.filter { $0.contains("-screen") || $0.hasPrefix("throw-space") }).to(beEmpty())
             }
 
+            it("lists the directional commands") {
+                let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
+                let directional = Direction.allCases.flatMap { ["focus-\($0.rawValue)", "swap-\($0.rawValue)"] }
+
+                expect(keys).to(contain(directional))
+                expect(directional.compactMap { CommandKey(rawValue: $0) }.count).to(equal(8))
+            }
+
             it("lists the custom layout commands only when there are custom layouts") {
                 let without = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: []).map { $0[1] }
                 let with = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey(customLayoutKeys: ["my-layout"]).map { $0[1] }

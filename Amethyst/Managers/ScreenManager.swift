@@ -42,6 +42,8 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     /// The last window that has been focused on the screen. This value is updated by the notification observations in
     /// `ObserveApplicationNotifications`.
     private(set) var lastFocusedWindow: Window?
+    /// The frames of the last layout pass, before window margins, for directional navigation.
+    private(set) var lastAssignedFrames: [Window.WindowID: CGRect] = [:]
     private let userConfiguration: UserConfiguration
 
     /// The tiles windows on this screen refuse (stay bigger than), so each is reported once per tile size.
@@ -279,8 +281,14 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         }
 
         guard let layout = currentLayout, let frameAssignments = layout.frameAssignments(windows, on: screen) else {
+            lastAssignedFrames = [:]
             return
         }
+
+        lastAssignedFrames = Dictionary(
+            frameAssignments.map { ($0.frameAssignment.window.id, $0.frameAssignment.frame) },
+            uniquingKeysWith: { _, last in last }
+        )
 
         // TODO: fix mff
 //        let mouseFollowsFocus = userConfiguration.mouseFollowsFocus()

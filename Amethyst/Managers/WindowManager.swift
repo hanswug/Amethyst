@@ -1014,6 +1014,7 @@ extension WindowManager: ApplicationObservationDelegate {
         if pendingTabDetection.removeValue(forKey: window.id()) != nil {
             completeTabDetection(for: window, on: screen)
         } else if windows.isWindowTracked(window) {
+            windows.recordFocus(of: window)
             distributeEventToScreen(screen, change: .focusChanged(window: window))
             markScreenForReflow(screen)
         } else {
@@ -1234,6 +1235,62 @@ extension WindowManager: WindowTransitionTarget {
             return nil
         }
         return lastMainWindow
+    }
+}
+
+// MARK: Directional Navigation
+extension WindowManager {
+    /// The tiled window in `direction` from `window` on its screen, or `nil` at the edge. A floating window starts from its live frame.
+    func directionalNeighbor(of window: Window, toward direction: Direction) -> Window? {
+        guard let screen = window.screen(), let screenManager = screenManager(for: screen) else {
+            return nil
+        }
+
+        let assignedFrames = screenManager.lastAssignedFrames
+        let candidates = activeWindows(on: screen).filter { $0.id() != window.id() }
+        let frames = Dictionary(
+            candidates.compactMap { candidate in assignedFrames[candidate.id()].map { (candidate.id(), $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let start = isWindowFloating(window) ? window.frame() : (assignedFrames[window.id()] ?? window.frame())
+        let mru = CGWindowsInfo.windowSpace(window).flatMap { windows.recentlyFocused[$0] } ?? []
+
+        guard let neighborID = DirectionalNavigation.neighbor(
+            of: start,
+            direction: direction,
+            frames: frames,
+            frontToBack: frontToBack(candidates),
+            mru: mru
+        ) else {
+            return nil
+        }
+
+        return candidates.first { $0.id() == neighborID }
+    }
+
+    /// The window's frame in the last layout pass, before margins.
+    func assignedFrame(of window: Window) -> CGRect? {
+        guard let screen = window.screen() else {
+            return nil
+        }
+
+        return screenManager(for: screen)?.lastAssignedFrames[window.id()]
+    }
+
+    func isFullscreenLayout(on screen: Screen) -> Bool {
+        return screenManager(for: screen)?.currentLayout is FullscreenLayout<Window>
+    }
+
+    /// The windows' IDs in on-screen order, frontmost first.
+    private func frontToBack(_ windows: [Window]) -> [Window.WindowID] {
+        guard let info = CGWindowsInfo<Window>(options: .optionOnScreenOnly, windowID: CGWindowID(0)) else {
+            return []
+        }
+
+        let idsByCGID = Dictionary(windows.map { ($0.cgID(), $0.id()) }, uniquingKeysWith: { first, _ in first })
+        return info.descriptions.compactMap { description in
+            (description[kCGWindowNumber as String] as? NSNumber).flatMap { idsByCGID[CGWindowID($0.uint32Value)] }
+        }
     }
 }
 
