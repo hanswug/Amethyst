@@ -144,6 +144,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 2.3.0 | Set window max count and main pane count |
 | 2.4.0 | Refused-tile HUD |
 | 3.0.0 | Renamed from hw-Amethyst to Ametrine, with a new icon: the app, bundle ID `com.ark.Ametrine`, config `~/.config/ametrine/ametrine.yml` (move the old `~/.config/hw-amethyst/amethyst.yml` there), `ametrine://` command URL, log `~/Library/Logs/Ametrine/`; `relaunch-amethyst` is now `relaunch-ametrine` |
+| 3.1.0 | Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` |
 
 ## Credits and licence
 
