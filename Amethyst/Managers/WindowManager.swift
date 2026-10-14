@@ -413,15 +413,18 @@ extension WindowManager {
     }
 
     func displayWindowCountHUD() {
+        let countText = userConfiguration.windowMaxCount().map(String.init) ?? "unlimited"
+        displayWindowLimitHUD(title: "Window max count · \(countText)")
+    }
+
+    /// Shows a window limit setting (the count, the overflow policy or size) on every screen, with `enables-window-count-hud`.
+    func displayWindowLimitHUD(title: String, description: String = "") {
         guard userConfiguration.enablesWindowCountHUD() else {
             return
         }
 
         for screenManager in screens.screenManagers {
-            let currentCount = userConfiguration.windowMaxCount() ?? 0
-            let countText = currentCount == 0 ? "unlimited" : "\(currentCount)"
-            let title = "Window max count · \(countText)"
-            screenManager.displayCustomHUD(title: title)
+            screenManager.displayCustomHUD(title: title, description: description)
         }
     }
 
@@ -1273,6 +1276,30 @@ extension WindowManager: ScreenManagerDelegate {
             : activeWindows(on: screen)
         windows[range(windows.count)].forEach {
             $0.minimize()
+        }
+    }
+
+    func floatOverflowWindows(forScreenManager screenManager: ScreenManager<WindowManager<Application>>, limit: Int) {
+        guard let screen = screenManager.screen else {
+            return
+        }
+
+        let overflow = windows.newestWindows(activeWindows(on: screen), over: limit)
+        guard !overflow.isEmpty else {
+            return
+        }
+
+        let area = screen.adjustedFrame()
+        let size = OverflowWindows.size(in: area, mode: userConfiguration.windowOverflowSize(), fixedSize: userConfiguration.windowOverflowFixedSize())
+
+        for (index, window) in overflow.enumerated() {
+            setFloating(true, forWindow: window, reason: .windowLimit)
+            distributeEventToScreen(screen, change: .remove(window: window))
+
+            // Size first and centre what the app accepted: apps with a minimum size stay bigger.
+            window.setFrame(CGRect(origin: window.frame().origin, size: size), withThreshold: CGSize(width: 1, height: 1))
+            let frame = OverflowWindows.frame(size: window.frame().size, centeredIn: area, cascade: index)
+            window.setFrame(frame, withThreshold: CGSize(width: 1, height: 1))
         }
     }
 

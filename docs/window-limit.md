@@ -12,6 +12,25 @@ enables-window-count-hud: true   # show the new count after changing it
 - **Adjusting it:** `increase-window-max-count` and `decrease-window-max-count` change the limit until the next Reload Config; then the file's value applies again.
 - **Seeing it:** the command palette shows the current count next to both commands. With `enables-window-count-hud: true`, a short on-screen message shows the new count.
 
+## Overflow: minimise or float
+
+`window-overflow` decides what happens to windows over the limit:
+
+```yaml
+window-overflow: float            # default minimize
+window-overflow-size: reasonable  # 60% × 70% of the screen; fixed = the size below
+window-overflow-width: 1600       # used by fixed (0 = not set)
+window-overflow-height: 1100
+```
+
+* **`minimize`** (default): the oldest window outside the main pane is minimised (see Behavior below).
+* **`float`**: the newest windows over the limit float, and the tiles stay as they are. "Newest" is the order windows were opened, not their place in the layout, so a window swapped to the end isn't mistaken for the new one.
+  * A floated window is centred in the screen's usable area (padding mode included) at 60% × 70%, or at the `fixed` size. Apps with a minimum size stay bigger and are centred anyway. Several at once cascade 30 pt down and right.
+  * Lowering the limit follows the same rule: the newest windows over it float.
+  * It stays floating when a tile frees up; `toggle-float` tiles it again.
+  * **Explain this window** says "over the window limit".
+* `toggle-window-overflow` and `toggle-window-overflow-size` switch both settings from the command palette until Reload Config.
+
 ## Behavior
 
 * Floating windows aren't counted or minimised.

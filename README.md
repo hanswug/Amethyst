@@ -40,7 +40,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
-  - [ ] `window-overflow: minimize | float`: what happens to a window over `window-max-count` (or, later, over a full side column). `float` floats the new window and leaves the tiles alone
+  - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns
   - [ ] Fix the `debug windows` crash
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`

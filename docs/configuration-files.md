@@ -24,7 +24,10 @@ The first file that exists is used:
 | `mod2` | Second modifier combination (default `option` + `shift` + `control`). Required. |
 | `mod3` | Third modifier combination (optional, none by default). |
 | `mod4` | Fourth modifier combination (optional, none by default). |
-| `window-max-count` | The max number of windows visible on a screen at once; more are minimised. `0` turns the limit off (default `0`). |
+| `window-max-count` | The max number of windows visible on a screen at once; more are minimised or float (`window-overflow`). `0` turns the limit off (default `0`). |
+| `window-overflow` | What happens to windows over `window-max-count`: `minimize` (the oldest window outside the main pane) or `float` (the newest windows float, centred, and the tiles stay as they are). Default `minimize`. See [window limit](window-limit.md). |
+| `window-overflow-size` | The size of a window floated over the limit: `reasonable` (60% × 70% of the screen's usable area) or `fixed` (`window-overflow-width` × `window-overflow-height`). Default `reasonable`. |
+| `window-overflow-width` / `window-overflow-height` | The `fixed` overflow window size in points; never bigger than the screen. `0` = not set, and `fixed` then falls back to `reasonable` (default `0`). |
 | `window-margins` | `true` to add margins between and around windows (default `false`). |
 | `smart-window-margins` | `true` to drop the margins when there is only one window on the screen, if margins are on (default `false`). |
 | `window-margin-size` | Size of the margins between and around windows (in px, default `0`). |
@@ -90,6 +93,8 @@ cycle-layout:
 | `set-main-pane-count` | Set the number of windows in the main pane (1–99), and show it. Palette and URL only. Only layouts with an adjustable main pane respond. |
 | `increase-window-max-count` | Raise `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |
 | `decrease-window-max-count` | Lower `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |
+| `toggle-window-overflow` | Switch `window-overflow` between `minimize` and `float` until Reload Config, and show it if `enables-window-count-hud` is on. Windows already minimised or floated stay so. |
+| `toggle-window-overflow-size` | Switch `window-overflow-size` between `reasonable` and `fixed` until Reload Config (stays `reasonable` without a configured size), and show it if `enables-window-count-hud` is on. |
 | `set-window-max-count` | Set `window-max-count` (0–99, `0` = unlimited) until Reload Config, and show it if `enables-window-count-hud` is on. Palette and URL only. |
 | `focus-ccw` | Focus the next window counter-clockwise. |
 | `focus-cw` | Focus the next window clockwise. |

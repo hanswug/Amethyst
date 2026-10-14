@@ -11,6 +11,18 @@ import Foundation
 import SwiftyJSON
 import Yams
 
+/// What happens to a window over `window-max-count`: the oldest window outside the main pane is minimised, or the newest windows float.
+enum WindowOverflow: String {
+    case minimize
+    case float
+}
+
+/// The size a window gets when it floats over the window limit: 60% × 70% of the screen, or `window-overflow-width` × `window-overflow-height`.
+enum WindowOverflowSize: String {
+    case reasonable
+    case fixed
+}
+
 enum DefaultFloat: Equatable {
     case floating
     case notFloating
@@ -74,6 +86,10 @@ enum ConfigurationKey: String {
     case windowMarginSize = "window-margin-size"
     case windowMinimumHeight = "window-minimum-height"
     case windowMinimumWidth = "window-minimum-width"
+    case windowOverflow = "window-overflow"
+    case windowOverflowSize = "window-overflow-size"
+    case windowOverflowWidth = "window-overflow-width"
+    case windowOverflowHeight = "window-overflow-height"
     case windowMaxCount = "window-max-count"
     case floatingBundleIdentifiers = "floating"
     case floatingBundleIdentifiersIsBlacklist = "floating-is-blacklist"
@@ -140,6 +156,8 @@ enum CommandKey: String {
     case explainWindow = "explain-window"
     case setWindowMaxCount = "set-window-max-count"
     case setMainPaneCount = "set-main-pane-count"
+    case toggleWindowOverflow = "toggle-window-overflow"
+    case toggleWindowOverflowSize = "toggle-window-overflow-size"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -348,6 +366,13 @@ class UserConfiguration: NSObject {
 
         for invalidMode in (storage.array(forKey: .paddingModes) ?? []) where PaddingMode.from(invalidMode) == nil {
             log.warning("Ignoring padding mode without a name: \(invalidMode)")
+        }
+
+        if let overflow = storage.object(forKey: .windowOverflow), WindowOverflow(rawValue: "\(overflow)") == nil {
+            log.warning("Unknown window-overflow \(overflow); using minimize")
+        }
+        if let size = storage.object(forKey: .windowOverflowSize), WindowOverflowSize(rawValue: "\(size)") == nil {
+            log.warning("Unknown window-overflow-size \(size); using reasonable")
         }
     }
 
@@ -762,6 +787,43 @@ class UserConfiguration: NSObject {
 
     func windowMinimumWidth() -> CGFloat {
         return CGFloat(storage.float(forKey: .windowMinimumWidth))
+    }
+
+    func windowOverflow() -> WindowOverflow {
+        return (storage.object(forKey: .windowOverflow) as? String).flatMap(WindowOverflow.init(rawValue:)) ?? .minimize
+    }
+
+    /// Switches between minimizing and floating windows over the limit until the configuration is loaded again, and returns the new policy.
+    @discardableResult func toggleWindowOverflow() -> WindowOverflow {
+        let overflow: WindowOverflow = windowOverflow() == .minimize ? .float : .minimize
+        storage.set(overflow.rawValue, forKey: .windowOverflow)
+        return overflow
+    }
+
+    func windowOverflowSize() -> WindowOverflowSize {
+        guard windowOverflowFixedSize() != nil else {
+            return .reasonable
+        }
+
+        return (storage.object(forKey: .windowOverflowSize) as? String).flatMap(WindowOverflowSize.init(rawValue:)) ?? .reasonable
+    }
+
+    /// `window-overflow-width` × `window-overflow-height`, if both are set.
+    func windowOverflowFixedSize() -> CGSize? {
+        let size = CGSize(width: CGFloat(storage.float(forKey: .windowOverflowWidth)), height: CGFloat(storage.float(forKey: .windowOverflowHeight)))
+        return size.width > 0 && size.height > 0 ? size : nil
+    }
+
+    /// Switches the overflow window size between 60% × 70% and the configured size until the configuration is loaded again, and returns the new mode.
+    /// Without a configured size it stays `reasonable`.
+    @discardableResult func toggleWindowOverflowSize() -> WindowOverflowSize {
+        guard windowOverflowFixedSize() != nil else {
+            return .reasonable
+        }
+
+        let size: WindowOverflowSize = windowOverflowSize() == .reasonable ? .fixed : .reasonable
+        storage.set(size.rawValue, forKey: .windowOverflowSize)
+        return size
     }
 
     func windowMaxCount() -> Int? {

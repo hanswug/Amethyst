@@ -301,6 +301,24 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
+        constructCommandWithCommandKey(CommandKey.toggleWindowOverflow.rawValue) {
+            let overflow = self.userConfiguration.toggleWindowOverflow()
+            windowManager.markAllScreensForReflow()
+            DispatchQueue.main.async {
+                windowManager.displayWindowLimitHUD(title: "Window overflow · \(overflow.rawValue)")
+            }
+        }
+
+        constructCommandWithCommandKey(CommandKey.toggleWindowOverflowSize.rawValue) {
+            let configuration = self.userConfiguration
+            let size = configuration.toggleWindowOverflowSize()
+            let note = configuration.windowOverflowFixedSize() == nil ? "no window-overflow-width/height set" : ""
+            DispatchQueue.main.async {
+                let sizeText = OverflowWindows.sizeDescription(mode: size, fixedSize: configuration.windowOverflowFixedSize())
+                windowManager.displayWindowLimitHUD(title: "Overflow window size · \(sizeText)", description: note)
+            }
+        }
+
         valueCommands[CommandKey.setWindowMaxCount.rawValue] = ValueCommand(
             name: "Set window max count",
             range: 0...99,
@@ -512,6 +530,8 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Decrease main pane count", CommandKey.decreaseMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Increase window max count", CommandKey.increaseWindowMaxCount.rawValue])
         hotKeyNameToDefaultsKey.append(["Decrease window max count", CommandKey.decreaseWindowMaxCount.rawValue])
+        hotKeyNameToDefaultsKey.append(["Toggle window overflow (minimize or float)", CommandKey.toggleWindowOverflow.rawValue])
+        hotKeyNameToDefaultsKey.append(["Toggle overflow window size", CommandKey.toggleWindowOverflowSize.rawValue])
         if !customLayoutKeys.isEmpty {
             hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
             hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])
