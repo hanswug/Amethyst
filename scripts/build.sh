@@ -31,7 +31,10 @@ if ! security find-identity -p codesigning | grep -q "\"${SIGNING_IDENTITY}\""; 
     exit 1
 fi
 
-echo "==> Building Release"
+# The build number is the commit count: it only grows and needs no bumping.
+BUILD_NUMBER="$(git rev-list --count HEAD)"
+
+echo "==> Building Release (build ${BUILD_NUMBER})"
 xcodebuild \
     -workspace Amethyst.xcworkspace \
     -scheme Amethyst \
@@ -39,6 +42,7 @@ xcodebuild \
     -derivedDataPath "$DERIVED_DATA" \
     -quiet \
     MACOSX_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
+    CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
     build
 
 echo "==> Verifying signature"

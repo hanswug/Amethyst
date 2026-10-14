@@ -46,7 +46,7 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/hw-Amethyst/hw-Amethyst.log`
   - [x] Set window max count and main pane count from the palette: pick the command, type a number (`0` = unlimited for the window count), Enter. Also `amethyst://command/set-window-max-count?value=<n>`
   - [x] A HUD when an app refuses its tile (its window stays bigger than the tile), once per window and tile size; `enables-refused-tile-hud`
-  - [ ] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (the app still reports upstream's 0.24.3)
+  - [x] Version numbers: semantic versioning for hw-Amethyst itself, matching the release names (see [Versions](#versions))
 
 ## Configuration
 
@@ -115,11 +115,30 @@ Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` o
 
 1. **One time per Mac:** in Keychain Access, create a self-signed certificate (Certificate Assistant → Create a Certificate…, type **Code Signing**) named `Amethyst Local Signing`, and set it to Always Trust for code signing. The Accessibility permission sticks to this identity across rebuilds.
 2. `scripts/build.sh` builds the Release app, installs `/Applications/hw-Amethyst.app` and launches it. Grant it Accessibility on first launch.
-3. `scripts/release.sh` runs the tests, builds and installs as above, and saves that build as a draft GitHub release (a signed zip, visible only to the repository owner).
+3. `scripts/release.sh major|minor|patch` bumps the version, runs the tests, builds and installs as above, commits and pushes the bump, and saves that build as a draft GitHub release `v<version>` (a signed zip, visible only to the repository owner). `current` releases the version as it stands; `--dry-run` shows what would happen.
 4. Before merging a change to window tracking, focus or floating, run the [manual tests](docs/manual-tests.md): the cases unit tests can't reach.
 5. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
 
 Don't use the fastlane lane: it signs for a Developer ID team this fork doesn't have. Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
+
+## Versions
+
+hw-Amethyst uses [semantic versioning](https://semver.org), with the config file as its interface: a change that needs edits to an existing config is a major version, a new feature a minor one, a fix a patch. Releases are named `v<version>`; the build number (in parentheses in the menu) is the commit count.
+
+Numbering started at 2.4.0 and was counted back to the fork's first build:
+
+| Version | What |
+| ------- | ---- |
+| 1.0.0 | hw-Amethyst: its own name, bundle ID and config file, self-signed, no auto-update |
+| 1.1.0 | Padding modes |
+| 1.2.0 | Float secondary windows |
+| 1.3.0 | Command URL |
+| 2.0.0 | Config only: no preferences window, no built-in keys, quits without a config file |
+| 2.1.0 | Command palette; screen and throw-to-space commands dropped |
+| 2.1.1 | BSP fixes; re-layout on every app switch |
+| 2.2.0 | Explain this window; `--log` writes a file |
+| 2.3.0 | Set window max count and main pane count |
+| 2.4.0 | Refused-tile HUD |
 
 ## Credits and licence
 
