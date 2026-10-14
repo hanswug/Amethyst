@@ -7,7 +7,8 @@ import Foundation
 
 /// `window-overflow: float`: which windows float when a screen has more tiled windows than `window-max-count`, and where they go.
 enum OverflowWindows {
-    /// The share of the screen's usable width and height a `reasonable` overflow window gets.
+    /// The default share of the screen's usable width and height a `reasonable` overflow window gets
+    /// (`window-overflow-reasonable-width` / `-height`).
     static let reasonableShare = CGSize(width: 0.6, height: 0.7)
 
     /// How far each further window floating in the same pass is moved down and right.
@@ -32,12 +33,12 @@ enum OverflowWindows {
     }
 
     /// The size to give an overflow window in a screen's usable area, never bigger than the area.
-    static func size(in area: CGRect, mode: WindowOverflowSize, fixedSize: CGSize?) -> CGSize {
+    static func size(in area: CGRect, mode: WindowOverflowSize, fixedSize: CGSize?, share: CGSize = reasonableShare) -> CGSize {
         switch (mode, fixedSize) {
         case let (.fixed, fixedSize?):
             return CGSize(width: min(fixedSize.width, area.width), height: min(fixedSize.height, area.height))
         default:
-            return CGSize(width: (area.width * reasonableShare.width).rounded(), height: (area.height * reasonableShare.height).rounded())
+            return CGSize(width: (area.width * share.width).rounded(), height: (area.height * share.height).rounded())
         }
     }
 
@@ -72,9 +73,9 @@ enum OverflowWindows {
     }
 
     /// The overflow window size in words, for the palette and the HUD.
-    static func sizeDescription(mode: WindowOverflowSize, fixedSize: CGSize?) -> String {
+    static func sizeDescription(mode: WindowOverflowSize, fixedSize: CGSize?, share: CGSize = reasonableShare) -> String {
         guard mode == .fixed, let fixedSize else {
-            return "\(Int(reasonableShare.width * 100))% × \(Int(reasonableShare.height * 100))%"
+            return "\(Int((share.width * 100).rounded()))% × \(Int((share.height * 100).rounded()))%"
         }
 
         return "\(Int(fixedSize.width)) × \(Int(fixedSize.height))"

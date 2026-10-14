@@ -88,6 +88,8 @@ enum ConfigurationKey: String {
     case windowMinimumWidth = "window-minimum-width"
     case windowOverflow = "window-overflow"
     case windowOverflowSize = "window-overflow-size"
+    case windowOverflowReasonableWidth = "window-overflow-reasonable-width"
+    case windowOverflowReasonableHeight = "window-overflow-reasonable-height"
     case windowOverflowWidth = "window-overflow-width"
     case windowOverflowHeight = "window-overflow-height"
     case windowMaxCount = "window-max-count"
@@ -373,6 +375,9 @@ class UserConfiguration: NSObject {
         }
         if let size = storage.object(forKey: .windowOverflowSize), WindowOverflowSize(rawValue: "\(size)") == nil {
             log.warning("Unknown window-overflow-size \(size); using reasonable")
+        }
+        for key in [ConfigurationKey.windowOverflowReasonableWidth, .windowOverflowReasonableHeight] where !(1...100).contains(storage.float(forKey: key)) {
+            log.warning("\(key.rawValue) must be a percentage from 1 to 100; using the default")
         }
     }
 
@@ -806,6 +811,20 @@ class UserConfiguration: NSObject {
         }
 
         return (storage.object(forKey: .windowOverflowSize) as? String).flatMap(WindowOverflowSize.init(rawValue:)) ?? .reasonable
+    }
+
+    /// The share of the screen a `reasonable` overflow window gets, from `window-overflow-reasonable-width` / `-height` (percent);
+    /// a value outside 1–100 falls back to 60% × 70%.
+    func windowOverflowReasonableShare() -> CGSize {
+        func share(_ key: ConfigurationKey, default defaultShare: CGFloat) -> CGFloat {
+            let percent = CGFloat(storage.float(forKey: key))
+            return (1...100).contains(percent) ? percent / 100 : defaultShare
+        }
+
+        return CGSize(
+            width: share(.windowOverflowReasonableWidth, default: OverflowWindows.reasonableShare.width),
+            height: share(.windowOverflowReasonableHeight, default: OverflowWindows.reasonableShare.height)
+        )
     }
 
     /// `window-overflow-width` × `window-overflow-height`, if both are set.

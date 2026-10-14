@@ -220,6 +220,8 @@
     "enables-refused-tile-hud": true,
     "window-overflow": "minimize",
     "window-overflow-size": "reasonable",
+    "window-overflow-reasonable-width": 60,
+    "window-overflow-reasonable-height": 70,
     "window-overflow-width": 0,
     "window-overflow-height": 0,
     "window-margin-size": 0,

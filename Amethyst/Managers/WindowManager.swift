@@ -1290,7 +1290,12 @@ extension WindowManager: ScreenManagerDelegate {
         }
 
         let area = screen.adjustedFrame()
-        let size = OverflowWindows.size(in: area, mode: userConfiguration.windowOverflowSize(), fixedSize: userConfiguration.windowOverflowFixedSize())
+        let size = OverflowWindows.size(
+            in: area,
+            mode: userConfiguration.windowOverflowSize(),
+            fixedSize: userConfiguration.windowOverflowFixedSize(),
+            share: userConfiguration.windowOverflowReasonableShare()
+        )
 
         // Windows floated over the limit earlier keep their cascade slots.
         var occupiedCenters = windows.windows(onScreen: screen)

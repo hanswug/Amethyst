@@ -19,6 +19,8 @@ enables-window-count-hud: true   # show the new count after changing it
 ```yaml
 window-overflow: float            # default minimize
 window-overflow-size: reasonable  # 60% × 70% of the screen; fixed = the size below
+window-overflow-reasonable-width: 60    # percent of the screen, for reasonable
+window-overflow-reasonable-height: 70
 window-overflow-width: 1600       # used by fixed (0 = not set)
 window-overflow-height: 1100
 ```

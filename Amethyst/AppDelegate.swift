@@ -140,7 +140,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             CommandKey.toggleWindowOverflow.rawValue: "now \(UserConfiguration.shared.windowOverflow().rawValue)",
             CommandKey.toggleWindowOverflowSize.rawValue: "now " + OverflowWindows.sizeDescription(
                 mode: UserConfiguration.shared.windowOverflowSize(),
-                fixedSize: UserConfiguration.shared.windowOverflowFixedSize()
+                fixedSize: UserConfiguration.shared.windowOverflowFixedSize(),
+                share: UserConfiguration.shared.windowOverflowReasonableShare()
             )
         ]
 

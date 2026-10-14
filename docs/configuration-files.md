@@ -27,6 +27,7 @@ The first file that exists is used:
 | `window-max-count` | The max number of windows visible on a screen at once; more are minimised or float (`window-overflow`). `0` turns the limit off (default `0`). |
 | `window-overflow` | What happens to windows over `window-max-count`: `minimize` (the oldest window outside the main pane) or `float` (the newest windows float, centred, and the tiles stay as they are). Default `minimize`. See [window limit](window-limit.md). |
 | `window-overflow-size` | The size of a window floated over the limit: `reasonable` (60% × 70% of the screen's usable area) or `fixed` (`window-overflow-width` × `window-overflow-height`). Default `reasonable`. |
+| `window-overflow-reasonable-width` / `window-overflow-reasonable-height` | The `reasonable` overflow window size, in percent of the screen's usable width and height (1–100; defaults `60` and `70`). |
 | `window-overflow-width` / `window-overflow-height` | The `fixed` overflow window size in points; never bigger than the screen. `0` = not set, and `fixed` then falls back to `reasonable` (default `0`). |
 | `window-margins` | `true` to add margins between and around windows (default `false`). |
 | `smart-window-margins` | `true` to drop the margins when there is only one window on the screen, if margins are on (default `false`). |

@@ -53,6 +53,12 @@ class OverflowWindowsTests: QuickSpec {
                 expect(OverflowWindows.size(in: area, mode: .fixed, fixedSize: nil)).to(equal(CGSize(width: 2304, height: 1134)))
             }
 
+            it("uses a configured share of the area") {
+                let half = CGSize(width: 0.5, height: 0.5)
+                expect(OverflowWindows.size(in: area, mode: .reasonable, fixedSize: nil, share: half)).to(equal(CGSize(width: 1920, height: 810)))
+                expect(OverflowWindows.sizeDescription(mode: .reasonable, fixedSize: nil, share: half)).to(equal("50% × 50%"))
+            }
+
             it("describes the size") {
                 expect(OverflowWindows.sizeDescription(mode: .reasonable, fixedSize: CGSize(width: 1600, height: 1100))).to(equal("60% × 70%"))
                 expect(OverflowWindows.sizeDescription(mode: .fixed, fixedSize: CGSize(width: 1600, height: 1100))).to(equal("1600 × 1100"))

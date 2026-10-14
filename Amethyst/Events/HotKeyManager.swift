@@ -314,7 +314,11 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             let size = configuration.toggleWindowOverflowSize()
             let note = configuration.windowOverflowFixedSize() == nil ? "no window-overflow-width/height set" : ""
             DispatchQueue.main.async {
-                let sizeText = OverflowWindows.sizeDescription(mode: size, fixedSize: configuration.windowOverflowFixedSize())
+                let sizeText = OverflowWindows.sizeDescription(
+                    mode: size,
+                    fixedSize: configuration.windowOverflowFixedSize(),
+                    share: configuration.windowOverflowReasonableShare()
+                )
                 windowManager.displayWindowLimitHUD(title: "Overflow window size · \(sizeText)", description: note)
             }
         }

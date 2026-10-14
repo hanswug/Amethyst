@@ -449,6 +449,21 @@ class UserConfigurationTests: QuickSpec {
                 expect(configuration.toggleWindowOverflowSize()).to(equal(.reasonable))
             }
 
+            it("reads the reasonable share as percentages, falling back to 60% × 70%") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.6, height: 0.7)))
+
+                storage.set(Float(50), forKey: .windowOverflowReasonableWidth)
+                storage.set(Float(80), forKey: .windowOverflowReasonableHeight)
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.5, height: 0.8)))
+
+                storage.set(Float(0), forKey: .windowOverflowReasonableWidth)
+                storage.set(Float(120), forKey: .windowOverflowReasonableHeight)
+                expect(configuration.windowOverflowReasonableShare()).to(equal(CGSize(width: 0.6, height: 0.7)))
+            }
+
             it("reads the size mode from the configuration") {
                 let storage = TestConfigurationStorage()
                 let configuration = UserConfiguration(storage: storage)
