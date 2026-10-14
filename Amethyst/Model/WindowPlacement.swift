@@ -110,7 +110,7 @@ enum WindowExplanation {
         case let .titleMatched(pattern, id)?:
             return "title rule \(pattern) (\(id))\(allowListNote)"
         case let .titleNotMatched(id)?:
-            return "no title rule of \(id) matches\(allowListNote)"
+            return "no title rule matches (\(id))\(allowListNote)"
         case .notListed?:
             return allowList ? "not in floating list (allow list)" : "no floating rule"
         case let .smallWindow(threshold)?:

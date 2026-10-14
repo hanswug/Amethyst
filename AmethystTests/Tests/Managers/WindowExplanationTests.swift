@@ -36,7 +36,7 @@ class WindowExplanationTests: QuickSpec {
                 expect(text(.init(state: .floating, reason: .notListed, floatingIsAllowList: true)))
                     .to(equal(["Floating", "not in floating list (allow list)"]))
                 expect(text(.init(state: .floating, reason: .titleNotMatched(id: "md.obsidian"), floatingIsAllowList: true)))
-                    .to(equal(["Floating", "no title rule of md.obsidian matches (allow list)"]))
+                    .to(equal(["Floating", "no title rule matches (md.obsidian) (allow list)"]))
             }
 
             it("names the other reasons") {
@@ -64,7 +64,7 @@ class WindowExplanationTests: QuickSpec {
                 expect(text(.init(state: .tiled, reason: .listed(id: "md.obsidian"), floatingIsAllowList: true, tiledCount: 1, windowMaxCount: 8)))
                     .to(equal(["Tiled", "in floating list (md.obsidian) (allow list) · 1 of 8 windows"]))
                 expect(text(.init(state: .tiled, reason: .titleNotMatched(id: "md.obsidian"), isSecondaryWindowAnchor: true, tiledCount: 3, windowMaxCount: 8)))
-                    .to(equal(["Tiled", "no title rule of md.obsidian matches · anchor of its app on this space · 3 of 8 windows"]))
+                    .to(equal(["Tiled", "no title rule matches (md.obsidian) · anchor of its app on this space · 3 of 8 windows"]))
             }
 
             it("says when nothing tiles") {
