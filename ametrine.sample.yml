@@ -404,8 +404,9 @@ enables-layout-hud: true
 # true to display the name of the layout when moving to a new space (default true).
 enables-layout-hud-on-space-change: true
 
-# Where a window arriving in the main pane goes (default last): first = a new window becomes the main window,
-# last = it goes last, outside main.
+# Where a window arriving in the main pane goes (default last).
+# first: on top of main (left when main's windows are side by side); with main full, its last window moves out.
+# last: at the end; it joins main only while main has room, so main stays as it is.
 main-arrival-position: last
 
 # The integer percentage of the screen dimension to increment and decrement main pane ratios by (default 5).

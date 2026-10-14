@@ -23,7 +23,8 @@ enum WindowOverflowSize: String {
     case fixed
 }
 
-/// Where a window arriving in the main pane goes: `first` makes a new window the main window, `last` puts it last, outside main.
+/// Where a window arriving in the main pane goes. `first`: on top of main (a full main pushes its last window out).
+/// `last`: at the end of the list, so it joins main only while main has room.
 enum MainArrivalPosition: String {
     case first
     case last
