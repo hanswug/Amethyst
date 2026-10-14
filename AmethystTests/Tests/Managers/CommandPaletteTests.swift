@@ -83,5 +83,33 @@ class CommandPaletteTests: QuickSpec {
                 expect(Set(keys).count).to(equal(keys.count))
             }
         }
+
+        describe("number mode") {
+            it("keeps only digits") {
+                expect(CommandPalette.digits("1a2 3")).to(equal("123"))
+                expect(CommandPalette.digits("-5")).to(equal("5"))
+                expect(CommandPalette.digits("")).to(equal(""))
+            }
+
+            it("accepts numbers within the range only") {
+                expect(CommandPalette.number("0", in: 0...99)).to(equal(0))
+                expect(CommandPalette.number("8", in: 0...99)).to(equal(8))
+                expect(CommandPalette.number("99", in: 0...99)).to(equal(99))
+                expect(CommandPalette.number("0", in: 1...99)).to(beNil())
+                expect(CommandPalette.number("100", in: 0...99)).to(beNil())
+                expect(CommandPalette.number("", in: 0...99)).to(beNil())
+                expect(CommandPalette.number("+5", in: 0...99)).to(beNil())
+                expect(CommandPalette.number("99999999999999999999999", in: 0...99)).to(beNil())
+            }
+
+            it("keeps the value when annotating") {
+                let value = CommandPaletteValue(prompt: "Window max count · now 8 · 0 = unlimited", range: 0...99)
+                let entry = CommandPaletteEntry(name: "Set window max count", commandKey: "set-window-max-count", shortcut: nil, value: value)
+                let annotated = CommandPalette.annotating([entry], notes: ["set-window-max-count": "now 8"])
+
+                expect(annotated.first?.name).to(equal("Set window max count (now 8)"))
+                expect(annotated.first?.value).to(equal(value))
+            }
+        }
     }
 }

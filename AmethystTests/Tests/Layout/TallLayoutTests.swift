@@ -245,5 +245,27 @@ class TallLayoutTests: QuickSpec {
                 expect(decodedLayout.mainPaneRatio).to(equal(0.45))
             }
         }
+
+        describe("setting the main pane count") {
+            it("steps up and down to the count, never below 1") {
+                let layout = TallLayout<TestWindow>()
+
+                layout.setMainPaneCount(3)
+                expect(layout.mainPaneCount).to(equal(3))
+
+                layout.setMainPaneCount(2)
+                expect(layout.mainPaneCount).to(equal(2))
+
+                layout.setMainPaneCount(0)
+                expect(layout.mainPaneCount).to(equal(1))
+            }
+
+            it("leaves a fixed count alone") {
+                let layout = TwoPaneLayout<TestWindow>()
+
+                layout.setMainPaneCount(3)
+                expect(layout.mainPaneCount).to(equal(1))
+            }
+        }
     }
 }

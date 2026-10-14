@@ -400,6 +400,19 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("window max count") {
+            it("sets the limit, with 0 as unlimited") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                configuration.setWindowMaxCount(6)
+                expect(configuration.windowMaxCount()).to(equal(6))
+
+                configuration.setWindowMaxCount(0)
+                expect(configuration.windowMaxCount()).to(beNil())
+            }
+        }
+
         describe("focus follows mouse") {
             it("toggles") {
                 let storage = TestConfigurationStorage()

@@ -137,6 +137,8 @@ enum CommandKey: String {
     case cyclePaddingModeBackward = "cycle-padding-mode-backward"
     case showCommandPalette = "show-command-palette"
     case explainWindow = "explain-window"
+    case setWindowMaxCount = "set-window-max-count"
+    case setMainPaneCount = "set-main-pane-count"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -777,6 +779,11 @@ class UserConfiguration: NSObject {
         let newCount = currentCount + 1
 
         setConfigurationValueWithKVO(Float(newCount), forKey: .windowMaxCount)
+    }
+
+    /// Sets the window limit until the configuration is loaded again; `0` means unlimited.
+    func setWindowMaxCount(_ count: Int) {
+        setConfigurationValueWithKVO(Float(max(0, count)), forKey: .windowMaxCount)
     }
 
     func decreaseWindowMaxCount() {

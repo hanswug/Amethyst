@@ -169,6 +169,22 @@ protocol PanedLayout {
 }
 
 extension PanedLayout {
+    /// Sets the number of windows in the main pane by stepping it up or down, so each layout keeps its own rules (a minimum of 1, a fixed count). Stops once the count stops changing.
+    func setMainPaneCount(_ count: Int) {
+        while mainPaneCount != count {
+            let previousCount = mainPaneCount
+            if mainPaneCount < count {
+                increaseMainPaneCount()
+            } else {
+                decreaseMainPaneCount()
+            }
+
+            guard mainPaneCount != previousCount else {
+                return
+            }
+        }
+    }
+
     /// The default debug layout description for paned layouts. It describes the ratio and number of main pane windows.
     var layoutDescription: String {
         return "(\(mainPaneRatio), \(mainPaneCount))"
