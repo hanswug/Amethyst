@@ -420,6 +420,58 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("focus border") {
+            it("is off by default, with a 5 pt accent glow and 12 pt corners") {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+                let appearance = configuration.focusBorderAppearance()
+
+                expect(configuration.focusBorder()).to(beFalse())
+                expect(appearance.style).to(equal(.glow))
+                expect(appearance.width).to(equal(5))
+                expect(appearance.radius).to(equal(12))
+                expect(appearance.color).to(equal(.accent))
+                expect(appearance.gradient).to(equal(FocusBorderAppearance.defaultGradient))
+            }
+
+            it("reads the configured values and falls back on unreadable ones") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                storage.set("solid", forKey: .focusBorderStyle)
+                storage.set(Float(3), forKey: .focusBorderWidth)
+                storage.set(Float(0), forKey: .focusBorderRadius)
+                storage.set("#FF453A", forKey: .focusBorderColor)
+                storage.set(["#000000", "#FFFFFF"], forKey: .focusBorderGradient)
+                var appearance = configuration.focusBorderAppearance()
+                expect(appearance.style).to(equal(.solid))
+                expect(appearance.width).to(equal(3))
+                expect(appearance.radius).to(equal(0))
+                expect(appearance.color).to(equal(FocusBorderColor("#FF453A")))
+                expect(appearance.gradient).to(equal([FocusBorderColor("#000000")!, FocusBorderColor("#FFFFFF")!]))
+
+                storage.set("neon", forKey: .focusBorderStyle)
+                storage.set("red", forKey: .focusBorderColor)
+                storage.set(["#000000"], forKey: .focusBorderGradient)
+                appearance = configuration.focusBorderAppearance()
+                expect(appearance.style).to(equal(.glow))
+                expect(appearance.color).to(equal(.accent))
+                expect(appearance.gradient).to(equal(FocusBorderAppearance.defaultGradient))
+            }
+
+            it("toggles on and off and cycles the style") {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+
+                expect(configuration.toggleFocusBorder()).to(beTrue())
+                expect(configuration.focusBorder()).to(beTrue())
+                expect(configuration.toggleFocusBorder()).to(beFalse())
+
+                expect(configuration.cycleFocusBorderStyle()).to(equal(.solid))
+                expect(configuration.cycleFocusBorderStyle()).to(equal(.gradient))
+                expect(configuration.cycleFocusBorderStyle()).to(equal(.glow))
+                expect(configuration.focusBorderStyle()).to(equal(.glow))
+            }
+        }
+
         describe("window overflow") {
             it("minimises unless the configuration says float") {
                 let storage = TestConfigurationStorage()

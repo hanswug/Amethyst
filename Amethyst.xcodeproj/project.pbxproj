@@ -46,6 +46,7 @@
 		401C35B522482EAF0019ED07 /* WindowTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B422482EAF0019ED07 /* WindowTransitionCoordinator.swift */; };
 		401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */; };
 		A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */; };
+		A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000049 /* FocusBorder.swift */; };
 		4029C4F11C112478001E4788 /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4029C4F01C112478001E4788 /* Layout.swift */; };
 		402DA3D72F53DCDB00B08CA2 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 402DA3D62F53DCDB00B08CA2 /* Silica */; };
 		402DA3DA2F53DCFE00B08CA2 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 402DA3D92F53DCFE00B08CA2 /* Silica */; };
@@ -122,6 +123,7 @@
 		40EC47F423F3A30100048B4F /* ScreenManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */; };
 		A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */; };
 		A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */; };
+		A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */; };
 		A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */; };
 		40EFFB4A2F0226EF00EDD929 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 40EFFB492F0226EF00EDD929 /* Silica */; };
 		4493EAA22139D9F000AA9623 /* ThreeColumnLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */; };
@@ -178,6 +180,7 @@
 		401C35B422482EAF0019ED07 /* WindowTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTransitionCoordinator.swift; sourceTree = "<group>"; };
 		401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigation.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000049 /* FocusBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorder.swift; sourceTree = "<group>"; };
 		4029C4F01C112478001E4788 /* Layout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
 		402DB6DE1742E41A00D1C936 /* Amethyst.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Amethyst.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		402DB6E11742E41A00D1C936 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -251,6 +254,7 @@
 		40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenManagerTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondaryWindowAnchorsTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigationTests.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorderTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteTests.swift; sourceTree = "<group>"; };
 		4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreeColumnLayout.swift; sourceTree = "<group>"; };
 		AA4AF40C26717DA900D2AE1B /* TwoPaneLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoPaneLayout.swift; sourceTree = "<group>"; };
@@ -508,6 +512,7 @@
 				40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */,
 				A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */,
 				A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */,
+				A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */,
 				A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */,
 				A3E1C0DE5EC0000000000023 /* WindowExplanationTests.swift */,
 				A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */,
@@ -574,6 +579,7 @@
 			children = (
 				40B3927B1814967F009A296B /* LayoutNameWindow.xib */,
 				401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */,
+				A3E1C0DE5EC0000000000049 /* FocusBorder.swift */,
 				A3E1C0DE5EC0000000000011 /* CommandPalette.swift */,
 				4058C46E1C4B119500B19D26 /* LayoutNameWindowController.swift */,
 			);
@@ -813,6 +819,7 @@
 				401C35B12244626E0019ED07 /* ApplicationObservation.swift in Sources */,
 				401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */,
 				A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */,
+				A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */,
 				40CF37C429BAC18300CDB07A /* ScreensInfo.swift in Sources */,
 				4062AD371C1FA83300DB612B /* RowLayout.swift in Sources */,
 				4006CF8E1CDFFE90004CA512 /* AppDelegate.swift in Sources */,
@@ -857,6 +864,7 @@
 				40EC47F423F3A30100048B4F /* ScreenManagerTests.swift in Sources */,
 				A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */,
 				A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */,
+				A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */,
 				A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */,
 				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */,

@@ -325,6 +325,22 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
+        constructCommandWithCommandKey(CommandKey.toggleFocusBorder.rawValue) {
+            let enabled = self.userConfiguration.toggleFocusBorder()
+            DispatchQueue.main.async {
+                windowManager.updateFocusBorder()
+                windowManager.displayFocusBorderHUD(title: "Focus border · \(enabled ? "on" : "off")")
+            }
+        }
+
+        constructCommandWithCommandKey(CommandKey.cycleFocusBorderStyle.rawValue) {
+            let style = self.userConfiguration.cycleFocusBorderStyle()
+            DispatchQueue.main.async {
+                windowManager.updateFocusBorder()
+                windowManager.displayFocusBorderHUD(title: "Focus border · \(style.rawValue)")
+            }
+        }
+
         constructCommandWithCommandKey(CommandKey.toggleWindowOverflowSize.rawValue) {
             let configuration = self.userConfiguration
             let size = configuration.toggleWindowOverflowSize()
@@ -552,6 +568,8 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Decrease window max count", CommandKey.decreaseWindowMaxCount.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle window overflow (minimize or float)", CommandKey.toggleWindowOverflow.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle overflow window size", CommandKey.toggleWindowOverflowSize.rawValue])
+        hotKeyNameToDefaultsKey.append(["Toggle focus border", CommandKey.toggleFocusBorder.rawValue])
+        hotKeyNameToDefaultsKey.append(["Cycle focus border style (glow, solid, gradient)", CommandKey.cycleFocusBorderStyle.rawValue])
         if !customLayoutKeys.isEmpty {
             hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
             hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])
