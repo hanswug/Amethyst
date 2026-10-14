@@ -93,8 +93,8 @@ cycle-layout:
 | `cycle-layout` | Move to the next layout in the list. |
 | `cycle-layout-backward` | Move to the previous layout in the list. |
 | `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
-| `shrink-main` | Shrink the main pane by `window-resize-step`. Not every layout responds. |
-| `expand-main` | Expand the main pane by `window-resize-step`. Not every layout responds. |
+| `shrink-main` | Shrink the main pane by `window-resize-step`, down to 5% of the screen (so neither pane disappears). Not every layout responds. |
+| `expand-main` | Expand the main pane by `window-resize-step`, up to 95% of the screen. Not every layout responds. |
 | `increase-main` | Add a window to the main pane, and show the new count. Only layouts with a main pane respond. |
 | `decrease-main` | Remove a window from the main pane, and show the new count. Only layouts with a main pane respond. |
 | `set-main-pane-count` | Set the number of windows in the main pane (1–99), and show it. Palette and URL only. Only layouts with an adjustable main pane respond. |
