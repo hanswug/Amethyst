@@ -158,6 +158,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 3.0.0 | Renamed from hw-Amethyst to Ametrine, with a new icon: the app, bundle ID `com.ark.Ametrine`, config `~/.config/ametrine/ametrine.yml` (move the old `~/.config/hw-amethyst/amethyst.yml` there), `ametrine://` command URL, log `~/Library/Logs/Ametrine/`; `relaunch-amethyst` is now `relaunch-ametrine` |
 | 3.1.0 | Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` |
 | 3.2.0 | Focus border: `focus-border` with `glow`, `solid` or `gradient` styles; `toggle-focus-border`, `cycle-focus-border-style` |
+| 3.2.1 | A relaunch (Reload Config, an update) keeps each Space's layout and the window order, so the main pane keeps its window |
 
 ## Credits and licence
 
