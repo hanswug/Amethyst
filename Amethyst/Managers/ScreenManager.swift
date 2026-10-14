@@ -207,14 +207,15 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
         self.space = space
 
-        setCurrentLayoutIndex(currentLayoutIndexBySpaceUUID[space.uuid] ?? 0, changingSpace: true)
-
         if let layouts = layoutsBySpaceUUID[space.uuid] {
             self.layouts = layouts
         } else {
             self.layouts = LayoutType.layoutsWithConfiguration(userConfiguration)
             layoutsBySpaceUUID[space.uuid] = layouts
         }
+
+        // After the layouts: right after launch there are none yet, and the index would be rejected as out of range.
+        setCurrentLayoutIndex(currentLayoutIndexBySpaceUUID[space.uuid] ?? 0, changingSpace: true)
     }
 
     func distributeEvent(_ change: Change<Window>) {
