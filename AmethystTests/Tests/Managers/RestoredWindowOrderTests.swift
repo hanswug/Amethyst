@@ -7,6 +7,7 @@
 import Foundation
 import Nimble
 import Quick
+import Silica
 
 class RestoredWindowOrderTests: QuickSpec {
     override func spec() {
@@ -53,6 +54,34 @@ class RestoredWindowOrderTests: QuickSpec {
             let data = try! JSONEncoder().encode(saved)
             expect(try! JSONDecoder().decode([SavedWindowID].self, from: data)).to(equal(saved))
             expect(String(data: data, encoding: .utf8)).to(contain("\"windowID\":8670"))
+        }
+    }
+}
+
+class PendingLastMainWindowsTests: QuickSpec {
+    override func spec() {
+        it("hands a saved window's Spaces back once") {
+            var pending = PendingLastMainWindows<String>([1: "safari", 2: "kaku", 3: "safari"])
+
+            expect(pending.takeSpaces(for: "safari").sorted()).to(equal([1, 3]))
+            expect(pending.takeSpaces(for: "safari")).to(beEmpty())
+            expect(pending.isEmpty).to(beFalse())
+            expect(pending.takeSpaces(for: "kaku")).to(equal([2]))
+            expect(pending.isEmpty).to(beTrue())
+        }
+
+        it("ignores windows that weren't saved") {
+            var pending = PendingLastMainWindows<String>([1: "safari"])
+            expect(pending.takeSpaces(for: "claude")).to(beEmpty())
+            expect(pending.isEmpty).to(beFalse())
+        }
+
+        it("saves Spaces as string keys and reads them back") {
+            let saved = ["7": SavedWindowID(pid: 55183, windowID: 7569)]
+            let data = try! JSONEncoder().encode(saved)
+            let decoded = try! JSONDecoder().decode([String: SavedWindowID].self, from: data)
+            expect(decoded).to(equal(saved))
+            expect(decoded.keys.compactMap { CGSSpaceID($0) }).to(equal([7]))
         }
     }
 }

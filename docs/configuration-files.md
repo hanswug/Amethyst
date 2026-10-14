@@ -63,7 +63,7 @@ The first file that exists is used:
 | `screen-padding-top` | Same for the top edge (in px, default `0`). |
 | `screen-padding-bottom` | Same for the bottom edge (in px, default `0`). |
 | `disable-padding-on-builtin-display` | `true` to apply no screen padding on a built-in display (default `false`). |
-| `restore-layouts-on-launch` | `true` to keep layouts across restarts and Reload Config (default `true`): each Space comes back on the layout it was on, with its main pane size, main pane count and column sizes, and the windows keep their places (main pane included). Windows opened while Ametrine wasn't running go after them. A layout no longer in `layouts` falls back to the first one. |
+| `restore-layouts-on-launch` | `true` to keep layouts across restarts and Reload Config (default `true`): each Space comes back on the layout it was on, with its main pane size, main pane count and column sizes, and the windows keep their places (main pane included); `swap-main` from the main window still swaps back with the window that was there before. Windows opened while Ametrine wasn't running go after them. A layout no longer in `layouts` falls back to the first one. |
 | `debug-layout-info` | `true` to add debug information to the layout HUD (default `false`). |
 | `hide-menu-bar-icon` | `true` to hide the menu bar icon, and with it the current layout's name shown next to it (default `false`). |
 
