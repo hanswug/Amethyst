@@ -159,6 +159,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 3.1.0 | Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` |
 | 3.2.0 | Focus border: `focus-border` with `glow`, `solid` or `gradient` styles; `toggle-focus-border`, `cycle-focus-border-style` |
 | 3.2.1 | A relaunch (Reload Config, an update) keeps each Space's layout and the window order, so the main pane keeps its window |
+| 3.2.2 | `swap-main` from the main window swaps back after a relaunch; the focus border stays on top after a click inside its window |
 
 ## Credits and licence
 
