@@ -109,6 +109,11 @@ private final class FocusBorderPanel: NSPanel {
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    /// AppKit pushes windows out from under the menu bar; the border must sit exactly around its window.
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        return frameRect
+    }
 }
 
 /// The overlay that draws the focus border. Main thread only.
