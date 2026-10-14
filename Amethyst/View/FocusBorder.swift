@@ -90,7 +90,7 @@ struct FocusBorderAppearance: Equatable {
     }
 }
 
-private final class FocusBorderPanel: NSPanel {
+final class FocusBorderPanel: NSPanel {
     init() {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         isOpaque = false

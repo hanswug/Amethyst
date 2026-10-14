@@ -4,9 +4,10 @@
 //
 
 @testable import Amethyst
-import CoreGraphics
+import AppKit
 import Nimble
 import Quick
+import XCTest
 
 class FocusBorderTests: QuickSpec {
     override func spec() {
@@ -65,5 +66,13 @@ class FocusBorderTests: QuickSpec {
                     .to(equal(CGRect(x: 88.5, y: 1498.5, width: 823, height: 623)))
             }
         }
+    }
+}
+
+/// AppKit windows can only be made on the main thread, where XCTest runs `@MainActor` methods (Quick's specs run elsewhere).
+class FocusBorderPanelTests: XCTestCase {
+    @MainActor func testItIsNotPushedOutFromUnderTheMenuBar() {
+        let frame = NSRect(x: 50, y: 2000, width: 400, height: 300)
+        XCTAssertEqual(FocusBorderPanel().constrainFrameRect(frame, to: NSScreen.screens.first), frame)
     }
 }
