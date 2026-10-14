@@ -32,6 +32,9 @@ protocol WindowTransitionTarget: AnyObject {
     func nextScreenIndexClockwise(from screen: Screen) -> Int
     func nextScreenIndexCounterClockwise(from screen: Screen) -> Int
     func lastMainWindowForCurrentSpace() -> Window?
+    func directionalNeighbor(of window: Window, toward direction: Direction) -> Window?
+    func assignedFrame(of window: Window) -> CGRect?
+    func isFullscreenLayout(on screen: Screen) -> Bool
 }
 
 class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
@@ -105,6 +108,25 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
         let windowToSwapWith = windows[(focusedWindowIndex + 1) % windows.count]
 
         target?.executeTransition(.switchWindows(focusedWindow, windowToSwapWith))
+    }
+
+    /// Swaps the focused window with the window in that direction; does nothing in Fullscreen or from a floating window.
+    func swapFocusedWindow(_ direction: Direction) {
+        guard let focusedWindow = Window.currentlyFocused(), target?.isWindowFloating(focusedWindow) == false, let screen = focusedWindow.screen() else {
+            return
+        }
+
+        guard target?.isFullscreenLayout(on: screen) == false, let otherWindow = target?.directionalNeighbor(of: focusedWindow, toward: direction) else {
+            return
+        }
+
+        let destination = target?.assignedFrame(of: otherWindow)
+        target?.executeTransition(.switchWindows(focusedWindow, otherWindow))
+
+        // The focused window takes the other window's tile; the cursor goes with it.
+        if let destination, UserConfiguration.shared.mouseFollowsFocus() {
+            Cursor.move(to: CGPoint(x: destination.midX, y: destination.midY))
+        }
     }
 
     func throwToScreenAtIndex(_ screenIndex: Int) {

@@ -30,6 +30,8 @@ protocol FocusTransitionTarget: AnyObject {
     func nextWindowIDCounterClockwise(on screen: Screen) -> Window.WindowID?
     func nextScreenIndexClockwise(from screen: Screen) -> Int
     func nextScreenIndexCounterClockwise(from screen: Screen) -> Int
+    func directionalNeighbor(of window: Window, toward direction: Direction) -> Window?
+    func isFullscreenLayout(on screen: Screen) -> Bool
 }
 
 class FocusTransitionCoordinator<Target: FocusTransitionTarget> {
@@ -101,6 +103,27 @@ class FocusTransitionCoordinator<Target: FocusTransitionTarget> {
         }()
 
         windowToFocus.focus()
+    }
+
+    /// Focuses the window in that direction. In Fullscreen, west and east cycle through the stack instead.
+    func moveFocus(_ direction: Direction) {
+        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+            return
+        }
+
+        if target?.isFullscreenLayout(on: screen) == true {
+            switch direction {
+            case .west:
+                moveFocusCounterClockwise()
+            case .east:
+                moveFocusClockwise()
+            case .north, .south:
+                break
+            }
+            return
+        }
+
+        target?.directionalNeighbor(of: focusedWindow, toward: direction)?.focus()
     }
 
     func moveFocusToMain() {

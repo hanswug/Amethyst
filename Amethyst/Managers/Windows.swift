@@ -55,6 +55,8 @@ extension WindowManager {
     class Windows {
         private(set) var windows: [Window] = []
         private(set) var lastMainWindows: [CGSSpaceID: Window?] = [:]
+        /// Recently focused windows per space, most recent first: the tie-break for directional navigation.
+        private(set) var recentlyFocused: [CGSSpaceID: [Window.WindowID]] = [:]
         private var activeIDCache: Set<CGWindowID> = Set()
         private var deactivatedPIDs: Set<pid_t> = Set()
         private var floatingMap: [Window.WindowID: Bool] = [:]
@@ -164,6 +166,9 @@ extension WindowManager {
 
             placementReasons.removeValue(forKey: window.id())
             additionOrder.removeValue(forKey: window.id())
+            for space in recentlyFocused.keys {
+                recentlyFocused[space]?.removeAll { $0 == window.id() }
+            }
 
             guard let windowIndex = windows.firstIndex(where: { $0.id() == window.id() }) else {
                 return
@@ -228,6 +233,21 @@ extension WindowManager {
             windows[otherWindowIndex] = window
 
             return true
+        }
+
+        // MARK: Focus History
+
+        private let recentlyFocusedLimit = 16
+
+        func recordFocus(of window: Window) {
+            guard let space = CGWindowsInfo.windowSpace(window) else {
+                return
+            }
+
+            var history = recentlyFocused[space] ?? []
+            history.removeAll { $0 == window.id() }
+            history.insert(window.id(), at: 0)
+            recentlyFocused[space] = Array(history.prefix(recentlyFocusedLimit))
         }
 
         // MARK: Window States

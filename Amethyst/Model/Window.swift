@@ -354,12 +354,7 @@ extension AXWindow: WindowType {
         }
 
         let windowFrame = frame()
-        let mouseCursorPoint = NSPoint(x: windowFrame.midX, y: windowFrame.midY)
-        guard let mouseMoveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: mouseCursorPoint, mouseButton: .left) else {
-            return true
-        }
-        mouseMoveEvent.flags = CGEventFlags(rawValue: 0)
-        mouseMoveEvent.post(tap: CGEventTapLocation.cghidEventTap)
+        Cursor.move(to: CGPoint(x: windowFrame.midX, y: windowFrame.midY))
 
         return true
     }
@@ -400,5 +395,16 @@ extension AXWindow: WindowType {
 extension AXWindow {
     override var description: String {
         return "\(super.description) (\(cgID()))"
+    }
+}
+
+enum Cursor {
+    /// Moves the mouse cursor to a point in screen coordinates (origin at the top left).
+    static func move(to point: CGPoint) {
+        guard let mouseMoveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left) else {
+            return
+        }
+        mouseMoveEvent.flags = CGEventFlags(rawValue: 0)
+        mouseMoveEvent.post(tap: CGEventTapLocation.cghidEventTap)
     }
 }
