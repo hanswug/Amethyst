@@ -32,6 +32,8 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
     enum CodingKeys: String, CodingKey {
         case layoutsBySpaceUUID
+        /// Which layout each Space was on, by layout key, so a relaunch comes back on it.
+        case currentLayoutKeyBySpaceUUID
     }
 
     weak var delegate: Delegate?
@@ -106,6 +108,10 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return try ScreenManager<Delegate>.decodedLayouts(from: keyedLayouts, userConfiguration: UserConfiguration.shared)
         }
 
+        // Saved before this key existed: every Space starts on the first layout.
+        let currentLayoutKeys = try values.decodeIfPresent([String: String].self, forKey: .currentLayoutKeyBySpaceUUID) ?? [:]
+        self.currentLayoutIndexBySpaceUUID = ScreenManager.layoutIndices(byKey: currentLayoutKeys, layoutsBySpaceUUID: self.layoutsBySpaceUUID)
+
         layoutNameWindowController = LayoutNameWindowController(windowNibName: "LayoutNameWindow")
     }
 
@@ -156,6 +162,38 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             }
         }
         try values.encode(layoutsBySpaceUUID, forKey: .layoutsBySpaceUUID)
+
+        // The current Space's index is only copied into the dictionary when switching away from it.
+        var currentLayoutIndices = currentLayoutIndexBySpaceUUID
+        if let space {
+            currentLayoutIndices[space.uuid] = currentLayoutIndex
+        }
+        let currentLayoutKeys = ScreenManager.layoutKeys(byIndex: currentLayoutIndices, layoutsBySpaceUUID: self.layoutsBySpaceUUID)
+        try values.encode(currentLayoutKeys, forKey: .currentLayoutKeyBySpaceUUID)
+    }
+
+    /// The key of each Space's selected layout, for saving. Keys rather than indices, so reordering `layouts:` keeps the selection.
+    static func layoutKeys(byIndex indices: [String: Int], layoutsBySpaceUUID: [String: [Layout<Window>]]) -> [String: String] {
+        var keys: [String: String] = [:]
+        for (spaceUUID, index) in indices {
+            guard let layouts = layoutsBySpaceUUID[spaceUUID], layouts.indices.contains(index) else {
+                continue
+            }
+            keys[spaceUUID] = layouts[index].layoutKey
+        }
+        return keys
+    }
+
+    /// Each Space's selected layout as an index again; a layout no longer in `layouts:` is dropped, so that Space starts on the first.
+    static func layoutIndices(byKey keys: [String: String], layoutsBySpaceUUID: [String: [Layout<Window>]]) -> [String: Int] {
+        var indices: [String: Int] = [:]
+        for (spaceUUID, key) in keys {
+            guard let index = layoutsBySpaceUUID[spaceUUID]?.firstIndex(where: { $0.layoutKey == key }) else {
+                continue
+            }
+            indices[spaceUUID] = index
+        }
+        return indices
     }
 
     func updateScreen(to screen: Screen) {

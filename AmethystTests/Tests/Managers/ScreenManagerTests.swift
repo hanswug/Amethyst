@@ -34,6 +34,38 @@ private final class TestDelegate: ScreenManagerDelegate {
 class ScreenManagerTests: QuickSpec {
     override func spec() {
         describe("coding") {
+            describe("the selected layout per Space") {
+                let layoutsBySpaceUUID: [String: [Layout<TestWindow>]] = [
+                    "space-a": [FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>(), TallLayout<TestWindow>()],
+                    "space-b": [FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>(), TallLayout<TestWindow>()]
+                ]
+
+                it("is saved by layout key and restored as the same index") {
+                    let keys = ScreenManager<TestDelegate>.layoutKeys(byIndex: ["space-a": 1, "space-b": 2], layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(keys).to(equal(["space-a": ThreeColumnMiddleLayout<TestWindow>.layoutKey, "space-b": TallLayout<TestWindow>.layoutKey]))
+
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(byKey: keys, layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(indices).to(equal(["space-a": 1, "space-b": 2]))
+                }
+
+                it("follows the layout when layouts: is reordered") {
+                    let reordered: [String: [Layout<TestWindow>]] = ["space-a": [TallLayout<TestWindow>(), FullscreenLayout<TestWindow>(), ThreeColumnMiddleLayout<TestWindow>()]]
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(byKey: ["space-a": ThreeColumnMiddleLayout<TestWindow>.layoutKey], layoutsBySpaceUUID: reordered)
+                    expect(indices).to(equal(["space-a": 2]))
+                }
+
+                it("drops a layout no longer listed, and unknown Spaces or indices") {
+                    let indices = ScreenManager<TestDelegate>.layoutIndices(
+                        byKey: ["space-a": "bsp", "space-c": TallLayout<TestWindow>.layoutKey],
+                        layoutsBySpaceUUID: layoutsBySpaceUUID
+                    )
+                    expect(indices).to(beEmpty())
+
+                    let keys = ScreenManager<TestDelegate>.layoutKeys(byIndex: ["space-a": 7, "space-c": 0], layoutsBySpaceUUID: layoutsBySpaceUUID)
+                    expect(keys).to(beEmpty())
+                }
+            }
+
             it("decodes layouts") {
                 let configuration = UserConfiguration(storage: TestConfigurationStorage())
                 configuration.setLayoutKeys(LayoutType<TestWindow>.standardLayoutClasses().map { $0.layoutKey })
