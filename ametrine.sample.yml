@@ -233,6 +233,11 @@ cycle-focus-border-style:
   mod: <NONE>
   key: <NONE>
 
+# Switch main-arrival-position between first and last until Reload Config.
+toggle-main-arrival-position:
+  mod: <NONE>
+  key: <NONE>
+
 # Display the layout HUD with the current layout on each screen.
 display-current-layout:
   mod: mod1
@@ -399,8 +404,9 @@ enables-layout-hud: true
 # true to display the name of the layout when moving to a new space (default true).
 enables-layout-hud-on-space-change: true
 
-# true to insert new windows into the first position and false to insert new windows into the last position (default false).
-new-windows-to-main: false
+# Where a window arriving in the main pane goes (default last): first = a new window becomes the main window,
+# last = it goes last, outside main.
+main-arrival-position: last
 
 # The integer percentage of the screen dimension to increment and decrement main pane ratios by (default 5).
 window-resize-step: 5

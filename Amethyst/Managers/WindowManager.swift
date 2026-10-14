@@ -453,8 +453,8 @@ extension WindowManager {
         displayWindowLimitHUD(title: "Window max count · \(countText)")
     }
 
-    /// Shows a focus border setting on every screen, with `enables-layout-hud`.
-    func displayFocusBorderHUD(title: String) {
+    /// Shows a setting toggled from the palette (focus border, main arrival position) on every screen, with `enables-layout-hud`.
+    func displaySettingHUD(title: String) {
         guard userConfiguration.enablesLayoutHUD() else {
             return
         }
@@ -795,7 +795,7 @@ extension WindowManager {
             _ = windows.replace(window: window, withWindow: otherWindow)
             distributeEventToScreen(screen, change: .tabChange(window: window, previousWindow: otherWindow))
         } else {
-            windows.add(window: window, atFront: userConfiguration.sendNewWindowsToMainPane())
+            windows.add(window: window, atFront: userConfiguration.mainArrivalPosition() == .first)
 
             // Only send .add to layouts if the window is on the currently active space.
             // Windows tracked during a space change for a different space should not

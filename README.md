@@ -48,7 +48,7 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns
   - [ ] A way to see which tile is Main: a second border colour or a small badge
-  - [ ] Maybe: `toggle-new-windows-to-main` in the palette (as upstream added in 5cfe2fe), switching `new-windows-to-main` until Reload Config, with its HUD following `enables-layout-hud`
+  - [x] `main-arrival-position: first | last` (was `new-windows-to-main: true | false`): whether a new window becomes the main window; `toggle-main-arrival-position` switches it from the palette
   - [x] Fix the `debug windows` crash (Finder lists the desktop as a window)
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/Ametrine/Ametrine.log`
   - [x] Set window max count and main pane count from the palette: pick the command, type a number (`0` = unlimited for the window count), Enter. Also `ametrine://command/set-window-max-count?value=<n>`
@@ -161,6 +161,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 3.2.1 | A relaunch (Reload Config, an update) keeps each Space's layout and the window order, so the main pane keeps its window |
 | 3.2.2 | `swap-main` from the main window swaps back after a relaunch; the focus border stays on top after a click inside its window |
 | 3.2.3 | Fewer accessibility calls: windows already in place aren't set again, and an app switch lays out once; the main pane stays within 5–95% of the screen |
+| 4.0.0 | `new-windows-to-main: true \| false` is now `main-arrival-position: first \| last` (rename it in your config); `toggle-main-arrival-position` |
 
 ## Credits and licence
 

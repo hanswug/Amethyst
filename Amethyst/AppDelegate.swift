@@ -138,6 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             CommandKey.decreaseWindowMaxCount.rawValue: windowMaxCount,
             CommandKey.setWindowMaxCount.rawValue: windowMaxCount,
             CommandKey.toggleWindowOverflow.rawValue: "now \(UserConfiguration.shared.windowOverflow().rawValue)",
+            CommandKey.toggleMainArrivalPosition.rawValue: "now \(UserConfiguration.shared.mainArrivalPosition().rawValue)",
             CommandKey.toggleWindowOverflowSize.rawValue: "now " + OverflowWindows.sizeDescription(
                 mode: UserConfiguration.shared.windowOverflowSize(),
                 fixedSize: UserConfiguration.shared.windowOverflowFixedSize(),
