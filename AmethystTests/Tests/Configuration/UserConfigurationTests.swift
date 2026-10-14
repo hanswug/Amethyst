@@ -400,6 +400,13 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("configuration file name") {
+            it("names the file in the XDG directory after the configuration") {
+                expect(UserConfiguration.xdgConfigurationFile(inDirectory: "/x/ametrine", name: "ametrine")).to(equal("/x/ametrine/ametrine.yml"))
+                expect(UserConfiguration.xdgConfigurationFile(inDirectory: "/x/amethyst", name: "amethyst")).to(equal("/x/amethyst/amethyst.yml"))
+            }
+        }
+
         describe("window max count") {
             it("sets the limit, with 0 as unlimited") {
                 let storage = TestConfigurationStorage()

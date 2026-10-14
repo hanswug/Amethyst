@@ -420,20 +420,25 @@ class UserConfiguration: NSObject {
         return (Bundle.main.infoDictionary?["AMConfigName"] as? String) ?? "amethyst"
     }
 
-    /// `$XDG_CONFIG_HOME/<name>` (a file, or a directory holding `amethyst.yml`).
+    /// `$XDG_CONFIG_HOME/<name>` (a file, or a directory holding `<name>.yml`).
     static var xdgConfigurationDirectory: String {
         let xdgConfigPath = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? NSHomeDirectory().appending("/.config")
         return xdgConfigPath.appending("/\(configurationName)")
     }
 
-    /// The configuration file to edit: the loaded one, or a new `$XDG_CONFIG_HOME/<name>/amethyst.yml` created on demand.
+    /// The file inside an XDG configuration directory: `<directory>/<name>.yml`, e.g. `ametrine/ametrine.yml`.
+    static func xdgConfigurationFile(inDirectory directory: String, name: String = configurationName) -> String {
+        return directory.appending("/\(name).yml")
+    }
+
+    /// The configuration file to edit: the loaded one, or a new `$XDG_CONFIG_HOME/<name>/<name>.yml` created on demand.
     func editableConfigurationFilePath() throws -> String {
         if let configurationFilePath = configurationFilePath, FileManager.default.fileExists(atPath: configurationFilePath) {
             return configurationFilePath
         }
 
         let directory = UserConfiguration.xdgConfigurationDirectory
-        let path = directory.appending("/amethyst.yml")
+        let path = UserConfiguration.xdgConfigurationFile(inDirectory: directory)
         if !FileManager.default.fileExists(atPath: path) {
             try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
             let starter = "# \(UserConfiguration.configurationName) configuration. This file is the only source of settings and key bindings.\n"
@@ -449,7 +454,7 @@ class UserConfiguration: NSObject {
     }
 
     private func exitWithMissingConfigurationFile() -> Never {
-        let path = UserConfiguration.xdgConfigurationDirectory.appending("/amethyst.yml").replacingOccurrences(of: NSHomeDirectory(), with: "~")
+        let path = UserConfiguration.xdgConfigurationFile(inDirectory: UserConfiguration.xdgConfigurationDirectory).replacingOccurrences(of: NSHomeDirectory(), with: "~")
         exitWithAlert("No configuration file found", path: path, advice: "Create it and start again.")
     }
 
@@ -488,7 +493,7 @@ class UserConfiguration: NSObject {
                 exitWithConfigurationFileError()
             }
         } else if FileManager.default.fileExists(atPath: amethystXDGConfigPath, isDirectory: &isDirectory) {
-            configurationFilePath = isDirectory.boolValue ? amethystXDGConfigPath.appending("/amethyst.yml") : amethystXDGConfigPath
+            configurationFilePath = isDirectory.boolValue ? UserConfiguration.xdgConfigurationFile(inDirectory: amethystXDGConfigPath) : amethystXDGConfigPath
             configurationYAML = yamlForConfig(at: configurationFilePath!)
 
             if configurationYAML == nil {

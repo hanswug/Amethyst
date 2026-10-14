@@ -1,6 +1,6 @@
 # Manual tests
 
-The unit tests cover the layouts' arithmetic. They can't reach what happens between hw-Amethyst and macOS: which events arrive, in which order, and which apps don't send them. Run these by hand before merging a trial branch into `fork/main`, and after any change to window tracking, focus or floating.
+The unit tests cover the layouts' arithmetic. They can't reach what happens between Ametrine and macOS: which events arrive, in which order, and which apps don't send them. Run these by hand before merging a trial branch into `fork/main`, and after any change to window tracking, focus or floating.
 
 Use three or four everyday apps from different vendors (a terminal, a browser, an editor, an Electron app). The bugs found so far depended on the app.
 
@@ -10,7 +10,7 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 |---|---|
 | Hide one of three tiled apps with ⌘H | No empty tile; the others fill the screen. |
 | Unhide it | It tiles again. |
-| Quit an app that has a window you opened after hw-Amethyst started | Its tile closes up. |
+| Quit an app that has a window you opened after Ametrine started | Its tile closes up. |
 | Close a window while another Space is showing, then come back | No empty tile. |
 | Minimise a tiled window, then restore it | It leaves and rejoins the layout. |
 

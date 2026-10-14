@@ -23,9 +23,9 @@ private let AMKeyCodeInvalid: AMKeyCode = 0xFF
 
 typealias HotKeyHandler = () -> Void
 
-/// `amethyst://command/<command-key>` runs any command, bound to a key or not, from outside the app (scripts, launchers).
+/// `ametrine://command/<command-key>` runs any command, bound to a key or not, from outside the app (scripts, launchers).
 enum CommandURL {
-    static let scheme = "amethyst"
+    static let scheme = "ametrine"
 
     /// The command key of a command URL, or `nil` for any other URL.
     static func commandKey(from url: URL) -> String? {
@@ -42,7 +42,7 @@ enum CommandURL {
         return String(components[0])
     }
 
-    /// The `value` query item of a command URL, e.g. `8` in `amethyst://command/set-window-max-count?value=8`.
+    /// The `value` query item of a command URL, e.g. `8` in `ametrine://command/set-window-max-count?value=8`.
     static func value(from url: URL) -> String? {
         return URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "value" }?.value
     }
@@ -573,7 +573,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             hotKeyNameToDefaultsKey.append([commandName, commandKey])
         }
 
-        hotKeyNameToDefaultsKey.append(["Relaunch Amethyst", CommandKey.relaunchAmethyst.rawValue])
+        hotKeyNameToDefaultsKey.append(["Relaunch Ametrine", CommandKey.relaunchAmethyst.rawValue])
         hotKeyNameToDefaultsKey.append(["Show command palette", CommandKey.showCommandPalette.rawValue])
 
         return hotKeyNameToDefaultsKey

@@ -35,20 +35,21 @@ class HotKeyManagerTests: QuickSpec {
             }
 
             it("reads the command key") {
-                expect(commandKey("amethyst://command/cycle-padding-mode")).to(equal("cycle-padding-mode"))
-                expect(commandKey("amethyst://command/select-middle-wide-layout/")).to(equal("select-middle-wide-layout"))
-                expect(commandKey("AMETHYST://Command/swap-main")).to(equal("swap-main"))
+                expect(commandKey("ametrine://command/cycle-padding-mode")).to(equal("cycle-padding-mode"))
+                expect(commandKey("ametrine://command/select-middle-wide-layout/")).to(equal("select-middle-wide-layout"))
+                expect(commandKey("AMETRINE://Command/swap-main")).to(equal("swap-main"))
             }
 
             it("decodes percent-encoded keys") {
-                expect(commandKey("amethyst://command/select-my%20mode-padding-mode")).to(equal("select-my mode-padding-mode"))
+                expect(commandKey("ametrine://command/select-my%20mode-padding-mode")).to(equal("select-my mode-padding-mode"))
             }
 
             it("rejects other URLs") {
-                expect(commandKey("amethyst://command/")).to(beNil())
-                expect(commandKey("amethyst://command")).to(beNil())
-                expect(commandKey("amethyst://command/a/b")).to(beNil())
-                expect(commandKey("amethyst://config/cycle-padding-mode")).to(beNil())
+                expect(commandKey("ametrine://command/")).to(beNil())
+                expect(commandKey("ametrine://command")).to(beNil())
+                expect(commandKey("ametrine://command/a/b")).to(beNil())
+                expect(commandKey("ametrine://config/cycle-padding-mode")).to(beNil())
+                expect(commandKey("amethyst://command/cycle-padding-mode")).to(beNil())
                 expect(commandKey("https://command/cycle-padding-mode")).to(beNil())
             }
 
@@ -57,11 +58,11 @@ class HotKeyManagerTests: QuickSpec {
                     return URL(string: string).flatMap { CommandURL.value(from: $0) }
                 }
 
-                expect(commandKey("amethyst://command/set-window-max-count?value=8")).to(equal("set-window-max-count"))
-                expect(value("amethyst://command/set-window-max-count?value=8")).to(equal("8"))
-                expect(value("amethyst://command/set-window-max-count?other=1&value=0")).to(equal("0"))
-                expect(value("amethyst://command/set-window-max-count")).to(beNil())
-                expect(value("amethyst://command/set-window-max-count?count=8")).to(beNil())
+                expect(commandKey("ametrine://command/set-window-max-count?value=8")).to(equal("set-window-max-count"))
+                expect(value("ametrine://command/set-window-max-count?value=8")).to(equal("8"))
+                expect(value("ametrine://command/set-window-max-count?other=1&value=0")).to(equal("0"))
+                expect(value("ametrine://command/set-window-max-count")).to(beNil())
+                expect(value("ametrine://command/set-window-max-count?count=8")).to(beNil())
             }
         }
     }

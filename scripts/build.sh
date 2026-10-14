@@ -11,8 +11,8 @@
 set -euo pipefail
 
 SIGNING_IDENTITY="Amethyst Local Signing"
-APP_NAME="hw-Amethyst"
-BUNDLE_ID="com.ark.Amethyst"
+APP_NAME="Ametrine"
+BUNDLE_ID="com.ark.Ametrine"
 INSTALL_PATH="/Applications/${APP_NAME}.app"
 # Upstream targets macOS 11, which Xcode 27 no longer accepts (minimum 12).
 DEPLOYMENT_TARGET="12.0"

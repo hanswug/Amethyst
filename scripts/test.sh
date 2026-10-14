@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-TEST_HOST_BUNDLE_ID="com.ark.Amethyst.debug"
+TEST_HOST_BUNDLE_ID="com.ark.Ametrine.debug"
 # Upstream targets macOS 11, which Xcode 27 no longer accepts (minimum 12).
 DEPLOYMENT_TARGET="12.0"
 
