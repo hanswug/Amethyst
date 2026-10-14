@@ -4,7 +4,8 @@ A personal tiling window manager for macOS, built on [Amethyst](https://github.c
 
 It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide.
 
-- **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory. Directional focus and swap are in; warp is planned.
+- **Move by direction.** ⌃⌥ + h/j/k/l focuses the window to the west, south, north or east; add ⌘ and the window swaps there. No clockwise order to remember, no Alt-Tab to reach the window next to you. Warp is next.
+- **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory.
 - **No hidden state.** A window is either visible or deliberately gone; nothing is parked where you have to remember it.
 - **One display and one Space at a time.** Each Space and each display is tiled on its own, so using several still works, but there are no commands to move windows between them. Dedicated apps (Raycast, for example) do that well, and moving a window to another Space needs simulated mouse drags because macOS has no public API for it.
 
@@ -18,6 +19,7 @@ It was born out of the need to handle many windows on large displays, such as a 
   - There's no preferences window: the menu has **Edit Config…** (opens the file) and **Reload Config** (relaunches).
   - There are no built-in key bindings. A command is bound only if the file binds it; leaving it out, or setting it to `false` or `<NONE>`, leaves it unbound.
   - A missing or broken config file shows an alert with the path and quits.
+- **Directional focus and swap:** `focus-west/east/north/south` and `swap-west/east/north/south` reach the visible tiled window in that direction. Ties go to the window you used last, so east, west, east comes back to the same window. At the screen edge nothing happens. In Fullscreen, west/east cycle through the windows. See [docs/directional-navigation.md](docs/directional-navigation.md).
 - **Command palette** (`show-command-palette`, Super+Y here): lists every command with its shortcut, plus current values such as the window max count and main pane count. Type to filter, ↑/↓ to select, Enter runs, Esc closes. Works like Spotlight: the app you're in stays in front.
 - **Command URL:** `open -g "ametrine://command/<command-key>"` runs any command, bound or not, from scripts or launchers. Unknown keys are ignored.
 - **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly, and the last mode survives restarts. The built-in display stays unpadded.
@@ -36,7 +38,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Command palette, with current counts and count HUDs
 - [x] BSP fixes (see [Layouts](#bsp-in-ametrine))
 - [x] Renamed from hw-Amethyst to Ametrine (3.0.0), with a purple-to-gold icon
-- [x] Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east)
+- [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
 - [ ] Focus border: a border around the focused window (width and colour in the config, `toggle-focus-border`), hidden in Fullscreen
@@ -80,6 +82,15 @@ floating-secondary-windows: [md.obsidian]
 
 window-max-count: 8
 enables-window-count-hud: true
+
+focus-west:  {mod: mod1, key: h}         # h/j/k/l = direction, modifier = verb
+focus-south: {mod: mod1, key: j}
+focus-north: {mod: mod1, key: k}
+focus-east:  {mod: mod1, key: l}
+swap-west:   {mod: mod2, key: h}
+swap-south:  {mod: mod2, key: j}
+swap-north:  {mod: mod2, key: k}
+swap-east:   {mod: mod2, key: l}
 
 focus-cw: false           # unbound, same as leaving it out or <NONE>
 ```

@@ -103,7 +103,7 @@ cycle-layout:
 | `swap-ccw` | Swap the focused window with the next one counter-clockwise. |
 | `swap-cw` | Swap the focused window with the next one clockwise. |
 | `swap-main` | Swap the focused window with the main window. |
-| `focus-west` … `focus-south` | Focus the tiled window in that direction (`west`, `east`, `north`, `south`). Only visible windows count: of windows stacked in one tile (Two Pane's secondary) only the front one is reached. Ties go to the window used most recently. From a floating window it reaches the nearest tile in that direction; floating windows are never a target. At the screen edge nothing happens (no wrap-around, no other display). In Fullscreen, west/east cycle through the windows and north/south do nothing. |
+| `focus-west` … `focus-south` | Focus the tiled window in that direction (`west`, `east`, `north`, `south`). Only visible windows count: of windows stacked in one tile (Two Pane's secondary) only the front one is reached. Ties go to the window used most recently. From a floating window it reaches the nearest tile in that direction; floating windows are never a target. At the screen edge nothing happens (no wrap-around, no other display). In Fullscreen, west/east cycle through the windows and north/south do nothing. See [directional focus and swap](directional-navigation.md). |
 | `swap-west` … `swap-south` | Swap the focused window with the tiled window in that direction (found as for `focus-<direction>`). Focus and, with `mouse-follows-focus`, the cursor go with the window. Nothing happens from a floating window or in Fullscreen. |
 | `toggle-float` | Toggle floating for the focused window. |
 | `explain-window` | Show in a HUD whether the focused window is tiled, floating or not managed, and why. |
