@@ -125,6 +125,7 @@
 		A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */; };
 		A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */; };
 		A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */; };
+		A3E1C0DE5EC0000000000050 /* ReflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004F /* ReflowTests.swift */; };
 		A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */; };
 		40EFFB4A2F0226EF00EDD929 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 40EFFB492F0226EF00EDD929 /* Silica */; };
 		4493EAA22139D9F000AA9623 /* ThreeColumnLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */; };
@@ -257,6 +258,7 @@
 		A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigationTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorderTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoredWindowOrderTests.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC000000000004F /* ReflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflowTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteTests.swift; sourceTree = "<group>"; };
 		4493EAA12139D9EF00AA9623 /* ThreeColumnLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreeColumnLayout.swift; sourceTree = "<group>"; };
 		AA4AF40C26717DA900D2AE1B /* TwoPaneLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoPaneLayout.swift; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 				40B0D144232D2E630021E0A7 /* FullscreenLayoutTests.swift */,
 				40D491D723367590007E0CCB /* RowLayoutTests.swift */,
 				403E1A2B233719E500DB7B2A /* TallLayoutTests.swift */,
+				A3E1C0DE5EC000000000004F /* ReflowTests.swift */,
 				40AB5BE823AB0A2B00E29346 /* TallRightLayoutTests.swift */,
 				40AB5BEC23AC3CF800E29346 /* ThreeColumnLayoutTests.swift */,
 				AAAC6BAB2677DF7B00BEC1B0 /* TwoPaneLayoutTests.swift */,
@@ -869,6 +872,7 @@
 				A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */,
 				A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */,
 				A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */,
+				A3E1C0DE5EC0000000000050 /* ReflowTests.swift in Sources */,
 				A3E1C0DE5EC0000000000014 /* CommandPaletteTests.swift in Sources */,
 				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */,

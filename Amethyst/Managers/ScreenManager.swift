@@ -246,14 +246,28 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         }
     }
 
-    func setNeedsReflow() {
+    /// How long a reflow after a focus change waits for the rest of the burst: an app switch posts several events in a row.
+    private static var focusReflowDelay: TimeInterval { 0.02 }
+    private var pendingFocusReflow: DispatchWorkItem?
+
+    /// Lays the screen out again. After a focus change the reflow waits briefly, so a burst of events reflows once.
+    func setNeedsReflow(afterFocusChange: Bool = false) {
         reflowOperationQueue.cancelAllOperations()
+        pendingFocusReflow?.cancel()
+        pendingFocusReflow = nil
 
         log.debug("Screen: \(screen?.screenID() ?? "unknown") reflow")
 
-        DispatchQueue.main.async {
-            self.minimizeWindows()
-            self.reflow()
+        let reflow = DispatchWorkItem { [weak self] in
+            self?.minimizeWindows()
+            self?.reflow()
+        }
+
+        if afterFocusChange {
+            pendingFocusReflow = reflow
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.focusReflowDelay, execute: reflow)
+        } else {
+            DispatchQueue.main.async(execute: reflow)
         }
     }
 

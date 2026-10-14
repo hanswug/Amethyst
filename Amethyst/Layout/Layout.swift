@@ -197,11 +197,15 @@ extension PanedLayout {
         - ratio: The ratio recommended by the caller.
      */
     func recommendMainPaneRatio(_ ratio: CGFloat) {
-        guard 0 <= ratio && ratio <= 1 else {
-            log.warning("tried to setMainPaneRatio out of range [0-1]:  \(ratio)")
-            return recommendMainPaneRawRatio(rawRatio: max(min(ratio, 1), 0))
+        recommendMainPaneRawRatio(rawRatio: Self.clampedMainPaneRatio(ratio))
+    }
+
+    /// Keeps both panes on screen: at 0 or 1 one of them would be zero wide (repeated shrink-main, a mouse resize to the edge).
+    static func clampedMainPaneRatio(_ ratio: CGFloat) -> CGFloat {
+        guard ratio.isFinite else {
+            return 0.5
         }
-        recommendMainPaneRawRatio(rawRatio: ratio)
+        return min(max(ratio, 0.05), 0.95)
     }
 
     /// The default behavior of main pane expansion that simply recommends an increase in ratio by the configured resize step.
