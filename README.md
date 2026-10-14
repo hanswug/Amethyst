@@ -37,7 +37,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] BSP fixes (see [Layouts](#bsp-in-hw-amethyst))
 - [ ] Directional focus and swap: `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east)
 - [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
-- [ ] On hold: rotate / mirror layouts (the idea isn't settled; done freely, it breaks the layouts)
+- [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
   - [ ] `window-overflow: minimize | float`: what happens to a window over `window-max-count` (or, later, over a full side column). `float` floats the new window and leaves the tiles alone
