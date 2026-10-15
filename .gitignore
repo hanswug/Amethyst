@@ -15,18 +15,11 @@ profile
 DerivedData
 .idea/
 *.hmap
-Pods
 build
-crashlytics_api_key
-crashlytics_app_key
-Carthage
-AMKeys.h
-fastlane/report.xml
 *profraw
 
 # Homebrew
 Brewfile.lock.json
-
 
 # Personal working notes (local only)
 /CLAUDE.md

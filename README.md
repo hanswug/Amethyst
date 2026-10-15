@@ -142,7 +142,7 @@ Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` o
 4. Before merging a change to window tracking, focus or floating, run the [manual tests](docs/manual-tests.md): the cases unit tests can't reach.
 5. `scripts/test.sh` runs the unit tests against a clean, empty config. `scripts/profile.sh` records a Time Profiler trace when something feels slow (see [docs/PROFILING.md](docs/PROFILING.md)).
 
-Don't use the fastlane lane: it signs for a Developer ID team this fork doesn't have. Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
+Upstream Amethyst can stay installed as a fallback with its own config, but never run both at once.
 
 ## Versions
 
