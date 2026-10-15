@@ -1208,6 +1208,7 @@ extension WindowManager: WindowTransitionTarget {
             guard windows.swap(window: window, withWindow: otherWindow) else {
                 return
             }
+            log.debug("Swap: \(window.title() ?? "") #\(window.cgID()) ↔ \(otherWindow.title() ?? "") #\(otherWindow.cgID())")
 
             distributeEventToAllScreens(.windowSwap(window: window, otherWindow: otherWindow))
             markAllScreensForReflow()

@@ -6,6 +6,7 @@
 //  Copyright © 2015 Ian Ynda-Hummel. All rights reserved.
 //
 
+import AppKit
 import Foundation
 import Silica
 
@@ -343,6 +344,9 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             uniquingKeysWith: { _, last in last }
         )
 
+        // Only built when a log destination wants it (`--log`): it asks every window for its title.
+        log.debug(ScreenManager.reflowTrace(layout: layout, windowSet: windows, frameAssignments: frameAssignments))
+
         // TODO: fix mff
 //        let mouseFollowsFocus = userConfiguration.mouseFollowsFocus()
 
@@ -377,6 +381,29 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         delegate?.onReflowInitiation()
         reflowOperationQueue.addOperations(frameAssignments, waitUntilFinished: false)
         reflowOperationQueue.addOperation(completeOperation)
+    }
+
+    /// One layout pass for the log: the layout and, per tiled window in list order, its app, title, whether it's on screen, and its tile.
+    /// A window that's tiled but not on screen leaves an empty tile.
+    private static func reflowTrace(layout: Layout<Window>, windowSet: WindowSet<Window>, frameAssignments: [FrameAssignmentOperation<Window>]) -> String {
+        var header = "Reflow: \(layout.layoutName), \(windowSet.windows.count) windows"
+        if let panedLayout = layout as? PanedLayout {
+            header += String(format: ", main count %d, ratio %.2f", panedLayout.mainPaneCount, panedLayout.mainPaneRatio)
+        }
+
+        let lines = frameAssignments.enumerated().map { index, operation -> String in
+            let assignment = operation.frameAssignment
+            let tile = assignment.frame
+            let tileText = String(format: "%.0f,%.0f %.0f×%.0f", tile.minX, tile.minY, tile.width, tile.height)
+            guard let window = windowSet.window(for: assignment.window) else {
+                return "  \(index). unknown window → \(tileText)"
+            }
+            let applicationName = NSRunningApplication(processIdentifier: window.pid())?.localizedName ?? "pid \(window.pid())"
+            let onScreen = window.isOnScreen() ? "" : " [not on screen]"
+            return "  \(index). \(applicationName) \"\(window.title() ?? "")\" #\(window.cgID())\(onScreen) → \(tileText)"
+        }
+
+        return ([header] + lines).joined(separator: "\n")
     }
 
     func updateCurrentLayout(_ updater: (Layout<Window>) -> Void) {
