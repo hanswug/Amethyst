@@ -8,33 +8,10 @@
 
 import Silica
 
-class WidescreenTallLayout<Window: WindowType>: Layout<Window> {
+class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
     class var isRight: Bool { fatalError("Must be implemented by subclass") }
 
-    enum CodingKeys: String, CodingKey {
-        case mainPaneCount
-        case mainPaneRatio
-    }
-
-    private(set) var mainPaneCount: Int = 1
-    private(set) var mainPaneRatio: CGFloat = 0.5
-
-    required init() {
-        super.init()
-    }
-
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.mainPaneCount = try values.decode(Int.self, forKey: .mainPaneCount)
-        self.mainPaneRatio = try values.decode(CGFloat.self, forKey: .mainPaneRatio)
-        super.init()
-    }
-
-    override func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(mainPaneCount, forKey: .mainPaneCount)
-        try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
-    }
+    override class var paneCount: Int { return 2 }
 
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
         let windows = windowSet.windows
@@ -43,8 +20,9 @@ class WidescreenTallLayout<Window: WindowType>: Layout<Window> {
             return []
         }
 
-        let mainPaneCount = min(windows.count, self.mainPaneCount)
-        let secondaryPaneCount = windows.count - mainPaneCount
+        let counts = fittedPaneCounts(windowCount: windows.count)
+        let mainPaneCount = counts[0]
+        let secondaryPaneCount = counts[1]
 
         let hasSecondaryPane = secondaryPaneCount > 0
 
@@ -99,19 +77,7 @@ class WidescreenTallLayout<Window: WindowType>: Layout<Window> {
     }
 }
 
-extension WidescreenTallLayout: PanedLayout {
-    func recommendMainPaneRawRatio(rawRatio: CGFloat) {
-        mainPaneRatio = rawRatio
-    }
-
-    func increaseMainPaneCount() {
-        mainPaneCount += 1
-    }
-
-    func decreaseMainPaneCount() {
-        mainPaneCount = max(1, mainPaneCount - 1)
-    }
-}
+extension WidescreenTallLayout: PanedLayout {}
 
 class WidescreenTallLayoutLeft<Window: WindowType>: WidescreenTallLayout<Window> {
     override class var isRight: Bool { return false }

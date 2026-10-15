@@ -20,6 +20,7 @@ It was born out of the need to handle many windows on large displays, such as a 
   - There are no built-in key bindings. A command is bound only if the file binds it; leaving it out, or setting it to `false` or `<NONE>`, leaves it unbound.
   - A missing or broken config file shows an alert with the path and quits.
 - **Directional focus and swap:** `focus-west/east/north/south` and `swap-west/east/north/south` reach the visible tiled window in that direction. Ties go to the window you used last, so east, west, east comes back to the same window. At the screen edge nothing happens. In Fullscreen, west/east cycle through the windows. See [docs/directional-navigation.md](docs/directional-navigation.md).
+- **Warp:** `warp-west/east/north/south` moves the focused window into the pane in that direction, so columns grow and shrink (3Column 1/2/2 → 1/3/1). A warp never empties a pane, and a window warped into main lands at `main-arrival-position`. The main pane count is a maximum: `increase-main` moves nothing, and the HUD shows "x of y". See [warp](docs/directional-navigation.md#warp).
 - **Command palette** (`show-command-palette`, Super+Y here): lists every command with its shortcut, plus current values such as the window max count and main pane count. Type to filter, ↑/↓ to select, Enter runs, Esc closes. Works like Spotlight: the app you're in stays in front.
 - **Command URL:** `open -g "ametrine://command/<command-key>"` runs any command, bound or not, from scripts or launchers. Unknown keys are ignored.
 - **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly, and the last mode survives restarts. The built-in display stays unpadded.
@@ -40,7 +41,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] BSP fixes (see [Layouts](#bsp-in-ametrine))
 - [x] Renamed from hw-Amethyst to Ametrine (3.0.0), with a purple-to-gold icon
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
-- [ ] Warp: `warp-<direction>` moves a window into the neighbouring column (3Column, Tall, Two Pane)
+- [x] Warp: `warp-<direction>` moves a window into the neighbouring pane in every tiled layout (swaps in Two Pane, Column and Row; splits the neighbour's tile in BSP), into an empty column too; pane sizes are remembered and the main pane count is a maximum
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
 - [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
 - [ ] A Raycast extension built on the command URL
@@ -124,7 +125,7 @@ Binary Space Partitioning keeps a tree of windows: a new window splits the focus
 - **Closing one of the first windows no longer reshuffles the layout:** the windows next to it take over its space.
 - **Quitting an app frees all its tiles**, including windows opened after Ametrine started. This applies to every layout.
 
-Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one. When a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main shrinks instead of pulling in a side window; a window coming back arrives at `main-arrival-position`.
+Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one. The main pane count is a maximum: `increase-main` moves nothing, and main fills by warp or by windows arriving at `main-arrival-position: first`. When a window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), only its own pane shrinks; a window coming back arrives at `main-arrival-position`.
 
 ## Build and install
 

@@ -60,6 +60,18 @@ enum WindowArrival {
         let arriving = list.filter { returningSet.contains($0) }
         return atFront ? arriving + others : others + arriving
     }
+
+    /// The list with the windows of `newOrder` put in that order, in the places they hold; every other window keeps its
+    /// place. Unchanged when `newOrder` isn't a reordering of windows in the list.
+    static func reordered<ID: Hashable>(_ list: [ID], as newOrder: [ID]) -> [ID] {
+        let members = Set(newOrder)
+        guard members.count == newOrder.count, list.filter({ members.contains($0) }).count == newOrder.count else {
+            return list
+        }
+
+        var next = newOrder.makeIterator()
+        return list.map { members.contains($0) ? next.next() ?? $0 : $0 }
+    }
 }
 
 struct SavedWindowID: Codable, Hashable {
@@ -310,6 +322,27 @@ extension WindowManager {
 
             let byID = Dictionary(windows.map { ($0.id(), $0) }, uniquingKeysWith: { first, _ in first })
             let order = WindowArrival.order(windows.map { $0.id() }, returning: returning, atFront: atFront)
+            windows = order.compactMap { byID[$0] }
+            return true
+        }
+
+        /// Puts the windows among `windowIDs` in that order, in the places they hold in the list (a warp, or a window the
+        /// layout moved into its pane). Returns whether anything moved.
+        @discardableResult func reorder(_ windowIDs: [Window.WindowID]) -> Bool {
+            let ids = windows.map { $0.id() }
+            let order = WindowArrival.reordered(ids, as: windowIDs)
+            guard order != ids else {
+                return false
+            }
+
+            // As with a swap: the window that leaves the top of main is the one swap-main brings back.
+            if let currentFocusedSpace = CGSpacesInfo<Window>.currentFocusedSpace(),
+               let firstActiveWindow = activeWindowOnCurrentScreen(atIndex: 0),
+               windowIDs.contains(firstActiveWindow.id()), windowIDs.first != firstActiveWindow.id() {
+                lastMainWindows[currentFocusedSpace.id] = firstActiveWindow
+            }
+
+            let byID = Dictionary(windows.map { ($0.id(), $0) }, uniquingKeysWith: { first, _ in first })
             windows = order.compactMap { byID[$0] }
             return true
         }

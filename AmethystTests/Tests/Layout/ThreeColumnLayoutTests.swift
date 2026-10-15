@@ -788,5 +788,32 @@ class ThreeColumnLayoutTests: QuickSpec {
                 }
             }
         }
+
+        describe("empty columns") {
+            it("reports a side column without windows as a warp target") {
+                let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
+                TestScreen.availableScreens = [screen]
+                let windowIDs = (0..<4).map { _ in TestWindow(element: nil)!.id() }
+                let layout = ThreeColumnMiddleLayout<TestWindow>()
+                layout.setMainPaneCount(3)
+
+                // Main count 3 with four windows: left 1, middle (main) 3, right empty.
+                _ = layout.reconcile(windowIDs: windowIDs)
+                expect(layout.paneCounts.counts).to(equal([3, 1, 0]))
+                expect(layout.emptyPaneFrames(windowCount: 4, on: screen)).to(equal([2: CGRect(x: 1500, y: 0, width: 500, height: 1000)]))
+
+                // Warping a main window east into it gives 1/2/1.
+                expect(layout.warpPlan(from: 1, to: .emptyPane(2), windowCount: 4, intoMainAtFront: false))
+                    .to(equal(.move(toIndex: 3, counts: PaneCounts([2, 1, 1]))))
+            }
+
+            it("reports nothing while every side column holds a window") {
+                let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
+                TestScreen.availableScreens = [screen]
+                let layout = ThreeColumnLeftLayout<TestWindow>()
+                _ = layout.reconcile(windowIDs: (0..<3).map { _ in TestWindow(element: nil)!.id() })
+                expect(layout.emptyPaneFrames(windowCount: 3, on: screen)).to(beEmpty())
+            }
+        }
     }
 }

@@ -54,12 +54,11 @@ struct QuadruplePaneArrangement {
     /**
      - Parameters:
         - mainPane: which Column is the main Pane
-        - numWindows: how many windows total
-        - numMainPane: how many windows in the main Pane
+        - counts: how many windows each pane holds: main, secondary, tertiary, quaternary
         - screenSize: total size of the screen
         - mainPaneRatio: ratio of the screen taken by main pane
      */
-    init(mainPane: FourColumn, numWindows: UInt, numMainPane: UInt, screenSize: CGSize, mainPaneRatio: CGFloat) {
+    init(mainPane: FourColumn, counts: [UInt], screenSize: CGSize, mainPaneRatio: CGFloat) {
         // forward and reverse mapping of columns to their designations
         self.panePosition = {
             switch mainPane {
@@ -72,14 +71,10 @@ struct QuadruplePaneArrangement {
         // swap keys and values for reverse lookup
         self.columnDesignation = Dictionary(uniqueKeysWithValues: panePosition.map({ ($1, $0) }))
 
-        // calculate how many are in each type
-        let mainPaneCount = min(numWindows, numMainPane)
-        let nonMainCount: UInt = numWindows - mainPaneCount
-        // we do tertiary first because a single window produces a zero in integer division by 2
-        let nonMainPaneCount: UInt = max(nonMainCount / 3, 1)
-        let quaternaryPaneCount = nonMainPaneCount
-        let tertiaryPaneCount = nonMainPaneCount
-        let secondaryPaneCount = nonMainPaneCount + max(nonMainCount, 3) % 3
+        let mainPaneCount = counts[0]
+        let secondaryPaneCount = counts[1]
+        let tertiaryPaneCount = counts[2]
+        let quaternaryPaneCount = counts[3]
         self.paneCount = [.main: mainPaneCount, .secondary: secondaryPaneCount, .tertiary: tertiaryPaneCount, .quaternary: quaternaryPaneCount]
 
         // calculate heights
@@ -169,32 +164,50 @@ struct QuadruplePaneArrangement {
 }
 
 // not an actual Layout, just a base class for the four actual Layouts below
-class FourColumnLayout<Window: WindowType>: Layout<Window> {
+class FourColumnLayout<Window: WindowType>: PaneCountedLayout<Window> {
     class var mainColumn: FourColumn { fatalError("Must be implemented by subclass") }
 
-    enum CodingKeys: String, CodingKey {
-        case mainPaneCount
-        case mainPaneRatio
+    override class var paneCount: Int { return 4 }
+
+    private static var panes: [FourPane] { [.main, .secondary, .tertiary, .quaternary] }
+
+    private func arrangement(windowCount: Int, screenSize: CGSize) -> QuadruplePaneArrangement {
+        return QuadruplePaneArrangement(
+            mainPane: type(of: self).mainColumn,
+            counts: fittedPaneCounts(windowCount: windowCount).counts.map { UInt($0) },
+            screenSize: screenSize,
+            mainPaneRatio: mainPaneRatio
+        )
     }
 
-    private(set) var mainPaneCount: Int = 1
-    private(set) var mainPaneRatio: CGFloat = 0.5
-
-    required init() {
-        super.init()
+    private static func offsetX(of column: FourColumn, widths: FourPaneWidths) -> CGFloat {
+        switch column {
+        case .left: return 0.0
+        case .middleLeft: return widths.left
+        case .middleRight: return widths.left + widths.middleLeft
+        case .right: return widths.left + widths.middleLeft + widths.middleRight
+        }
     }
 
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.mainPaneCount = try values.decode(Int.self, forKey: .mainPaneCount)
-        self.mainPaneRatio = try values.decode(CGFloat.self, forKey: .mainPaneRatio)
-        super.init()
-    }
+    /// Every column keeps its quarter of the screen, so a side column without windows is a warp target.
+    override func emptyPaneFrames(windowCount: Int, on screen: Screen) -> [Int: CGRect] {
+        guard windowCount > 0 else {
+            return [:]
+        }
 
-    override func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(mainPaneCount, forKey: .mainPaneCount)
-        try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
+        let screenFrame = screen.adjustedFrame()
+        let paneArrangement = arrangement(windowCount: windowCount, screenSize: screenFrame.size)
+        let widths = paneArrangement.widthsLeftToRight()
+        var frames: [Int: CGRect] = [:]
+        for (index, pane) in Self.panes.enumerated() where pane != .main && paneArrangement.count(pane) == 0 && paneArrangement.width(pane) > 0 {
+            frames[index] = CGRect(
+                x: screenFrame.origin.x + Self.offsetX(of: paneArrangement.column(ofPane: pane), widths: widths),
+                y: screenFrame.origin.y,
+                width: paneArrangement.width(pane),
+                height: screenFrame.height
+            )
+        }
+        return frames
     }
 
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
@@ -205,13 +218,7 @@ class FourColumnLayout<Window: WindowType>: Layout<Window> {
         }
 
         let screenFrame = screen.adjustedFrame()
-        let paneArrangement = QuadruplePaneArrangement(
-            mainPane: type(of: self).mainColumn,
-            numWindows: UInt(windows.count),
-            numMainPane: UInt(mainPaneCount),
-            screenSize: screenFrame.size,
-            mainPaneRatio: mainPaneRatio
-        )
+        let paneArrangement = arrangement(windowCount: windows.count, screenSize: screenFrame.size)
 
         return windows.reduce([]) { frameAssignments, window -> [FrameAssignmentOperation<Window>] in
             var assignments = frameAssignments
@@ -225,14 +232,7 @@ class FourColumnLayout<Window: WindowType>: Layout<Window> {
 
             let widths = paneArrangement.widthsLeftToRight()
 
-            let xorigin: CGFloat = screenFrame.origin.x + {
-                switch column {
-                case .left: return 0.0
-                case .middleLeft: return widths.left
-                case .middleRight: return widths.left + widths.middleLeft
-                case .right: return widths.left + widths.middleLeft + widths.middleRight
-                }
-            }()
+            let xorigin: CGFloat = screenFrame.origin.x + Self.offsetX(of: column, widths: widths)
 
             let scaleFactor: CGFloat = screenFrame.width / {
                 if pane == .main {
@@ -260,20 +260,6 @@ class FourColumnLayout<Window: WindowType>: Layout<Window> {
 
             return assignments
         }
-    }
-}
-
-extension FourColumnLayout {
-    func recommendMainPaneRawRatio(rawRatio: CGFloat) {
-        mainPaneRatio = rawRatio
-    }
-
-    func increaseMainPaneCount() {
-        mainPaneCount += 1
-    }
-
-    func decreaseMainPaneCount() {
-        mainPaneCount = max(1, mainPaneCount - 1)
     }
 }
 

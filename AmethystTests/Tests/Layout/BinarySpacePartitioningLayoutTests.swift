@@ -707,6 +707,40 @@ class BinarySpacePartitioningLayoutTests: QuickSpec {
             }
         }
 
+        describe("warp") {
+            it("leaves its tile and splits the neighbour's on the side it came from") {
+                let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
+                TestScreen.availableScreens = [screen]
+                let windows = [TestWindow(element: nil)!, TestWindow(element: nil)!, TestWindow(element: nil)!]
+                let layout = BinarySpacePartitioningLayout<TestWindow>()
+                windows.forEach { layout.updateWithChange(.add(window: $0)) }
+
+                // a on the left; b above c on the right. a warps east onto b: it came from the west, so it takes the
+                // first half of b's tile, which splits top/bottom.
+                expect(layout.warp(windows[0].id(), onto: windows[1].id(), toward: .east)).to(beTrue())
+
+                let windowSet = WindowSet<TestWindow>(
+                    windows: windows.map { LayoutWindow<TestWindow>(id: $0.id(), frame: $0.frame(), isFocused: false) },
+                    isWindowWithIDActive: { _ in return true },
+                    isWindowWithIDFloating: { _ in return false },
+                    windowForID: { id in return windows.first { $0.id() == id } }
+                )
+                let frames = Dictionary(uniqueKeysWithValues: layout.frameAssignments(windowSet, on: screen)!.map {
+                    ($0.frameAssignment.window.id, $0.frameAssignment.frame)
+                })
+                expect(frames[windows[0].id()]).to(equal(CGRect(x: 0, y: 0, width: 1000, height: 500)))
+                expect(frames[windows[1].id()]).to(equal(CGRect(x: 0, y: 500, width: 1000, height: 500)))
+                expect(frames[windows[2].id()]).to(equal(CGRect(x: 1000, y: 0, width: 1000, height: 1000)))
+            }
+
+            it("does nothing for a window that isn't in the tree") {
+                let layout = BinarySpacePartitioningLayout<TestWindow>()
+                let windows = [TestWindow(element: nil)!, TestWindow(element: nil)!]
+                layout.updateWithChange(.add(window: windows[0]))
+                expect(layout.warp(windows[1].id(), onto: windows[0].id(), toward: .west)).to(beFalse())
+            }
+        }
+
         describe("coding") {
             it("encodes and decodes") {
                 let layout = BinarySpacePartitioningLayout<TestWindow>()

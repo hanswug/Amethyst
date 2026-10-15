@@ -16,6 +16,7 @@ enum WindowTransition<Window: WindowType> {
     case moveWindowToScreen(_ window: Window, screen: Screen)
     case moveWindowToSpaceAtIndex(_ window: Window, spaceIndex: Int, sourceSpaceIndex: Int)
     case resetFocus
+    case warpWindow(_ window: Window, direction: Direction)
 }
 
 protocol WindowTransitionTarget: AnyObject {
@@ -127,6 +128,19 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
         if let destination, UserConfiguration.shared.mouseFollowsFocus() {
             Cursor.move(to: CGPoint(x: destination.midX, y: destination.midY))
         }
+    }
+
+    /// Warps the focused window toward `direction` (handover §5.5); does nothing in Fullscreen or from a floating window.
+    func warpFocusedWindow(_ direction: Direction) {
+        guard let focusedWindow = Window.currentlyFocused(), target?.isWindowFloating(focusedWindow) == false, let screen = focusedWindow.screen() else {
+            return
+        }
+
+        guard target?.isFullscreenLayout(on: screen) == false else {
+            return
+        }
+
+        target?.executeTransition(.warpWindow(focusedWindow, direction: direction))
     }
 
     func throwToScreenAtIndex(_ screenIndex: Int) {

@@ -36,6 +36,9 @@ private final class TestDelegate: ScreenManagerDelegate {
     func windowsCameBack(_ windowIDs: [TestWindow.WindowID]) -> Bool {
         fatalError()
     }
+    func reorderWindows(_ windowIDs: [TestWindow.WindowID]) -> Bool {
+        fatalError()
+    }
 }
 
 class ScreenManagerTests: QuickSpec {
@@ -274,6 +277,17 @@ class ScreenManagerTests: QuickSpec {
 
             it("go first, in their order") {
                 expect(WindowArrival.order(["a", "b", "c", "d"], returning: ["d", "b"], atFront: true)).to(equal(["b", "d", "a", "c"]))
+            }
+        }
+
+        describe("reordering a screen's windows") {
+            it("puts them in the new order in the places they hold; other windows keep theirs") {
+                expect(WindowArrival.reordered(["a", "x", "b", "c", "y"], as: ["a", "c", "b"])).to(equal(["a", "x", "c", "b", "y"]))
+            }
+
+            it("leaves the list alone when the new order isn't a reordering of windows in it") {
+                expect(WindowArrival.reordered(["a", "b", "c"], as: ["a", "z"])).to(equal(["a", "b", "c"]))
+                expect(WindowArrival.reordered(["a", "b", "c"], as: ["a", "a"])).to(equal(["a", "b", "c"]))
             }
         }
 

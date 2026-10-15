@@ -1,4 +1,4 @@
-# Directional focus and swap
+# Directional focus, swap and warp
 
 Move around the layout by direction, the way you'd point at the screen: "the window to the right", "the one above". You don't have to remember the order windows were opened in, and you don't need Alt-Tab to reach the window next to you.
 
@@ -26,7 +26,7 @@ swap-ccw:  false
 swap-cw:   false
 ```
 
-Arrow keys work too (`left`, `down`, `up`, `right`). All eight commands are also in the command palette and on the command URL, e.g. `open -g "ametrine://command/focus-east"`.
+Arrow keys work too (`left`, `down`, `up`, `right`). All eight commands are also in the command palette and on the command URL, e.g. `open -g "ametrine://command/focus-east"`. `warp-west`, `warp-east`, `warp-north` and `warp-south` (below) bind the same way; swap and warp shouldn't share a modifier.
 
 ## What it does
 
@@ -58,3 +58,26 @@ In 3Column Left with a main window, three windows in the middle column and one o
 * **Screen edge:** nothing happens. There's no wrap-around and no jump to another display.
 * **Fullscreen** is the exception: every window fills the screen, so west/east cycle through the windows (wrapping around) and north/south do nothing. Swap does nothing in Fullscreen.
 * Directions use the tiles the layout assigned, before window margins, so an app that won't shrink to its tile doesn't confuse them.
+
+## Warp
+
+`warp-<direction>` moves the focused window into the pane next to it. Swap exchanges two windows and every pane keeps its size; warp makes one pane a window bigger and the other a window smaller.
+
+The rules, the same in every layout:
+
+* **Another pane:** the window joins it, right after the neighbour (below it, or to its right where a pane's windows are side by side). The neighbour is found as for focus, so it can be the window you used last in that column rather than the nearest one. If that isn't the spot you wanted, swap from there.
+* **Into main:** the window lands on top of main with `main-arrival-position: first`, at the bottom with `last`, wherever its neighbour is. A warp into a full main raises the maximum by one.
+* **The same pane:** a swap.
+* **The last window of a pane** swaps instead: a warp never empties a pane.
+* **An empty side column** (3Column, 4Column) can be warped into; the window becomes its only window. Focus and swap skip it.
+* **Two Pane, Column, Row:** each pane holds one window, so warp swaps.
+* **BSP:** the window leaves its tile and splits the neighbour's, on the side it came from.
+* **Fullscreen, Floating, custom layouts, a floating window:** nothing happens.
+
+In 3Column Left with main, two windows in the middle column and two on the right (1/2/2), warping a right-column window west gives 1/3/1. Closing a middle window then gives 1/2/1: the right column keeps its window. In 3Column Middle with main count 3 and one window on the left, the right column is empty (1/3/0); warping a main window east gives 1/2/1.
+
+Pane sizes are remembered per layout and Space, and survive a relaunch:
+
+* A new window goes to the shorter side column (ties to the first), or into main while main has room and the side panes are still empty. Opened one at a time, windows get the usual balanced split.
+* A window that leaves view (closed, quit, hidden, minimised, moved to another Space, floated) shrinks only its own pane. An emptied side column takes a window from the next one (1/0/2 becomes 1/1/1). A window coming back arrives like a new one, at `main-arrival-position`, not in its old column.
+* `increase-main` and `set-main-pane-count` set the most windows main may hold; nothing moves. The HUD and the palette show "x of y": the windows in main, of the maximum. `decrease-main` below what main holds moves the extra windows to the first side pane.
