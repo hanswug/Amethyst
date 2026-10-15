@@ -171,6 +171,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.0.0 | `new-windows-to-main: true \| false` is now `main-arrival-position: first \| last` (rename it in your config); `toggle-main-arrival-position`. The focus border is rebuilt: it follows each window's own corners and keeps up with drags and resizes, and the palette shows its state and style. `--log` traces each layout pass |
 | 4.1.0 | Main shrinks when one of its windows leaves view (closed, quit, hidden, minimised, another Space, floated), and a window coming back arrives at `main-arrival-position`; the focus border catches a window moved right after it was focused |
 | 4.2.0 | Warp: `warp-west/east/north/south` moves a window into the pane in that direction (3Column 1/2/2 → 1/3/1), into an empty column too, and `warp-main` into main from anywhere; swaps where a pane would empty or holds one window; splits the neighbour's tile in BSP. Pane sizes are remembered per layout and survive a relaunch. The main pane count is a maximum: `increase-main` moves nothing, warps in and out move it by one, and the HUD shows "x of y" |
+| 4.3.0 | Padding modes per Space: each Space keeps the mode picked on it, also across restarts, and starts on `padding-mode` until one is picked; the padding commands and the Padding menu act on the current Space. `--log` logs how long each Space change takes |
 
 ## Credits and licence
 
