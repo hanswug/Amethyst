@@ -101,6 +101,10 @@ final class FocusBorderPanel: NSPanel {
         hidesOnDeactivate = false
         animationBehavior = .none
         collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenNone]
+        // One level above app windows: apps raise their own window whenever they like (a click, CotEditor while selecting text),
+        // which covered a border kept just above the window. The focused window is the frontmost app window, so nothing else
+        // shows under the ring; menus and floating panels (Raycast, …) sit higher and still cover it.
+        level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue + 1)
 
         let view = NSView()
         view.wantsLayer = true
@@ -125,52 +129,11 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// A click raises the clicked window above the border without a focus change; this puts the border back on top.
-    private var clickMonitor: Any?
-
-    init() {
-        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown]) { [weak self] _ in
-            self?.raiseAgainShortly()
-        }
-    }
-
-    deinit {
-        if let clickMonitor {
-            NSEvent.removeMonitor(clickMonitor)
-        }
-    }
-
-    private func raiseAboveWindow() {
-        guard let currentWindowID else {
-            return
-        }
-
-        panel.order(.above, relativeTo: Int(currentWindowID))
-    }
-
-    /// The app's own raise can land after the border was ordered: after a click, and after a focus change while the app
-    /// activates (CotEditor with a selection). Ordering again a moment later puts the border back on top, if it's still on that window.
-    private func raiseAgainShortly() {
-        guard let windowID = currentWindowID else {
-            return
-        }
-
-        for delay in [0.05, 0.3] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard self?.currentWindowID == windowID else {
-                    return
-                }
-                self?.raiseAboveWindow()
-            }
-        }
-    }
-
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
         currentWindowID = windowID
         move(to: windowFrame, force: true)
-        panel.order(.above, relativeTo: Int(windowID))
-        raiseAgainShortly()
+        panel.orderFrontRegardless()
     }
 
     /// Follows the window while it moves or resizes.
