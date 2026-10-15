@@ -46,8 +46,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
-  - [ ] `max-column-rows: 3` for side columns
-  - [ ] A way to see which tile is Main: a second border colour or a small badge
+  - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide, Widescreen Tall's main)
   - [x] `main-arrival-position: first | last` (was `new-windows-to-main: true | false`): whether a new window goes on top of main or at the end; `toggle-main-arrival-position` switches it from the palette
   - [x] Fix the `debug windows` crash (Finder lists the desktop as a window)
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/Ametrine/Ametrine.log`
