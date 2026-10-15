@@ -499,6 +499,55 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("layout names") {
+            func loadedConfiguration(_ yaml: String) -> UserConfiguration {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+                configuration.configurationYAML = try! Yams.load(yaml: yaml) as? [String: Any]
+                configuration.configurationJSON = nil
+                configuration.defaultConfiguration = JSON([String: Any]())
+                configuration.loadConfiguration()
+                return configuration
+            }
+
+            let yaml = """
+            layout-names:
+              tall-left: coding
+              tall-right: "  coding (flipped)  "
+              wide-top: ""
+              3column-middle: 27
+              row-top:
+              not-a-layout: ignored
+            """
+
+            it("shows the configured name") {
+                let configuration = loadedConfiguration(yaml)
+
+                expect(configuration.layoutDisplayName(forKey: "tall-left", builtInName: "Tall Left")).to(equal("coding"))
+                expect(configuration.layoutDisplayName(forKey: "tall-right", builtInName: "Tall Right")).to(equal("coding (flipped)"))
+            }
+
+            it("shows the built-in name for a layout without an entry") {
+                let configuration = loadedConfiguration(yaml)
+
+                expect(configuration.layoutDisplayName(forKey: "bsp", builtInName: "Binary Space Partitioning")).to(equal("Binary Space Partitioning"))
+                expect(loadedConfiguration("layouts: [bsp]").layoutDisplayName(forKey: "bsp", builtInName: "BSP")).to(equal("BSP"))
+            }
+
+            it("shows the key when the name is empty, missing or not text") {
+                let configuration = loadedConfiguration(yaml)
+
+                expect(configuration.layoutDisplayName(forKey: "wide-top", builtInName: "Wide Top")).to(equal("wide-top"))
+                expect(configuration.layoutDisplayName(forKey: "row-top", builtInName: "Row Top")).to(equal("row-top"))
+                expect(configuration.layoutDisplayName(forKey: "3column-middle", builtInName: "3Column Middle")).to(equal("3column-middle"))
+            }
+
+            it("ignores layout-names that isn't a map") {
+                let configuration = loadedConfiguration("layout-names: [coding]")
+
+                expect(configuration.layoutDisplayName(forKey: "tall-left", builtInName: "Tall Left")).to(equal("Tall Left"))
+            }
+        }
+
         describe("window overflow") {
             it("minimises unless the configuration says float") {
                 let storage = TestConfigurationStorage()

@@ -9,8 +9,8 @@
 import Silica
 
 class ColumnLayout<Window: WindowType>: Layout<Window>, PanedLayout {
-    override static var layoutName: String { return "Column" }
-    override static var layoutKey: String { return "column" }
+    override class var layoutName: String { return "Column Left" }
+    override class var layoutKey: String { return "column-left" }
 
     enum CodingKeys: String, CodingKey {
         case mainPaneCount
@@ -98,5 +98,15 @@ class ColumnLayout<Window: WindowType>: Layout<Window>, PanedLayout {
 
             return assignments
         }
+    }
+}
+
+/// Column Left's twin: the first window is on the far right and the order runs leftwards.
+class ColumnRightLayout<Window: WindowType>: ColumnLayout<Window> {
+    override static var layoutName: String { return "Column Right" }
+    override static var layoutKey: String { return "column-right" }
+
+    override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
+        return super.frameAssignments(windowSet, on: screen)?.map { $0.mirrored(.horizontal) }
     }
 }

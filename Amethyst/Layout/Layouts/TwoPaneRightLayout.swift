@@ -9,8 +9,8 @@
 import Silica
 
 class TwoPaneRightLayout<Window: WindowType>: Layout<Window>, PanedLayout {
-    override static var layoutName: String { return "Two Pane Right" }
-    override static var layoutKey: String { return "two-pane-right" }
+    override static var layoutName: String { return "Two Pane B" }
+    override static var layoutKey: String { return "two-pane-b" }
 
     enum CodingKeys: String, CodingKey {
         case mainPaneCount

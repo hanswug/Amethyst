@@ -38,6 +38,11 @@ class Layout<Window: WindowType>: Codable {
     /// The display name of the layout.
     var layoutName: String { return type(of: self).layoutName }
 
+    /// The name shown in the menu bar, HUD, Layouts menu and palette: the `layout-names` entry, or the built-in name.
+    var displayName: String {
+        return UserConfiguration.shared.layoutDisplayName(forKey: layoutKey, builtInName: layoutName)
+    }
+
     /// The configuration key of the layout.
     var layoutKey: String { return type(of: self).layoutKey }
 

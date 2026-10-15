@@ -37,6 +37,7 @@
 		A3E1C0DE5EC0000000000032 /* RefusedTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000031 /* RefusedTiles.swift */; };
 		A3E1C0DE5EC0000000000054 /* PaneCounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000053 /* PaneCounts.swift */; };
 		A3E1C0DE5EC0000000000056 /* PaneCountsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000055 /* PaneCountsTests.swift */; };
+		A3E1C0DE5EC0000000000058 /* TwinLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000057 /* TwinLayoutTests.swift */; };
 		A3E1C0DE5EC0000000000042 /* OverflowWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000041 /* OverflowWindows.swift */; };
 		A3E1C0DE5EC0000000000044 /* OverflowWindowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000043 /* OverflowWindowsTests.swift */; };
 		A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */; };
@@ -173,6 +174,7 @@
 		A3E1C0DE5EC0000000000031 /* RefusedTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefusedTiles.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000053 /* PaneCounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneCounts.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000055 /* PaneCountsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneCountsTests.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000057 /* TwinLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwinLayoutTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000041 /* OverflowWindows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowWindows.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000043 /* OverflowWindowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowWindowsTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000033 /* RefusedTilesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefusedTilesTests.swift; sourceTree = "<group>"; };
@@ -496,6 +498,7 @@
 				40D491D723367590007E0CCB /* RowLayoutTests.swift */,
 				403E1A2B233719E500DB7B2A /* TallLayoutTests.swift */,
 				A3E1C0DE5EC0000000000055 /* PaneCountsTests.swift */,
+				A3E1C0DE5EC0000000000057 /* TwinLayoutTests.swift */,
 				A3E1C0DE5EC000000000004F /* ReflowTests.swift */,
 				40AB5BE823AB0A2B00E29346 /* TallRightLayoutTests.swift */,
 				40AB5BEC23AC3CF800E29346 /* ThreeColumnLayoutTests.swift */,
@@ -868,6 +871,7 @@
 				A3E1C0DE5EC0000000000024 /* WindowExplanationTests.swift in Sources */,
 				A3E1C0DE5EC0000000000034 /* RefusedTilesTests.swift in Sources */,
 				A3E1C0DE5EC0000000000056 /* PaneCountsTests.swift in Sources */,
+				A3E1C0DE5EC0000000000058 /* TwinLayoutTests.swift in Sources */,
 				A3E1C0DE5EC0000000000044 /* OverflowWindowsTests.swift in Sources */,
 				40D491DB23367630007E0CCB /* FrameAssignmentVerification.swift in Sources */,
 				40AB5BED23AC3CF800E29346 /* ThreeColumnLayoutTests.swift in Sources */,

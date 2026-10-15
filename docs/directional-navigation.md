@@ -78,11 +78,11 @@ The rules, the same in every layout:
 * **The same pane:** a swap.
 * **The last window of a pane** swaps instead: a warp never empties a pane.
 * **An empty side column** (3Column, 4Column) can be warped into; the window becomes its only window. Focus and swap skip it.
-* **Two Pane, Column, Row:** each pane holds one window, so warp swaps.
+* **Two Pane A/B, Column Left/Right, Row Top/Bottom:** each pane holds one window, so warp swaps.
 * **BSP:** the window leaves its tile and splits the neighbour's, on the side it came from.
 * **Fullscreen, Floating, custom layouts, a floating window:** nothing happens.
 
-**`warp-main`** moves the focused window into main from wherever it is, without having to be next to main: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; Two Pane, Column and Row swap with main, like `swap-main`. From main, and in BSP (no main pane), nothing happens.
+**`warp-main`** moves the focused window into main from wherever it is, without having to be next to main: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; Two Pane, Column and Row (both twins of each) swap with main, like `swap-main`. From main, and in BSP (no main pane), nothing happens.
 
 In 3Column Left with main, two windows in the middle column and two on the right (1/2/2), warping a right-column window west gives 1/3/1. Closing a middle window then gives 1/2/1: the right column keeps its window. In 3Column Middle with main count 3 and one window on the left, the right column is empty (1/3/0); warping a main window east gives 1/2/1.
 

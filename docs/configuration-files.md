@@ -19,7 +19,8 @@ The first file that exists is used:
 
 | Key | Description |
 | -- | -- |
-| `layouts` | Ordered list of layouts to use, by layout key (default `tall`, `wide`, `fullscreen`, `column`). See the [README](../README.md#layouts) for the keys. |
+| `layouts` | Ordered list of layouts to use, by layout key (default `tall-left`, `wide-top`, `fullscreen`, `column-left`). See the [README](../README.md#layouts) for the keys. |
+| `layout-names` | The name shown for a layout in the menu bar, the HUD, the Layouts menu and the palette, by layout key, e.g. `tall-left: coding`. Layouts left out show their built-in name; an empty or non-text name shows the key (default none). |
 | `mod1` | First modifier combination, a list of `option`, `control`, `shift`, `command` (default `option` + `shift`). Required. |
 | `mod2` | Second modifier combination (default `option` + `shift` + `control`). Required. |
 | `mod3` | Third modifier combination (optional, none by default). |
@@ -92,7 +93,7 @@ cycle-layout:
 | ------- | ------------|
 | `cycle-layout` | Move to the next layout in the list. |
 | `cycle-layout-backward` | Move to the previous layout in the list. |
-| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
+| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-left-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
 | `shrink-main` | Shrink the main pane by `window-resize-step`, down to 5% of the screen (so neither pane disappears). Not every layout responds. |
 | `expand-main` | Expand the main pane by `window-resize-step`, up to 95% of the screen. Not every layout responds. |
 | `increase-main` | Raise the most windows the main pane may hold, and show "x of y" (the windows in main, of the maximum). Nothing moves: main fills by `warp-<direction>`, by a window arriving with `main-arrival-position: first`, or by new windows while the side panes are still empty. When a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main holds one fewer and the maximum stays; main never empties while there are windows. Warping a window out of main lowers the maximum by one; warping into a full main raises it by one. This is how Tall, Wide, Widescreen Tall, 3Column and 4Column work; in Column and Row the count is the number of main windows, lowered when one leaves view. |

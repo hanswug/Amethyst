@@ -13,7 +13,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 
 ## What it does
 
-- **Tiles windows per Space**, using the layouts listed in the config. Daily set: Fullscreen, Two Pane, 3Column Left, 3Column Middle, Tall.
+- **Tiles windows per Space**, using the layouts listed in the config. Daily set: Fullscreen, Two Pane A, 3Column Left, 3Column Middle, Tall Left.
 - **The config file is the only source of settings and keys.**
   - It's read from `~/.config/ametrine/ametrine.yml` (or `~/.ametrine.yml`, or `~/.ametrine`).
   - There's no preferences window: the menu has **Edit Config…** (opens the file) and **Reload Config** (relaunches).
@@ -43,11 +43,12 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [x] Warp (4.2.0): `warp-<direction>` and `warp-main` move a window into the neighbouring pane, or into main, in every tiled layout (swaps in Two Pane, Column and Row; splits the neighbour's tile in BSP), into an empty column too; pane sizes are remembered and the main pane count is a maximum
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
+  - [x] Step 1 (5.0.0): every layout named by where main is (`tall-left`, `wide-top`, `two-pane-a`, `3column-middle`, `column-left`, `row-top`, …), the missing twins Wide Bottom, Column Right and Row Bottom, and `layout-names` for your own names
 - [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
-  - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide, Widescreen Tall's main)
+  - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide Top/Bottom, Widescreen Tall's main)
   - [ ] Warp with the mouse: drop zones while dragging a window, to warp it into a pane instead of swapping
   - [ ] Remove the files left over from upstream that Ametrine doesn't use or need
   - [ ] Clean config file: reads like a complete settings file in logical sections, every setting and command listed, so binding something needs no trip to the docs
@@ -67,7 +68,7 @@ mod1: [option, control]                     # everyday commands
 mod2: [option, control, command]            # transformations
 mod4: [option, control, shift, command]     # "Super"
 
-layouts: [fullscreen, two-pane, 3column-left, middle-wide, tall]
+layouts: [fullscreen, two-pane-a, 3column-left, 3column-middle, tall-left]
 
 show-command-palette: {mod: mod4, key: y}
 
@@ -109,19 +110,20 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 
 | Layout | Key | What it does |
 |---|---|---|
-| Tall | `tall` | Main pane on the left, the rest stacked in rows on the right |
-| Tall Right | `tall-right` | Tall, with the main pane on the right |
-| Wide | `wide` | Main pane on top, the rest in columns below |
-| Two Pane | `two-pane` | Main pane plus one visible secondary pane; the other windows wait behind it |
-| Two Pane Right | `two-pane-right` | Two Pane, with the main pane on the right |
-| 3Column Left / Middle / Right | `3column-left`, `middle-wide`, `3column-right` | Main pane plus two side columns, shared out as evenly as possible |
+| Tall Left / Right | `tall-left`, `tall-right` | Main pane on the left (or right), the rest stacked in rows beside it |
+| Wide Top / Bottom | `wide-top`, `wide-bottom` | Main pane on top (or at the bottom), the rest in columns beside it |
+| Two Pane A / B | `two-pane-a`, `two-pane-b` | Main pane plus one visible secondary pane; the other windows wait behind it. A puts main first (left, or top on a portrait screen), B second |
+| 3Column Left / Middle / Right | `3column-left`, `3column-middle`, `3column-right` | Main pane plus two side columns, shared out as evenly as possible |
 | 4Column Left / Right | `4column-left`, `4column-right` | Main pane plus three side columns |
-| Widescreen Tall / Tall Right | `widescreen-tall`, `widescreen-tall-right` | Tall (or Tall Right), but several main windows split into columns |
+| Widescreen Tall Left / Right | `widescreen-tall-left`, `widescreen-tall-right` | Tall Left (or Right), but several main windows split into columns |
 | Fullscreen | `fullscreen` | The focused window fills the screen |
-| Column / Row | `column`, `row` | One column (or row) per window |
+| Column Left / Right | `column-left`, `column-right` | One column per window, the first on the left (or right) |
+| Row Top / Bottom | `row-top`, `row-bottom` | One row per window, the first on top (or at the bottom) |
 | Floating | `floating` | Nothing is tiled |
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
 | Custom | file name | JavaScript layouts in `~/Library/Application Support/Amethyst/Layouts/*.js`; see [docs/custom-layouts.md](docs/custom-layouts.md) |
+
+Each name says where main is. The pairs are twins, the same layout mirrored; the flip commands (coming) switch between them. `layout-names` can give any layout your own name, e.g. `tall-left: coding`.
 
 ### BSP in Ametrine
 

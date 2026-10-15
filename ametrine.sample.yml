@@ -5,24 +5,33 @@
 # A command is bound only if this file binds it. Settings left out get built-in defaults.
 # Reference: docs/configuration-files.md in the Ametrine repo.
 
-# layouts - Ordered list of layouts to use by layout key (default tall, wide, fullscreen, and column).
+# layouts - Ordered list of layouts to use by layout key (default tall-left, wide-top, fullscreen, and column-left).
 layouts:
   - fullscreen
   - floating
-  - tall
+  - tall-left
   - tall-right
-  - wide
-  - two-pane
+  - wide-top
+  - wide-bottom
+  - two-pane-a
   - 3column-left
-  - middle-wide # The legacy name of "3column-middle"
+  - 3column-middle
   - 3column-right
   - 4column-left
   - 4column-right
-  - column
-  - row
-  - widescreen-tall
+  - column-left
+  - column-right
+  - row-top
+  - row-bottom
+  - widescreen-tall-left
   - widescreen-tall-right
   - bsp
+
+# layout-names - The name shown for a layout (menu bar, HUD, Layouts menu, palette), by layout key.
+# Layouts left out show their built-in name; an empty name shows the key.
+# layout-names:
+#   tall-left: coding
+#   3column-middle: work
 
 # First mod (default control + option). Every day commands
 mod1:
@@ -205,13 +214,13 @@ select-fullscreen-layout:
   mod: mod1
   key: '1'
 
-# Select two-pane layout
-select-two-pane-layout:
+# Select two-pane-a layout
+select-two-pane-a-layout:
   mod: mod1
   key: '2'
 
 # Select 3column-middle layout
-select-middle-wide-layout:
+select-3column-middle-layout:
   mod: mod1
   key: '3'
 
@@ -223,18 +232,18 @@ select-3column-left-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select tall layout
-select-tall-layout:
+# Select tall-left layout
+select-tall-left-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select wide layout.
-select-wide-layout:
+# Select wide-top layout.
+select-wide-top-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select column layout.
-select-column-layout:
+# Select column-left layout.
+select-column-left-layout:
   mod: <NONE>
   key: <NONE>
 

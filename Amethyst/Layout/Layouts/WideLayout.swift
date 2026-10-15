@@ -9,8 +9,8 @@
 import Silica
 
 class WideLayout<Window: WindowType>: PaneCountedLayout<Window>, PanedLayout {
-    override static var layoutName: String { return "Wide" }
-    override static var layoutKey: String { return "wide" }
+    override class var layoutName: String { return "Wide Top" }
+    override class var layoutKey: String { return "wide-top" }
 
     override class var paneCount: Int { return 2 }
 
@@ -67,5 +67,15 @@ class WideLayout<Window: WindowType>: PaneCountedLayout<Window>, PanedLayout {
 
             return assignments
         }
+    }
+}
+
+/// Wide Top's twin: main is a row of columns along the bottom.
+class WideBottomLayout<Window: WindowType>: WideLayout<Window> {
+    override static var layoutName: String { return "Wide Bottom" }
+    override static var layoutKey: String { return "wide-bottom" }
+
+    override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
+        return super.frameAssignments(windowSet, on: screen)?.map { $0.mirrored(.vertical) }
     }
 }
