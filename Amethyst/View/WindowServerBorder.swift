@@ -54,8 +54,6 @@ enum SkyLight {
     static let flushWindowContentRegion = function("SLSFlushWindowContentRegion", (@convention(c) (Int32, UInt32, UnsafeMutableRawPointer?) -> Int32).self)
     static let freezeWindow = function("SLSWindowFreezeWithOptions", (@convention(c) (Int32, UInt32, CFTypeRef?) -> Int32).self)
     static let thawWindow = function("SLSWindowThaw", (@convention(c) (Int32, UInt32) -> Int32).self)
-    static let disableUpdate = function("SLSDisableUpdate", (@convention(c) (Int32) -> Int32).self)
-    static let reenableUpdate = function("SLSReenableUpdate", (@convention(c) (Int32) -> Int32).self)
     static let transactionCreate = function("SLSTransactionCreate", (@convention(c) (Int32) -> Unmanaged<CFTypeRef>?).self)
     static let transactionMoveWindow = function("SLSTransactionMoveWindowWithGroup", (@convention(c) (CFTypeRef, UInt32, CGPoint) -> Int32).self)
     static let transactionOrderWindow = function("SLSTransactionOrderWindow", (@convention(c) (CFTypeRef, UInt32, Int32, UInt32) -> Int32).self)
@@ -77,7 +75,7 @@ enum SkyLight {
         let calls: [Any?] = [
             mainConnectionID, newConnection, registerNotifyProc, requestNotificationsForWindows, getWindowBounds, newRegionWithRect,
             newWindow, releaseWindow, setWindowResolution, setWindowOpacity, setWindowTags, setShadowProperties, setWindowShape,
-            windowContextCreate, flushWindowContentRegion, freezeWindow, thawWindow, disableUpdate, reenableUpdate, transactionCreate,
+            windowContextCreate, flushWindowContentRegion, freezeWindow, thawWindow, transactionCreate,
             transactionMoveWindow, transactionOrderWindow, transactionSetWindowLevel, transactionCommit, moveWindowsToManagedSpace
         ]
         return calls.allSatisfy { $0 != nil }
@@ -317,7 +315,9 @@ final class WindowServerBorder {
     }
 
     /// Puts the border around the bounds. Reshapes and redraws only when the size, the window's place inside the border window,
-    /// or the look changed, with screen updates held so no half-done frame shows; otherwise only moves it. Orders it in if asked.
+    /// or the look changed, with the border window frozen so no half-done border shows; otherwise only moves it. Orders it in if
+    /// asked. Screen updates are never held: that paused the whole screen, and a window being resized showed blank between its
+    /// new size and its new content.
     private func update(around bounds: CGRect, orderFront: Bool) {
         guard let appearance = effectiveAppearance else {
             return
@@ -338,7 +338,6 @@ final class WindowServerBorder {
 
         let needsDrawing = frame.size != drawnSize || windowRect != drawnWindowRect || appearance != drawnAppearance
         if needsDrawing {
-            _ = SkyLight.disableUpdate?(connection)
             _ = SkyLight.freezeWindow?(connection, borderWindowID, nil)
             // The offset places the window: at its final origin, never at the screen's corner.
             if let region = SkyLight.region(CGRect(origin: .zero, size: frame.size)) {
@@ -363,10 +362,6 @@ final class WindowServerBorder {
                 _ = SkyLight.transactionSetWindowLevel?(transaction, borderWindowID, Int32(NSWindow.Level.normal.rawValue + 1))
                 _ = SkyLight.transactionOrderWindow?(transaction, borderWindowID, 1, 0)
             }
-        }
-
-        if needsDrawing {
-            _ = SkyLight.reenableUpdate?(connection)
         }
     }
 
