@@ -14,6 +14,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 ## What it does
 
 - **Tiles windows per Space**, using the layouts listed in the config. Daily set: Fullscreen, Two Pane A, 3Column Left, 3Column Middle, Tall Left.
+- **Fullscreen toggle:** `toggle-fullscreen` switches a Space between its layout and Fullscreen with the focused window in front, and back with every window in its tile.
 - **The config file is the only source of settings and keys.**
   - It's read from `~/.config/ametrine/ametrine.yml` (or `~/.ametrine.yml`, or `~/.ametrine`).
   - There's no preferences window: the menu has **Edit Config…** (opens the file) and **Reload Config** (relaunches).

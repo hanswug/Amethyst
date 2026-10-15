@@ -329,3 +329,84 @@ class ScreenManagerRestoreTests: XCTestCase {
         XCTAssertEqual(older.currentLayout?.layoutKey, FullscreenLayout<TestWindow>.layoutKey)
     }
 }
+
+/// `toggle-fullscreen` and going back by selecting the current layout again, per Space.
+class ScreenManagerFullscreenToggleTests: XCTestCase {
+    private struct SavedState: Encodable {
+        let layoutsBySpaceUUID: [String: [[String: Data]]]
+    }
+
+    private let spaceA = Space(id: 1, type: CGSSpaceTypeUser, uuid: "SPACE-A")
+    private let spaceB = Space(id: 2, type: CGSSpaceTypeUser, uuid: "SPACE-B")
+    private var previousLayoutKeys: [String] = []
+
+    override func setUp() {
+        previousLayoutKeys = UserConfiguration.shared.layoutKeys()
+    }
+
+    override func tearDown() {
+        UserConfiguration.shared.setLayoutKeys(previousLayoutKeys)
+    }
+
+    /// A screen manager on `spaceA` whose layouts are `keys`, built the way a relaunch builds one.
+    @MainActor private func screenManager(_ keys: [String]) throws -> ScreenManager<TestDelegate> {
+        UserConfiguration.shared.setLayoutKeys(keys)
+        let saved = try JSONEncoder().encode(SavedState(layoutsBySpaceUUID: [:]))
+        let screenManager = try JSONDecoder().decode(ScreenManager<TestDelegate>.self, from: saved)
+        screenManager.updateSpace(to: spaceA)
+        return screenManager
+    }
+
+    @MainActor func testTogglesToFullscreenInPlaceAndBackToTheSameLayout() throws {
+        let screenManager = try screenManager(["3column-left", "tall-left"])
+        screenManager.cycleLayoutForward()
+        let tall = try XCTUnwrap(screenManager.currentLayout as? TallLayout<TestWindow>)
+        tall.increaseMainPaneCount()
+
+        screenManager.toggleFullscreen()
+        XCTAssertTrue(screenManager.currentLayout is FullscreenLayout<TestWindow>)
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["3column-left", "fullscreen"])
+
+        screenManager.toggleFullscreen()
+        XCTAssertTrue(screenManager.currentLayout === tall)
+        XCTAssertEqual(tall.mainPaneCount, 2)
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["3column-left", "tall-left"])
+    }
+
+    @MainActor func testCyclingEndsTheToggleAndMovesOnFromTheSlot() throws {
+        let screenManager = try screenManager(["tall-left", "3column-middle", "wide-top"])
+
+        screenManager.toggleFullscreen()
+        screenManager.cycleLayoutForward()
+
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "3column-middle")
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-left", "3column-middle", "wide-top"])
+    }
+
+    @MainActor func testSavesTheSlotsOwnLayoutWhileToggled() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top"])
+        screenManager.toggleFullscreen()
+
+        let saved = try JSONSerialization.jsonObject(with: JSONEncoder().encode(screenManager)) as? [String: Any]
+        let selection = saved?["currentLayoutKeyBySpaceUUID"] as? [String: String]
+
+        XCTAssertEqual(selection?[spaceA.uuid], "tall-left")
+    }
+
+    @MainActor func testGoesBackFromAFullscreenSelectedTheUsualWayPerSpace() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top", "fullscreen"])
+
+        screenManager.selectLayout("wide-top")
+        screenManager.selectLayout("fullscreen")
+        screenManager.updateSpace(to: spaceB)
+        screenManager.selectLayout("fullscreen")
+        screenManager.updateSpace(to: spaceA)
+
+        screenManager.toggleFullscreen()
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "wide-top")
+
+        screenManager.updateSpace(to: spaceB)
+        screenManager.selectLayout("fullscreen")
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "tall-left")
+    }
+}

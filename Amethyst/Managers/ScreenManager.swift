@@ -115,7 +115,15 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     private var currentLayoutIndexBySpaceUUID: [String: Int] = [:]
     private var layoutsBySpaceUUID: [String: [Layout<Window>]] = [:]
     private var currentLayoutIndex: Int = 0
-    var previousLayoutKey: String?
+    /// The layout used before the current one, per Space: selecting the current layout again goes back to it.
+    private var previousLayoutKeyBySpaceUUID: [String: String] = [:]
+
+    /// A slot that `toggle-fullscreen` filled with Fullscreen, and the slot's own layout, given back on the way back.
+    private struct FullscreenToggle {
+        let index: Int
+        let layout: Layout<Window>
+    }
+    private var fullscreenToggleBySpaceUUID: [String: FullscreenToggle] = [:]
     var currentLayout: Layout<Window>? {
         guard !layouts.isEmpty else {
             return nil
@@ -205,7 +213,14 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
     func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
-        let layoutsBySpaceUUID = try self.layoutsBySpaceUUID.mapValues { layouts in
+
+        // A toggled Fullscreen isn't saved: the slot's own layout is, so a relaunch comes back on it.
+        var savedLayoutsBySpaceUUID = self.layoutsBySpaceUUID
+        for (spaceUUID, toggle) in fullscreenToggleBySpaceUUID where savedLayoutsBySpaceUUID[spaceUUID]?.indices.contains(toggle.index) == true {
+            savedLayoutsBySpaceUUID[spaceUUID]?[toggle.index] = toggle.layout
+        }
+
+        let layoutsBySpaceUUID = try savedLayoutsBySpaceUUID.mapValues { layouts in
             return try layouts.map { layout -> [String: Data] in
                 let layoutKey = layout.layoutKey.data(using: .utf8)!
                 let encodedLayout = try LayoutType.encoded(layout: layout)
@@ -219,7 +234,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         if let space {
             currentLayoutIndices[space.uuid] = currentLayoutIndex
         }
-        let currentLayoutKeys = ScreenManager.layoutKeys(byIndex: currentLayoutIndices, layoutsBySpaceUUID: self.layoutsBySpaceUUID)
+        let currentLayoutKeys = ScreenManager.layoutKeys(byIndex: currentLayoutIndices, layoutsBySpaceUUID: savedLayoutsBySpaceUUID)
         try values.encode(currentLayoutKeys, forKey: .currentLayoutKeyBySpaceUUID)
     }
 
@@ -498,29 +513,96 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     }
 
     func cycleLayoutForward() {
+        endFullscreenToggle()
+        rememberCurrentLayout()
         setCurrentLayoutIndex((currentLayoutIndex + 1) % layouts.count)
         setNeedsReflow()
     }
 
     func cycleLayoutBackward() {
+        endFullscreenToggle()
+        rememberCurrentLayout()
         setCurrentLayoutIndex((currentLayoutIndex == 0 ? layouts.count : currentLayoutIndex) - 1)
         setNeedsReflow()
     }
 
+    /// Selects the layout; selecting the current one again goes back to the layout used before it on this Space.
     func selectLayout(_ layoutString: String) {
-        guard let currentLayoutKey = currentLayout?.layoutKey else {
+        let endedToggle = endFullscreenToggle()
+
+        guard let currentLayoutKey = currentLayout?.layoutKey, let spaceUUID = space?.uuid else {
             return
         }
 
-        let nextLayoutKey = currentLayoutKey == layoutString ? previousLayoutKey : layoutString
+        let nextLayoutKey = currentLayoutKey == layoutString ? previousLayoutKeyBySpaceUUID[spaceUUID] : layoutString
 
         guard let layoutIndex = layouts.firstIndex(where: { $0.layoutKey == nextLayoutKey }) else {
+            if endedToggle {
+                setCurrentLayoutIndex(currentLayoutIndex)
+                setNeedsReflow()
+            }
             return
         }
 
         setCurrentLayoutIndex(layoutIndex)
         setNeedsReflow()
-        previousLayoutKey = currentLayoutKey
+        previousLayoutKeyBySpaceUUID[spaceUUID] = currentLayoutKey
+    }
+
+    /**
+     Switches this Space between its layout and Fullscreen. Fullscreen takes over the current slot and gives it back, so it needn't be in
+     `layouts:`, and the slot's own layout keeps its state (main count, pane sizes). Window order doesn't change: going back, every window is
+     in the tile it had. On a Fullscreen selected the usual way, it goes back to the layout used before it.
+     */
+    func toggleFullscreen() {
+        guard let spaceUUID = space?.uuid, let current = currentLayout else {
+            return
+        }
+
+        if endFullscreenToggle() {
+            setCurrentLayoutIndex(currentLayoutIndex)
+            setNeedsReflow()
+            return
+        }
+
+        if current is FullscreenLayout<Window> {
+            if let previousKey = previousLayoutKeyBySpaceUUID[spaceUUID], previousKey != current.layoutKey {
+                selectLayout(previousKey)
+            }
+            return
+        }
+
+        fullscreenToggleBySpaceUUID[spaceUUID] = FullscreenToggle(index: currentLayoutIndex, layout: current)
+        replaceLayout(at: currentLayoutIndex, with: FullscreenLayout<Window>())
+        setCurrentLayoutIndex(currentLayoutIndex)
+        setNeedsReflow()
+    }
+
+    /// Gives a toggled Fullscreen's slot its own layout back, without a reflow. Returns whether there was a toggle.
+    @discardableResult private func endFullscreenToggle() -> Bool {
+        guard let spaceUUID = space?.uuid, let toggle = fullscreenToggleBySpaceUUID.removeValue(forKey: spaceUUID) else {
+            return false
+        }
+
+        replaceLayout(at: toggle.index, with: toggle.layout)
+        return true
+    }
+
+    private func replaceLayout(at index: Int, with layout: Layout<Window>) {
+        guard layouts.indices.contains(index) else {
+            return
+        }
+
+        layouts[index] = layout
+        if let spaceUUID = space?.uuid {
+            layoutsBySpaceUUID[spaceUUID] = layouts
+        }
+    }
+
+    private func rememberCurrentLayout() {
+        if let spaceUUID = space?.uuid, let currentLayoutKey = currentLayout?.layoutKey {
+            previousLayoutKeyBySpaceUUID[spaceUUID] = currentLayoutKey
+        }
     }
 
     private func setCurrentLayoutIndex(_ index: Int, changingSpace: Bool = false) {
