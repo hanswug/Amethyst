@@ -29,7 +29,7 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 | Drag and resize the focused window | The border follows it. |
 | Click inside the focused window (Safari: the address bar, then the page) | The border stays on top, with no window shadow over it. |
 | In CotEditor, select text with the mouse and with Shift+arrows; focus another app and move back (`focus-<direction>`, Alt-Tab) | The border stays on top of CotEditor throughout. |
-| Drag a floating window (System Settings) around, then resize it by an edge | The border disappears while the mouse is down and comes back around the window on release; no trailing ring. |
+| Drag a floating window (System Settings) around, then resize it by an edge | The border disappears as the drag starts (no first-frame trail) and comes back around the window on release. A plain click doesn't make it blink. |
 | Open a floating Settings window | It gets the border; the tile behind loses it. |
 | Switch to the Fullscreen layout, then open a native full-screen app | No border in either. |
 | ⌘H the focused app; switch Space | The border moves to the newly focused window (or disappears). |

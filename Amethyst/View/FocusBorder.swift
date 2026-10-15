@@ -129,22 +129,56 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// Moved events arrive in bursts while a window is dragged, so the border would trail it; it's hidden until the mouse is released.
+    /// Moved events arrive in bursts while a window is dragged, so the border would trail it. It's hidden from the first drag event
+    /// that starts on the window or its edge (a move, a resize, also a text selection) until the mouse is released.
     private var isHiddenForDrag = false
-    private var mouseUpMonitor: Any?
+    private var mouseDownLocation: CGPoint?
+    private var mouseMonitor: Any?
 
     init() {
-        mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { [weak self] _ in
+        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp]) { [weak self] event in
+            let type = event.type
+            let location = NSEvent.mouseLocation
             DispatchQueue.main.async {
-                self?.endDrag()
+                self?.handleMouse(type, at: location)
             }
         }
     }
 
     deinit {
-        if let mouseUpMonitor {
-            NSEvent.removeMonitor(mouseUpMonitor)
+        if let mouseMonitor {
+            NSEvent.removeMonitor(mouseMonitor)
         }
+    }
+
+    /// - Parameter location: In screen coordinates, origin bottom left (`NSEvent.mouseLocation`).
+    private func handleMouse(_ type: NSEvent.EventType, at location: CGPoint) {
+        switch type {
+        case .leftMouseDown:
+            mouseDownLocation = location
+        case .leftMouseDragged:
+            // Checked now, not on mouse-down: a click on another window moves the border there first.
+            if let mouseDownLocation, !isHiddenForDrag, isOnWindow(mouseDownLocation) {
+                isHiddenForDrag = true
+                panel.orderOut(nil)
+            }
+        case .leftMouseUp:
+            mouseDownLocation = nil
+            endDrag()
+        default:
+            break
+        }
+    }
+
+    /// Whether a point is on the bordered window or within a few points of its edge, where a resize starts.
+    private func isOnWindow(_ location: CGPoint) -> Bool {
+        guard let windowFrame, currentWindowID != nil else {
+            return false
+        }
+
+        let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
+        let flipped = CGRect(x: windowFrame.minX, y: primaryScreenHeight - windowFrame.maxY, width: windowFrame.width, height: windowFrame.height)
+        return flipped.insetBy(dx: -6, dy: -6).contains(location)
     }
 
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
