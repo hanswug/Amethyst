@@ -23,7 +23,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - **Warp:** `warp-west/east/north/south` moves the focused window into the pane in that direction, and `warp-main` into main from anywhere, so columns grow and shrink (3Column 1/2/2 → 1/3/1). A warp never empties a pane, and a window warped into main lands at `main-arrival-position`. The main pane count is a maximum: `increase-main` moves nothing, warping into a full main or out of main moves it by one, and the HUD shows "x of y". See [warp](docs/directional-navigation.md#warp).
 - **Command palette** (`show-command-palette`, Super+Y here): lists every command with its shortcut, plus current values such as the window max count and main pane count. Type to filter, ↑/↓ to select, Enter runs, Esc closes. Works like Spotlight: the app you're in stays in front.
 - **Command URL:** `open -g "ametrine://command/<command-key>"` runs any command, bound or not, from scripts or launchers. Unknown keys are ignored.
-- **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly, and the last mode survives restarts. The built-in display stays unpadded.
+- **Padding modes:** named virtual monitors on a large display, e.g. `full`, `wide` (21:9) and `27` (a centred 27"), anchored to the bottom edge. Switch with `cycle-padding-mode` or `select-<name>-padding-mode`, or from the Padding menu. The change applies instantly to the current Space; each Space keeps its own mode, which survives restarts. The built-in display stays unpadded.
 - **Floating secondary windows:** for apps in `floating-secondary-windows`, the first window on a Space tiles. That app's other windows (Settings, dialogs, Open panels) float, with no title rules.
 - **Keeps up with app switches:** every switch to another app re-lays out the screen, also for apps that don't announce it through Accessibility. Quitting an app frees all its tiles.
 - **Focus border** (`focus-border: true`): a ring just outside the focused window, never over it. `glow` (default) is a thin ring with a soft halo like the macOS focus ring, in the system accent colour; `solid` and `gradient` (purple to gold) are the alternatives. It follows each window's own corners and keeps up with drags and resizes, like JankyBorders. Width, colour and a fallback corner radius are in the config. No border on tiled windows in the Fullscreen layout or in native full screen. `toggle-focus-border` and `cycle-focus-border-style` switch it until Reload Config.
@@ -79,7 +79,7 @@ padding-modes:
     left: 640
     right: 640
     top: 720
-padding-mode: wide        # used only until a mode has been selected
+padding-mode: wide        # each Space starts on this until you pick a mode there
 cycle-padding-mode: {mod: mod4, key: "0"}
 
 floating-secondary-windows: [md.obsidian]
@@ -171,6 +171,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.0.0 | `new-windows-to-main: true \| false` is now `main-arrival-position: first \| last` (rename it in your config); `toggle-main-arrival-position`. The focus border is rebuilt: it follows each window's own corners and keeps up with drags and resizes, and the palette shows its state and style. `--log` traces each layout pass |
 | 4.1.0 | Main shrinks when one of its windows leaves view (closed, quit, hidden, minimised, another Space, floated), and a window coming back arrives at `main-arrival-position`; the focus border catches a window moved right after it was focused |
 | 4.2.0 | Warp: `warp-west/east/north/south` moves a window into the pane in that direction (3Column 1/2/2 → 1/3/1), into an empty column too, and `warp-main` into main from anywhere; swaps where a pane would empty or holds one window; splits the neighbour's tile in BSP. Pane sizes are remembered per layout and survive a relaunch. The main pane count is a maximum: `increase-main` moves nothing, warps in and out move it by one, and the HUD shows "x of y" |
+| 4.3.0 | Padding modes per Space: each Space keeps the mode picked on it, also across restarts, and starts on `padding-mode` until one is picked; the padding commands and the Padding menu act on the current Space. `--log` logs how long each Space change takes |
 
 ## Credits and licence
 

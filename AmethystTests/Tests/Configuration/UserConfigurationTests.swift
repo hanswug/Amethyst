@@ -949,12 +949,15 @@ class UserConfigurationTests: QuickSpec {
                 return configuration
             }
 
-            func paddings(_ configuration: UserConfiguration) -> [CGFloat] {
+            let spaceA = "SPACE-A"
+            let spaceB = "SPACE-B"
+
+            func paddings(_ configuration: UserConfiguration, on spaceUUID: String? = spaceA) -> [CGFloat] {
                 return [
-                    configuration.screenPaddingTop(),
-                    configuration.screenPaddingBottom(),
-                    configuration.screenPaddingLeft(),
-                    configuration.screenPaddingRight()
+                    configuration.screenPaddingTop(forSpaceUUID: spaceUUID),
+                    configuration.screenPaddingBottom(forSpaceUUID: spaceUUID),
+                    configuration.screenPaddingLeft(forSpaceUUID: spaceUUID),
+                    configuration.screenPaddingRight(forSpaceUUID: spaceUUID)
                 ]
             }
 
@@ -1008,7 +1011,7 @@ class UserConfigurationTests: QuickSpec {
                 it("uses the plain screen paddings when no modes are configured") {
                     let configuration = loadedConfiguration("layouts: [tall]" + plainPaddingsYAML)
 
-                    expect(configuration.activePaddingMode()).to(beNil())
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)).to(beNil())
                     expect(paddings(configuration)).to(equal([10, 20, 30, 40]))
                 }
 
@@ -1021,16 +1024,16 @@ class UserConfigurationTests: QuickSpec {
                 it("uses the active mode's values") {
                     let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
 
-                    configuration.selectPaddingMode(named: "27")
+                    configuration.selectPaddingMode(named: "27", forSpaceUUID: spaceA)
 
                     expect(paddings(configuration)).to(equal([720, 0, 640, 640]))
                 }
 
                 it("falls back to the plain screen paddings for an unknown active name") {
-                    stateDefaults.set("gone", forKey: UserConfiguration.activePaddingModeKey)
+                    stateDefaults.set([spaceA: "gone"], forKey: UserConfiguration.paddingModeBySpaceKey)
                     let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
 
-                    expect(configuration.activePaddingMode()).to(beNil())
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)).to(beNil())
                     expect(paddings(configuration)).to(equal([10, 20, 30, 40]))
                 }
             }
@@ -1039,38 +1042,77 @@ class UserConfigurationTests: QuickSpec {
                 it("starts with padding-mode from the configuration") {
                     let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
 
-                    expect(configuration.activePaddingMode()?.name).to(equal("wide"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("wide"))
                 }
 
                 it("accepts a bare number for padding-mode") {
                     let configuration = loadedConfiguration(modesYAML + "\npadding-mode: 27")
 
-                    expect(configuration.activePaddingMode()?.name).to(equal("27"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("27"))
                 }
 
                 it("prefers the selected mode over padding-mode, also after reloading the configuration") {
                     let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
 
-                    configuration.selectPaddingMode(named: "full")
+                    configuration.selectPaddingMode(named: "full", forSpaceUUID: spaceA)
                     configuration.loadConfiguration()
 
-                    expect(configuration.activePaddingMode()?.name).to(equal("full"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("full"))
                 }
 
                 it("survives a restart") {
-                    loadedConfiguration(modesYAML).selectPaddingMode(named: "27")
+                    loadedConfiguration(modesYAML).selectPaddingMode(named: "27", forSpaceUUID: spaceA)
 
                     let relaunched = loadedConfiguration(modesYAML + "\npadding-mode: wide")
 
-                    expect(relaunched.activePaddingMode()?.name).to(equal("27"))
+                    expect(relaunched.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("27"))
                 }
 
                 it("ignores selecting an unknown name") {
                     let configuration = loadedConfiguration(modesYAML)
-                    configuration.selectPaddingMode(named: "wide")
+                    configuration.selectPaddingMode(named: "wide", forSpaceUUID: spaceA)
 
-                    expect(configuration.selectPaddingMode(named: "nope")).to(beNil())
-                    expect(configuration.activePaddingMode()?.name).to(equal("wide"))
+                    expect(configuration.selectPaddingMode(named: "nope", forSpaceUUID: spaceA)).to(beNil())
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("wide"))
+                }
+            }
+
+            describe("per Space") {
+                it("keeps a selection to its own Space") {
+                    let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
+
+                    configuration.selectPaddingMode(named: "27", forSpaceUUID: spaceA)
+                    configuration.selectPaddingMode(named: "full", forSpaceUUID: spaceB)
+
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("27"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceB)?.name).to(equal("full"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: "SPACE-NEW")?.name).to(equal("wide"))
+                }
+
+                it("gives each screen the padding of its own Space") {
+                    let configuration = loadedConfiguration(modesYAML + plainPaddingsYAML)
+
+                    configuration.selectPaddingMode(named: "27", forSpaceUUID: spaceA)
+
+                    expect(paddings(configuration, on: spaceA)).to(equal([720, 0, 640, 640]))
+                    expect(paddings(configuration, on: spaceB)).to(equal([10, 20, 30, 40]))
+                }
+
+                it("uses padding-mode without a Space and stores nothing") {
+                    let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
+
+                    expect(configuration.activePaddingMode(forSpaceUUID: nil)?.name).to(equal("wide"))
+                    expect(configuration.selectPaddingMode(named: "27", forSpaceUUID: nil)?.name).to(equal("27"))
+                    expect(stateDefaults.dictionary(forKey: UserConfiguration.paddingModeBySpaceKey)).to(beNil())
+                }
+
+                it("drops the single mode stored before modes were per Space") {
+                    stateDefaults.set("27", forKey: UserConfiguration.legacyActivePaddingModeKey)
+
+                    let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
+
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("wide"))
+                    expect(stateDefaults.string(forKey: UserConfiguration.legacyActivePaddingModeKey)).to(beNil())
                 }
             }
 
@@ -1078,7 +1120,7 @@ class UserConfigurationTests: QuickSpec {
                 it("goes forward in order and wraps around") {
                     let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
 
-                    let names = (0..<3).compactMap { _ in configuration.cyclePaddingMode(forward: true)?.name }
+                    let names = (0..<3).compactMap { _ in configuration.cyclePaddingMode(forward: true, forSpaceUUID: spaceA)?.name }
 
                     expect(names).to(equal(["27", "full", "wide"]))
                 }
@@ -1086,23 +1128,31 @@ class UserConfigurationTests: QuickSpec {
                 it("goes backward and wraps around") {
                     let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
 
-                    let names = (0..<3).compactMap { _ in configuration.cyclePaddingMode(forward: false)?.name }
+                    let names = (0..<3).compactMap { _ in configuration.cyclePaddingMode(forward: false, forSpaceUUID: spaceA)?.name }
 
                     expect(names).to(equal(["full", "27", "wide"]))
                 }
 
                 it("starts at the first or last mode when none is active") {
-                    expect(loadedConfiguration(modesYAML).cyclePaddingMode(forward: true)?.name).to(equal("full"))
+                    expect(loadedConfiguration(modesYAML).cyclePaddingMode(forward: true, forSpaceUUID: spaceA)?.name).to(equal("full"))
+                    expect(loadedConfiguration(modesYAML).cyclePaddingMode(forward: false, forSpaceUUID: spaceB)?.name).to(equal("27"))
+                }
 
-                    stateDefaults.removeObject(forKey: UserConfiguration.activePaddingModeKey)
-                    expect(loadedConfiguration(modesYAML).cyclePaddingMode(forward: false)?.name).to(equal("27"))
+                it("cycles from the Space's own mode and leaves other Spaces alone") {
+                    let configuration = loadedConfiguration(modesYAML + "\npadding-mode: wide")
+                    configuration.selectPaddingMode(named: "full", forSpaceUUID: spaceA)
+
+                    expect(configuration.cyclePaddingMode(forward: true, forSpaceUUID: spaceA)?.name).to(equal("wide"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceB)?.name).to(equal("wide"))
+                    expect(configuration.cyclePaddingMode(forward: true, forSpaceUUID: spaceB)?.name).to(equal("27"))
+                    expect(configuration.activePaddingMode(forSpaceUUID: spaceA)?.name).to(equal("wide"))
                 }
 
                 it("does nothing without modes") {
                     let configuration = loadedConfiguration("layouts: [tall]")
 
-                    expect(configuration.cyclePaddingMode(forward: true)).to(beNil())
-                    expect(stateDefaults.string(forKey: UserConfiguration.activePaddingModeKey)).to(beNil())
+                    expect(configuration.cyclePaddingMode(forward: true, forSpaceUUID: spaceA)).to(beNil())
+                    expect(stateDefaults.dictionary(forKey: UserConfiguration.paddingModeBySpaceKey)).to(beNil())
                 }
             }
         }

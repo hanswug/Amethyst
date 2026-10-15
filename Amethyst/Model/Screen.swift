@@ -106,10 +106,12 @@ struct AMScreen: ScreenType {
          let isScreenBuiltin: Bool = screenNumber.map { CGDisplayIsBuiltin($0) == 1 } ?? false
          if isDisablePaddingOnBuiltinDisplay && isScreenBuiltin {return frame}
 
-        let paddingTop = UserConfiguration.shared.screenPaddingTop()
-        let paddingBottom = UserConfiguration.shared.screenPaddingBottom()
-        let paddingLeft = UserConfiguration.shared.screenPaddingLeft()
-        let paddingRight = UserConfiguration.shared.screenPaddingRight()
+        // Each Space has its own padding mode; use the one of the Space this screen is showing.
+        let spaceUUID = CGSpacesInfo<AXWindow>.currentSpaceForScreen(self)?.uuid
+        let paddingTop = UserConfiguration.shared.screenPaddingTop(forSpaceUUID: spaceUUID)
+        let paddingBottom = UserConfiguration.shared.screenPaddingBottom(forSpaceUUID: spaceUUID)
+        let paddingLeft = UserConfiguration.shared.screenPaddingLeft(forSpaceUUID: spaceUUID)
+        let paddingRight = UserConfiguration.shared.screenPaddingRight(forSpaceUUID: spaceUUID)
         frame.origin.y += paddingTop
         frame.origin.x += paddingLeft
         // subtract the right padding, and also any amount that we pushed the frame to the left with the left padding

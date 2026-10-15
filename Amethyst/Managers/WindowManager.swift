@@ -220,6 +220,8 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     }
 
     @objc func activeSpaceDidChange(_ notification: Notification) {
+        let start = Date()
+
         // Update spaces across screens so that events get distributed to the correct layouts
         screens.updateSpaces()
 
@@ -237,21 +239,31 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
             self?.updateFocusBorder()
         }
 
+        let sweepStart = Date()
         for runningApplication in NSWorkspace.shared.runningApplications {
             let pid = runningApplication.processIdentifier
             guard let application = applicationWithPID(pid) else {
                 continue
             }
 
+            let applicationStart = Date()
             application.dropWindowsCache()
 
             for window in application.windows() {
                 add(window: window)
             }
+
+            let applicationTime = Date().timeIntervalSince(applicationStart)
+            if applicationTime > 0.1 {
+                log.info("Space change: \(runningApplication.localizedName ?? "pid \(pid)") took \(Int(applicationTime * 1000)) ms to list its windows")
+            }
         }
 
         windows.regenerateActiveIDCache()
         markAllScreensForReflow()
+
+        let end = Date()
+        log.info("Space change: \(Int(end.timeIntervalSince(start) * 1000)) ms, of which \(Int(end.timeIntervalSince(sweepStart) * 1000)) ms listing windows")
     }
 
     @objc func screenParametersDidChange(_ notification: Notification) {
@@ -476,23 +488,35 @@ extension WindowManager {
     }
 
     func selectPaddingMode(named name: String) {
-        guard let paddingMode = userConfiguration.selectPaddingMode(named: name) else {
+        let screenManager = paddingScreenManager()
+        guard let paddingMode = userConfiguration.selectPaddingMode(named: name, forSpaceUUID: screenManager?.space?.uuid) else {
             log.warning("Unknown padding mode: \(name)")
             return
         }
 
-        paddingModeDidChange(to: paddingMode)
+        paddingModeDidChange(to: paddingMode, on: screenManager)
     }
 
     func cyclePaddingMode(forward: Bool) {
-        guard let paddingMode = userConfiguration.cyclePaddingMode(forward: forward) else {
+        let screenManager = paddingScreenManager()
+        guard let paddingMode = userConfiguration.cyclePaddingMode(forward: forward, forSpaceUUID: screenManager?.space?.uuid) else {
             return
         }
 
-        paddingModeDidChange(to: paddingMode)
+        paddingModeDidChange(to: paddingMode, on: screenManager)
     }
 
-    private func paddingModeDidChange(to paddingMode: PaddingMode) {
+    /// The padding mode of the focused screen's Space, for the Padding menu.
+    func activePaddingMode() -> PaddingMode? {
+        return userConfiguration.activePaddingMode(forSpaceUUID: paddingScreenManager()?.space?.uuid)
+    }
+
+    /// Padding modes are per Space: commands act on the focused screen's Space, or the first screen's on an empty desktop.
+    private func paddingScreenManager() -> ScreenManager<WindowManager<Application>>? {
+        return focusedScreenManager() ?? screens.screenManagers.first
+    }
+
+    private func paddingModeDidChange(to paddingMode: PaddingMode, on screenManager: ScreenManager<WindowManager<Application>>?) {
         // Screen paddings are read on every reflow, so reflowing applies the new mode immediately.
         markAllScreensForReflow()
 
@@ -501,9 +525,7 @@ extension WindowManager {
                 return
             }
 
-            for screenManager in self.screens.screenManagers {
-                screenManager.displayCustomHUD(title: "Padding · \(paddingMode.name)")
-            }
+            screenManager?.displayCustomHUD(title: "Padding · \(paddingMode.name)")
         }
     }
 

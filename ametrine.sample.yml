@@ -1,4 +1,4 @@
-# Hans's Ametrine config, snapshot of 2026-10-14. Copy to ~/.config/ametrine/ametrine.yml.
+# Hans's Ametrine config, snapshot of 2026-10-15. Copy to ~/.config/ametrine/ametrine.yml.
 # Ametrine configuration: the only source of settings and key bindings.
 # Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml).
 # Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
@@ -8,41 +8,48 @@
 # layouts - Ordered list of layouts to use by layout key (default tall, wide, fullscreen, and column).
 layouts:
   - fullscreen
-  # - tall-right
-  # wide
+  - floating
+  - tall
+  - tall-right
+  - wide
   - two-pane
   - 3column-left
-  - middle-wide
-  - tall
-  # - middle-wide # The legacy name of "3column-middle"
-  # - 3column-right
-  # - 4column-left
-  # - 4column-right
-  # - column
-  # - row
-  # - floating
-  # - widescreen-tall
-  # - widescreen-tall-right
+  - middle-wide # The legacy name of "3column-middle"
+  - 3column-right
+  - 4column-left
+  - 4column-right
+  - column
+  - row
+  - widescreen-tall
+  - widescreen-tall-right
   - bsp
 
-# First mod (default option + shift).
+# First mod (default control + option). Every day commands
 mod1:
-  - option
   # - shift
   - control
+  - option
   # - command
 
-# Second mod (default option + shift + control).
+# Second mod (default option + control + command). Warps
 mod2:
-  - option
-#  - shift
+  # - shift
   - control
+  - option
   - command
 
-# Third mod: swap (control + command). Warp has mod2: it moves windows more naturally.
-# (shift + control + option never reached Ametrine: another app holds those keys.)
+# Third mod: (default control + command). Swaps
 mod3:
+  # - shift
   - control
+  # - option
+  - command
+  
+# Fourth mod: (default shift + control + option + command). Super
+mod4:
+  - shift
+  - control
+  - option
   - command
 
 # Commands:
@@ -66,7 +73,7 @@ cycle-layout:
 
 # Move to the previous layout in the list.
 cycle-layout-backward:
-  mod: mod2
+  mod: mod1
   key: ','
 
 # Shrink the main pane by a percentage of the screen dimension as defined by window-resize-step. Note that not all layouts respond to this command.
@@ -109,13 +116,13 @@ decrease-main:
 # Previous/next retired for directional focus and swap (an Alt-Tab app covers previous/next).
 # Focus the next window in the list going counter-clockwise.
 focus-ccw:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod1
+  key: left
 
 # Focus the next window in the list going clockwise.
 focus-cw:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod1
+  key: right
 
 # Focus the main window in the list.
 focus-main:
@@ -124,13 +131,13 @@ focus-main:
 
 # Swap the position of the currently focused window with the next window in the list going counter-clockwise.
 swap-ccw:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod3
+  key: left
 
 # Swap the position of the currently focused window with the next window in the list going clockwise.
 swap-cw:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod3
+  key: right
 
 # Swap the position of the currently focused window with the main window in the list.
 swap-main:
@@ -193,11 +200,6 @@ warp-main:
   mod: mod2
   key: m
 
-# Select wide layout
-#select-wide-layout:
-#  mod: mod1
-#  key: s
-
 # Select fullscreen layout
 select-fullscreen-layout:
   mod: mod1
@@ -208,23 +210,23 @@ select-two-pane-layout:
   mod: mod1
   key: '2'
 
-# Select 3column-left layout
-select-3column-left-layout:
-  mod: mod1
-  key: '3'
-
 # Select 3column-middle layout
 select-middle-wide-layout:
   mod: mod1
-  key: '4'
-
-# Select tall layout
-select-tall-layout:
-  mod: mod1
-  key: '5'
+  key: '3'
 
 # The following commands used to be bound by built-in defaults and were never chosen explicitly,
 # so they are unbound (<NONE>). Ametrine binds only what this file binds; set mod/key to bind one.
+
+# Select 3column-left layout
+select-3column-left-layout:
+  mod: <NONE>
+  key: <NONE>
+
+# Select tall layout
+select-tall-layout:
+  mod: <NONE>
+  key: <NONE>
 
 # Select wide layout.
 select-wide-layout:
@@ -243,7 +245,7 @@ select-bsp-layout:
 
 # Toggle the floating state of the currently focused window; i.e., if it was floating make it tiled and if it was tiled make it floating.
 toggle-float:
-  mod: mod1
+  mod: mod2
   key: t
 
 # Show in a HUD whether the focused window is tiled, floating or not managed, and why.
@@ -268,8 +270,8 @@ toggle-main-arrival-position:
 
 # Display the layout HUD with the current layout on each screen.
 display-current-layout:
-  mod: mod1
-  key: i
+  mod: <NONE>
+  key: <NONE>
 
 # Turn on or off tiling entirely.
 toggle-tiling:
@@ -328,18 +330,18 @@ window-overflow: float
 # fixed (window-overflow-width x window-overflow-height) (default reasonable).
 window-overflow-size: reasonable
 
-# The reasonable size, in percent of the screen's usable width and height (1-100, defaults 60 and 70).
+# The reasonable size, in percent of the screen's usable width and height (1-100, defaults 60 and 60).
 window-overflow-reasonable-width: 60
-window-overflow-reasonable-height: 70
+window-overflow-reasonable-height: 60
 
 # The fixed size in points, never bigger than the screen (0 = not set; fixed then uses reasonable).
-window-overflow-width: 0
-window-overflow-height: 0
+window-overflow-width: 1025
+window-overflow-height: 900
 
 # Switch window-overflow between minimize and float until Reload Config.
 toggle-window-overflow:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod2
+  key: o
 
 # Switch window-overflow-size between reasonable and fixed until Reload Config.
 toggle-window-overflow-size:
@@ -452,31 +454,27 @@ screen-padding-top: 0   # padding modes below replace the old 540
 screen-padding-bottom: 0
 
 # --- Ametrine: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
-# Super+0 cycles full → wide → 27. The selected mode survives restarts;
-# padding-mode only applies until a mode has been selected.
-mod4:
-  - option
-  - control
-  - shift
-  - command
+# Super+0 cycles full → wide → 27 on the current Space. Each Space keeps
+# its own mode, which survives restarts; padding-mode is where a Space
+# starts until a mode has been picked there.
 padding-modes:
   - name: full
   - name: wide
     top: 540
-  - name: "27"
+  - name: "27 screen"
     left: 640
     right: 640
     top: 720
 padding-mode: wide
 cycle-padding-mode:
-  mod: mod4
+  mod: mod1
   key: "0"
 
 # --- Ametrine: command palette ---
 # Super+Y lists every command with its shortcut; type to filter, Enter runs, Esc closes.
 show-command-palette:
-  mod: mod4
-  key: y
+  mod: mod1
+  key: p
 
 # true to maintain layout state across application executions (default true).
 restore-layouts-on-launch: true
