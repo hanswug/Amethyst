@@ -17,6 +17,7 @@ enum WindowTransition<Window: WindowType> {
     case moveWindowToSpaceAtIndex(_ window: Window, spaceIndex: Int, sourceSpaceIndex: Int)
     case resetFocus
     case warpWindow(_ window: Window, direction: Direction)
+    case warpWindowToMain(_ window: Window)
 }
 
 protocol WindowTransitionTarget: AnyObject {
@@ -141,6 +142,19 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
         }
 
         target?.executeTransition(.warpWindow(focusedWindow, direction: direction))
+    }
+
+    /// Warps the focused window into main (`warp-main`); does nothing in Fullscreen or from a floating window.
+    func warpFocusedWindowToMain() {
+        guard let focusedWindow = Window.currentlyFocused(), target?.isWindowFloating(focusedWindow) == false, let screen = focusedWindow.screen() else {
+            return
+        }
+
+        guard target?.isFullscreenLayout(on: screen) == false else {
+            return
+        }
+
+        target?.executeTransition(.warpWindowToMain(focusedWindow))
     }
 
     func throwToScreenAtIndex(_ screenIndex: Int) {

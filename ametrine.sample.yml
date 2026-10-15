@@ -188,6 +188,11 @@ warp-east:
   mod: mod3
   key: l
 
+# Warp the focused window into main from wherever it is (swaps with main's top window from a pane's last window).
+warp-main:
+  mod: mod3
+  key: m
+
 # Select wide layout
 #select-wide-layout:
 #  mod: mod1

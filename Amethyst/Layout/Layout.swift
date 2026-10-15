@@ -153,6 +153,11 @@ class PaneCountedLayout<Window: WindowType>: Layout<Window> {
         return fittedPaneCounts(windowCount: windowCount).warp(from: index, to: target, intoMainAtFront: intoMainAtFront)
     }
 
+    /// What `warp-main` does with the window at `index` among `windowCount` windows (`PaneCounts.warpIntoMain`).
+    func warpIntoMainPlan(from index: Int, windowCount: Int, intoMainAtFront: Bool) -> PaneCounts.WarpPlan? {
+        return fittedPaneCounts(windowCount: windowCount).warpIntoMain(from: index, intoMainAtFront: intoMainAtFront)
+    }
+
     /// Takes the sizes after a warp moved a window. A warp into a full main raises the maximum to match.
     func applyWarp(_ counts: PaneCounts) {
         paneState.setCounts(counts)

@@ -213,6 +213,30 @@ struct PaneCounts: Codable, Equatable, CustomStringConvertible {
         newCounts[targetPane] += 1
         return .move(toIndex: destination, counts: PaneCounts(newCounts))
     }
+
+    /**
+     What `warp-main` does with the window at `index` (agreed 2026-10-14): it joins main from wherever it is, at the top
+     (`intoMainAtFront`) or the bottom. A window already in main stays; the last window of a side pane swaps with main's
+     top window instead (a warp never empties a pane).
+     */
+    func warpIntoMain(from index: Int, intoMainAtFront: Bool) -> WarpPlan? {
+        guard index >= 0, index < total else {
+            return nil
+        }
+
+        let sourcePane = pane(ofIndex: index)
+        guard sourcePane != 0 else {
+            return nil
+        }
+        if counts[sourcePane] == 1 {
+            return .swap(0)
+        }
+
+        var newCounts = counts
+        newCounts[sourcePane] -= 1
+        newCounts[0] += 1
+        return .move(toIndex: intoMainAtFront ? 0 : counts[0], counts: PaneCounts(newCounts))
+    }
 }
 
 /**

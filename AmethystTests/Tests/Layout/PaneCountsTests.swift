@@ -107,6 +107,24 @@ class PaneCountsTests: QuickSpec {
                     .to(equal(.move(toIndex: 3, counts: PaneCounts([2, 1, 1]))))
             }
 
+            describe("into main") {
+                it("joins main from any column, at the bottom or the top") {
+                    // 3Column Left 1/2/2: the right column's last window warps into main.
+                    expect(PaneCounts([1, 2, 2]).warpIntoMain(from: 4, intoMainAtFront: false))
+                        .to(equal(.move(toIndex: 1, counts: PaneCounts([2, 2, 1]))))
+                    expect(PaneCounts([1, 2, 2]).warpIntoMain(from: 4, intoMainAtFront: true))
+                        .to(equal(.move(toIndex: 0, counts: PaneCounts([2, 2, 1]))))
+                }
+
+                it("swaps with main's top window from a pane's last window") {
+                    expect(PaneCounts([2, 1, 1]).warpIntoMain(from: 3, intoMainAtFront: false)).to(equal(.swap(0)))
+                }
+
+                it("does nothing from main") {
+                    expect(PaneCounts([2, 1, 1]).warpIntoMain(from: 1, intoMainAtFront: false)).to(beNil())
+                }
+            }
+
             it("does nothing into an empty column from a pane's last window") {
                 expect(PaneCounts([2, 1, 0]).warp(from: 2, to: .emptyPane(2), intoMainAtFront: false)).to(beNil())
             }

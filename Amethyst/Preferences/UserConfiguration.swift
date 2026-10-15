@@ -167,6 +167,7 @@ enum CommandKey: String {
     case warpEast = "warp-east"
     case warpNorth = "warp-north"
     case warpSouth = "warp-south"
+    case warpMain = "warp-main"
     case toggleFloat = "toggle-float"
     case displayCurrentLayout = "display-current-layout"
     case toggleTiling = "toggle-tiling"

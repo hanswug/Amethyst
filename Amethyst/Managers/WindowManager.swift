@@ -1253,6 +1253,8 @@ extension WindowManager: WindowTransitionTarget {
             }
         case let .warpWindow(window, direction):
             warp(window, toward: direction)
+        case let .warpWindowToMain(window):
+            warpToMain(window)
         }
     }
 
@@ -1436,7 +1438,50 @@ extension WindowManager {
         }
 
         let atFront = userConfiguration.mainArrivalPosition() == .first
-        switch layout.warpPlan(from: index, to: target, windowCount: windowIDs.count, intoMainAtFront: atFront) {
+        let plan = layout.warpPlan(from: index, to: target, windowCount: windowIDs.count, intoMainAtFront: atFront)
+        apply(plan, to: window, among: windowIDs, in: layout, on: screen)
+    }
+
+    /**
+     `warp-main`: the window joins main from wherever it is (agreed 2026-10-14).
+
+     - Layouts with stored pane sizes: `PaneCounts.warpIntoMain`; the last window of a side pane swaps with main's top window.
+     - Two Pane, Column, Row: a swap with main's top window, like `swap-main`.
+     - Already in main, BSP (no main pane), Fullscreen, Floating, custom layouts: nothing.
+     */
+    func warpToMain(_ window: Window) {
+        guard let screen = window.screen(), let screenManager = screenManager(for: screen), let layout = screenManager.currentLayout else {
+            return
+        }
+
+        let windowIDs = windows.windowSet(forActiveWindowsOnScreen: screen).windows.map(\.id)
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return
+        }
+
+        switch layout {
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is CustomLayout<Window>, is BinarySpacePartitioningLayout<Window>:
+            return
+        case let paneCountedLayout as PaneCountedLayout<Window>:
+            let atFront = userConfiguration.mainArrivalPosition() == .first
+            let plan = paneCountedLayout.warpIntoMainPlan(from: index, windowCount: windowIDs.count, intoMainAtFront: atFront)
+            apply(plan, to: window, among: windowIDs, in: paneCountedLayout, on: screen)
+        default:
+            let mainCount = (layout as? PanedLayout).map { min($0.mainPaneCount, windowIDs.count) } ?? 1
+            guard index >= mainCount, let mainWindow = windows.window(withID: windowIDs[0]) else {
+                return
+            }
+            swapForWarp(window, with: mainWindow)
+        }
+    }
+
+    /// Carries out a warp plan for the window among this screen's `windowIDs`.
+    private func apply(_ plan: PaneCounts.WarpPlan?, to window: Window, among windowIDs: [Window.WindowID], in layout: PaneCountedLayout<Window>, on screen: Screen) {
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return
+        }
+
+        switch plan {
         case let .swap(otherIndex):
             guard let otherWindow = windows.window(withID: windowIDs[otherIndex]) else {
                 return
@@ -1449,7 +1494,7 @@ extension WindowManager {
             let before = layout.paneCounts
             windows.reorder(order)
             layout.applyWarp(counts)
-            log.debug("Warp \(direction): \(window.title() ?? "") #\(window.cgID()) panes \(before) → \(counts)")
+            log.debug("Warp: \(window.title() ?? "") #\(window.cgID()) panes \(before) → \(counts)")
             followWithCursor(window, in: layout, on: screen)
             markScreenForReflow(screen)
         case nil:

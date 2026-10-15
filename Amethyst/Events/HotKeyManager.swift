@@ -266,6 +266,10 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
+        constructCommandWithCommandKey(CommandKey.warpMain.rawValue) {
+            windowManager.windowTransitionCoordinator.warpFocusedWindowToMain()
+        }
+
         constructCommandWithCommandKey(CommandKey.displayCurrentLayout.rawValue) {
             DispatchQueue.main.async {
                 windowManager.displayCurrentLayout()
@@ -610,6 +614,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Warp focused window east", CommandKey.warpEast.rawValue])
         hotKeyNameToDefaultsKey.append(["Warp focused window north", CommandKey.warpNorth.rawValue])
         hotKeyNameToDefaultsKey.append(["Warp focused window south", CommandKey.warpSouth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window into main", CommandKey.warpMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Force windows to be reevaluated", CommandKey.reevaluateWindows.rawValue])
 
         hotKeyNameToDefaultsKey.append(["Toggle float for focused window", CommandKey.toggleFloat.rawValue])
