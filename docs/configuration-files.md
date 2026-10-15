@@ -54,7 +54,7 @@ The first file that exists is used:
 | `focus-border-color` | `accent` (the system accent colour, following System Settings), `"#RRGGBB"` or `"#AARRGGBB"` (default `accent`). Quote hex colours in YAML. |
 | `focus-border-gradient` | The two colours of the `gradient` style, top left to bottom right (default `["#9B5DE5", "#F4B942"]`, purple to gold). |
 | `focus-border-radius` | Corner radius in points (default `12`), used when the window server doesn't report the window's own radius; normally the border follows each window's own corners. |
-| `main-arrival-position` | Where a window arriving in the main pane goes: `first` or `last` (default `last`). `first`: on top of main (left when main's windows are side by side); with main full, its last window moves out. `last`: at the end; it joins main only while main has room, so main stays as it is. Swaps (`swap-main`, `swap-<direction>`) don't use it: they exchange two windows' places. Replaces `new-windows-to-main` (`true` = `first`, `false` = `last`). |
+| `main-arrival-position` | Where a window arriving in the main pane goes: `first` or `last` (default `last`). `first`: on top of main (left when main's windows are side by side); with main full, its last window moves out. `last`: at the end; it joins main only while main has room, so main stays as it is. A window coming back into view (unhidden, unminimised, back from another Space, tiled again) arrives the same way. Swaps (`swap-main`, `swap-<direction>`) don't use it: they exchange two windows' places. Replaces `new-windows-to-main` (`true` = `first`, `false` = `last`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
 | `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |
 | `padding-mode` | The mode to use until one has been selected. After that, the last selected mode survives restarts (default none). |
@@ -95,7 +95,7 @@ cycle-layout:
 | `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
 | `shrink-main` | Shrink the main pane by `window-resize-step`, down to 5% of the screen (so neither pane disappears). Not every layout responds. |
 | `expand-main` | Expand the main pane by `window-resize-step`, up to 95% of the screen. Not every layout responds. |
-| `increase-main` | Add a window to the main pane, and show the new count. Only layouts with a main pane respond. |
+| `increase-main` | Add a window to the main pane, and show the new count. Only layouts with a main pane respond. The count is a maximum: when a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main shrinks by one instead of pulling in a side window; it never goes below 1. |
 | `decrease-main` | Remove a window from the main pane, and show the new count. Only layouts with a main pane respond. |
 | `set-main-pane-count` | Set the number of windows in the main pane (1–99), and show it. Palette and URL only. Only layouts with an adjustable main pane respond. |
 | `increase-window-max-count` | Raise `window-max-count` by one until Reload Config, and show it if `enables-window-count-hud` is on. |

@@ -52,6 +52,16 @@ struct SecondaryWindowAnchors<WindowID: Hashable> {
 }
 
 /// A window as saved when Ametrine quits. Other applications keep running across a relaunch, so pid and window number find it again.
+/// Where windows that come back into view go: `main-arrival-position` puts them first or last, in the order they came back.
+enum WindowArrival {
+    static func order<ID: Hashable>(_ list: [ID], returning: [ID], atFront: Bool) -> [ID] {
+        let returningSet = Set(returning)
+        let others = list.filter { !returningSet.contains($0) }
+        let arriving = list.filter { returningSet.contains($0) }
+        return atFront ? arriving + others : others + arriving
+    }
+}
+
 struct SavedWindowID: Codable, Hashable {
     let pid: pid_t
     let windowID: CGWindowID
@@ -274,6 +284,33 @@ extension WindowManager {
                 windows.remove(at: windowIndex)
             }
 
+            return true
+        }
+
+        /// Windows that left view and haven't come back yet; one that comes back arrives again (`arriveReturning`).
+        private var departedIDs: Set<Window.WindowID> = []
+
+        func noteDeparted(_ windowIDs: [Window.WindowID]) {
+            departedIDs.formUnion(windowIDs)
+        }
+
+        /// Moves the windows among `windowIDs` that had left view to the arrival position, front or back, in their order.
+        /// Returns whether any moved.
+        func arriveReturning(_ windowIDs: [Window.WindowID], atFront: Bool) -> Bool {
+            let returning = windowIDs.filter { departedIDs.contains($0) }
+            departedIDs.subtract(windowIDs)
+            guard !returning.isEmpty else {
+                return false
+            }
+
+            if atFront, let currentFocusedSpace = CGSpacesInfo<Window>.currentFocusedSpace(),
+               let firstActiveWindow = activeWindowOnCurrentScreen(atIndex: 0) {
+                lastMainWindows[currentFocusedSpace.id] = firstActiveWindow
+            }
+
+            let byID = Dictionary(windows.map { ($0.id(), $0) }, uniquingKeysWith: { first, _ in first })
+            let order = WindowArrival.order(windows.map { $0.id() }, returning: returning, atFront: atFront)
+            windows = order.compactMap { byID[$0] }
             return true
         }
 

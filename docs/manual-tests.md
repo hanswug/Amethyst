@@ -50,6 +50,8 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 |---|---|
 | Open one more window than `window-max-count` | The oldest window outside the main pane is minimised (or, once `window-overflow: float` exists, the new window floats). |
 | Run `decrease-window-max-count` | The windows over the new limit follow the same rule. |
+| 3Column Middle, main count 3 (left 1, main 3, right 1): close a main window | Main shrinks to 2; left and right keep their windows; no blank column. |
+| Same, but ⌘H or minimise a main window instead | Main shrinks to 2. Unhide or unminimise it: it comes back at `main-arrival-position` (last: the end), not into main. |
 
 ## App-level
 

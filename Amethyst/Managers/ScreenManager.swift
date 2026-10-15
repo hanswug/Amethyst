@@ -25,6 +25,46 @@ protocol ScreenManagerDelegate: AnyObject {
     func activeWindowSet(forScreenManager screenManager: ScreenManager<Self>, on screen: Window.Screen) -> WindowSet<Window>
     func onReflowInitiation()
     func onReflowCompletion()
+    /// Windows that left view on this screen's Space (closed, quit, hidden, minimised, moved away, floated).
+    func windowsLeftView(_ windowIDs: [Window.WindowID])
+    /// Windows that appeared on this screen's Space; those that had left view before arrive again at `main-arrival-position`.
+    /// Returns whether any moved, so the pass reads the window set again.
+    func windowsCameBack(_ windowIDs: [Window.WindowID]) -> Bool
+}
+
+/// What changed between two layout passes on the same Space and layout. Only visible windows are managed: a main window that
+/// leaves view (closed, quit, hidden, minimised, moved to another Space, floated) shrinks main, as a window leaving a side
+/// column shrinks only that column; main count is a maximum, not a target.
+struct VisibleWindowChange<ID: Hashable> {
+    /// Windows in the previous pass that aren't in this one.
+    let left: [ID]
+    /// Windows in this pass that weren't in the previous one.
+    let appeared: [ID]
+    /// How many fewer windows main should hold.
+    let mainShrink: Int
+
+    /// - Parameter previousMainCount: How many windows main held in the previous pass.
+    init(previous: [ID], previousMainCount: Int, current: [ID]) {
+        let previousSet = Set(previous)
+        let currentSet = Set(current)
+        var left = previous.filter { !currentSet.contains($0) }
+        var appeared = current.filter { !previousSet.contains($0) }
+
+        // A tab switch puts one window in another's place: neither left nor appeared.
+        for index in previous.indices where index < current.count {
+            if !currentSet.contains(previous[index]) && !previousSet.contains(current[index]) {
+                left.removeAll { $0 == previous[index] }
+                appeared.removeAll { $0 == current[index] }
+            }
+        }
+
+        let main = Set(previous.prefix(previousMainCount))
+        let leftMain = left.filter { main.contains($0) }.count
+        // Bounded by how much the count dropped: a close and an open in one pass leave main as it is.
+        self.left = left
+        self.appeared = appeared
+        self.mainShrink = min(leftMain, max(0, previous.count - current.count))
+    }
 }
 
 final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
@@ -47,6 +87,14 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     private(set) var lastFocusedWindow: Window?
     /// The frames of the last layout pass, before window margins, for directional navigation.
     private(set) var lastAssignedFrames: [Window.WindowID: CGRect] = [:]
+
+    /// The previous pass per Space UUID: its windows in order, how many of them were in main, and the layout.
+    private struct PreviousPass {
+        let windowIDs: [Window.WindowID]
+        let mainCount: Int
+        let layoutKey: String
+    }
+    private var previousPasses: [String: PreviousPass] = [:]
     private let userConfiguration: UserConfiguration
 
     /// The tiles windows on this screen refuse (stay bigger than), so each is reported once per tile size.
@@ -330,14 +378,36 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return
         }
 
-        guard let windows = delegate?.activeWindowSet(forScreenManager: self, on: screen) else {
+        guard var windows = delegate?.activeWindowSet(forScreenManager: self, on: screen), let spaceUUID = space?.uuid else {
             return
+        }
+
+        if let layout = currentLayout, let previous = previousPasses[spaceUUID], previous.layoutKey == layout.layoutKey {
+            let change = VisibleWindowChange(previous: previous.windowIDs, previousMainCount: previous.mainCount, current: windows.windows.map(\.id))
+            if !change.left.isEmpty {
+                delegate?.windowsLeftView(change.left)
+            }
+            if change.mainShrink > 0, let panedLayout = layout as? PanedLayout {
+                let mainCount = max(1, min(panedLayout.mainPaneCount, previous.mainCount) - change.mainShrink)
+                log.debug("Main count \(panedLayout.mainPaneCount) → \(mainCount): \(change.mainShrink) main window(s) left view")
+                while panedLayout.mainPaneCount > mainCount {
+                    panedLayout.decreaseMainPaneCount()
+                }
+            }
+            if !change.appeared.isEmpty, delegate?.windowsCameBack(change.appeared) == true,
+               let rearranged = delegate?.activeWindowSet(forScreenManager: self, on: screen) {
+                windows = rearranged
+            }
         }
 
         guard let layout = currentLayout, let frameAssignments = layout.frameAssignments(windows, on: screen) else {
             lastAssignedFrames = [:]
             return
         }
+
+        let windowIDs = windows.windows.map(\.id)
+        let mainCount = (layout as? PanedLayout).map { min($0.mainPaneCount, windowIDs.count) } ?? 0
+        previousPasses[spaceUUID] = PreviousPass(windowIDs: windowIDs, mainCount: mainCount, layoutKey: layout.layoutKey)
 
         lastAssignedFrames = Dictionary(
             frameAssignments.map { ($0.frameAssignment.window.id, $0.frameAssignment.frame) },
