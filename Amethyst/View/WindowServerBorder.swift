@@ -2,10 +2,10 @@
 //  WindowServerBorder.swift
 //  Amethyst
 //
-//  The focus border as a window of its own in the window server, drawn with Core Graphics and moved in window-server
-//  transactions off the main thread, so it keeps up with a window being dragged or resized. Uses private SkyLight calls, the
-//  same ones window tools such as JankyBorders and yabai rely on, looked up at runtime: without them FocusBorder falls back to
-//  an AppKit panel.
+//  The focus border as eight small windows of its own in the window server (four corners, four edges), drawn with Core
+//  Graphics once and then only moved, and the edges stretched, in window-server transactions off the main thread. A resize
+//  never redraws or reshapes anything, which is what flickered. Uses private SkyLight calls, the same ones window tools such as
+//  JankyBorders and yabai rely on, looked up at runtime: without them FocusBorder falls back to an AppKit panel.
 //
 
 import Cocoa
@@ -49,15 +49,15 @@ enum SkyLight {
     static let setWindowOpacity = function("SLSSetWindowOpacity", (@convention(c) (Int32, UInt32, Bool) -> Int32).self)
     static let setWindowTags = function("SLSSetWindowTags", (@convention(c) (Int32, UInt32, UnsafeMutablePointer<UInt64>, Int32) -> Int32).self)
     static let setShadowProperties = function("SLSWindowSetShadowProperties", (@convention(c) (UInt32, CFDictionary) -> Int32).self)
-    static let setWindowShape = function("SLSSetWindowShape", (@convention(c) (Int32, UInt32, Float, Float, CFTypeRef) -> Int32).self)
     static let windowContextCreate = function("SLWindowContextCreate", (@convention(c) (Int32, UInt32, CFDictionary?) -> Unmanaged<CGContext>?).self)
     static let flushWindowContentRegion = function("SLSFlushWindowContentRegion", (@convention(c) (Int32, UInt32, UnsafeMutableRawPointer?) -> Int32).self)
-    static let freezeWindow = function("SLSWindowFreezeWithOptions", (@convention(c) (Int32, UInt32, CFTypeRef?) -> Int32).self)
-    static let thawWindow = function("SLSWindowThaw", (@convention(c) (Int32, UInt32) -> Int32).self)
     static let transactionCreate = function("SLSTransactionCreate", (@convention(c) (Int32) -> Unmanaged<CFTypeRef>?).self)
     static let transactionMoveWindow = function("SLSTransactionMoveWindowWithGroup", (@convention(c) (CFTypeRef, UInt32, CGPoint) -> Int32).self)
     static let transactionOrderWindow = function("SLSTransactionOrderWindow", (@convention(c) (CFTypeRef, UInt32, Int32, UInt32) -> Int32).self)
     static let transactionSetWindowLevel = function("SLSTransactionSetWindowLevel", (@convention(c) (CFTypeRef, UInt32, Int32) -> Int32).self)
+    static let transactionSetWindowTransform = function(
+        "SLSTransactionSetWindowTransform", (@convention(c) (CFTypeRef, UInt32, Int32, Int32, CGAffineTransform) -> Int32).self
+    )
     static let transactionCommit = function("SLSTransactionCommit", (@convention(c) (CFTypeRef, Int32) -> Int32).self)
     static let moveWindowsToManagedSpace = function("SLSMoveWindowsToManagedSpace", (@convention(c) (Int32, CFArray, UInt64) -> Int32).self)
 
@@ -74,9 +74,9 @@ enum SkyLight {
     static let isAvailable: Bool = {
         let calls: [Any?] = [
             mainConnectionID, newConnection, registerNotifyProc, requestNotificationsForWindows, getWindowBounds, newRegionWithRect,
-            newWindow, releaseWindow, setWindowResolution, setWindowOpacity, setWindowTags, setShadowProperties, setWindowShape,
-            windowContextCreate, flushWindowContentRegion, freezeWindow, thawWindow, transactionCreate,
-            transactionMoveWindow, transactionOrderWindow, transactionSetWindowLevel, transactionCommit, moveWindowsToManagedSpace
+            newWindow, releaseWindow, setWindowResolution, setWindowOpacity, setWindowTags, setShadowProperties,
+            windowContextCreate, flushWindowContentRegion, transactionCreate, transactionMoveWindow, transactionOrderWindow,
+            transactionSetWindowLevel, transactionSetWindowTransform, transactionCommit, moveWindowsToManagedSpace
         ]
         return calls.allSatisfy { $0 != nil }
     }()
@@ -171,21 +171,79 @@ enum FocusBorderDrawing {
     }
 }
 
-/// The border window. All window-server work runs on its own serial queue; callers only post to it.
+/// Where the border's eight pieces go around a window, origin top left. The corners keep their size; the edges span between
+/// them, so a resize only moves corners and stretches edges.
+struct FocusBorderPieces: Equatable {
+    enum Piece: CaseIterable {
+        case topLeft, top, topRight, right, bottomRight, bottom, bottomLeft, left
+    }
+
+    /// How far the border reaches beyond each side of the window.
+    let left: CGFloat
+    let top: CGFloat
+    let right: CGFloat
+    let bottom: CGFloat
+    /// How far the corner pieces reach into the window along each side: its corner radius, in whole points.
+    let corner: CGFloat
+
+    /// The pieces for a border drawn around `windowFrame`: the overlay is `appearance.windowServerFrame`, in whole points.
+    init(windowFrame: CGRect, appearance: FocusBorderAppearance) {
+        let overlay = appearance.windowServerFrame(forWindowFrame: windowFrame)
+        left = windowFrame.minX - overlay.minX
+        top = windowFrame.minY - overlay.minY
+        right = overlay.maxX - windowFrame.maxX
+        bottom = overlay.maxY - windowFrame.maxY
+        corner = ceil(min(appearance.radius, windowFrame.width / 2, windowFrame.height / 2))
+    }
+
+    /// The rects around a window; edges of a window too small for its corners are zero long.
+    func rects(around window: CGRect) -> [Piece: CGRect] {
+        let width = max(window.width - 2 * corner, 0)
+        let height = max(window.height - 2 * corner, 0)
+        return [
+            .topLeft: CGRect(x: window.minX - left, y: window.minY - top, width: left + corner, height: top + corner),
+            .top: CGRect(x: window.minX + corner, y: window.minY - top, width: width, height: top),
+            .topRight: CGRect(x: window.maxX - corner, y: window.minY - top, width: corner + right, height: top + corner),
+            .right: CGRect(x: window.maxX, y: window.minY + corner, width: right, height: height),
+            .bottomRight: CGRect(x: window.maxX - corner, y: window.maxY - corner, width: corner + right, height: corner + bottom),
+            .bottom: CGRect(x: window.minX + corner, y: window.maxY, width: width, height: bottom),
+            .bottomLeft: CGRect(x: window.minX - left, y: window.maxY - corner, width: left + corner, height: corner + bottom),
+            .left: CGRect(x: window.minX - left, y: window.minY + corner, width: left, height: height)
+        ]
+    }
+
+    /// The window-server transform that shows a piece drawn at `drawnSize` in `rect`: it maps screen points to the piece's own,
+    /// so an edge drawn at one length is stretched to another.
+    static func transform(showing drawnSize: CGSize, in rect: CGRect) -> CGAffineTransform {
+        let scaleX = drawnSize.width / max(rect.width, 0.001)
+        let scaleY = drawnSize.height / max(rect.height, 0.001)
+        return CGAffineTransform(a: scaleX, b: 0, c: 0, d: scaleY, tx: -rect.minX * scaleX, ty: -rect.minY * scaleY)
+    }
+}
+
+/// The border. All window-server work runs on its own serial queue; callers only post to it.
 final class WindowServerBorder {
+    private struct DrawnPiece {
+        let windowID: UInt32
+        let context: CGContext
+        let drawnSize: CGSize
+    }
+
+    /// What the current pieces were drawn for; anything else needs a new set.
+    private struct Drawing: Equatable {
+        let targetWindowID: CGWindowID
+        let appearance: FocusBorderAppearance
+        let pieces: FocusBorderPieces
+    }
+
     private let queue = DispatchQueue(label: "Ametrine.FocusBorder", qos: .userInteractive)
 
     // Owned by `queue`.
     private var connection: Int32 = 0
-    private var borderWindowID: UInt32 = 0
-    private var context: CGContext?
-    private var drawnSize: CGSize?
-    private var drawnWindowRect: CGRect?
-    private var drawnAppearance: FocusBorderAppearance?
+    private var pieces: [FocusBorderPieces.Piece: DrawnPiece] = [:]
+    private var drawing: Drawing?
     private var targetWindowID: CGWindowID?
-    private var appearance: FocusBorderAppearance?
     private var spaceID: Int?
-    private var scale: CGFloat = 2
     /// The target's own corner radius, read when the border moves to it.
     private var windowRadius: CGFloat?
     /// The target's bounds the border was last put around.
@@ -236,16 +294,29 @@ final class WindowServerBorder {
                 self.windowRadius = SkyLight.cornerRadius(of: windowID, connection: self.connection)
             }
             self.targetWindowID = windowID
-            self.appearance = appearance
-            self.scale = scale
-            if spaceID != self.spaceID {
-                self.spaceID = spaceID
-                self.moveToSpace()
-            }
+            let spaceChanged = spaceID != self.spaceID
+            self.spaceID = spaceID
             guard let bounds = SkyLight.bounds(of: windowID, connection: self.connection) else {
                 return
             }
-            self.update(around: bounds, orderFront: true)
+
+            var appearance = appearance
+            if let windowRadius = self.windowRadius {
+                appearance.radius = windowRadius
+            }
+            let piecesLayout = self.drawing?.targetWindowID == windowID && self.drawing?.appearance == appearance
+                ? self.drawing!.pieces
+                : FocusBorderPieces(windowFrame: bounds, appearance: appearance)
+            let drawing = Drawing(targetWindowID: windowID, appearance: appearance, pieces: piecesLayout)
+
+            if drawing != self.drawing || self.pieces.isEmpty {
+                self.replacePieces(drawing: drawing, around: bounds, scale: scale)
+            } else {
+                if spaceChanged {
+                    self.moveToSpace(self.pieces.values.map(\.windowID))
+                }
+                self.place(around: bounds, orderFront: true)
+            }
         }
     }
 
@@ -253,10 +324,15 @@ final class WindowServerBorder {
         queue.async {
             self.targetWindowID = nil
             self.stopPolling()
-            guard self.borderWindowID != 0, let orderWindow = SkyLight.transactionOrderWindow else {
+            let windowIDs = self.pieces.values.map(\.windowID)
+            guard !windowIDs.isEmpty, let orderWindow = SkyLight.transactionOrderWindow else {
                 return
             }
-            SkyLight.transaction(self.connection) { _ = orderWindow($0, self.borderWindowID, 0, 0) }
+            SkyLight.transaction(self.connection) { transaction in
+                for windowID in windowIDs {
+                    _ = orderWindow(transaction, windowID, 0, 0)
+                }
+            }
         }
     }
 
@@ -270,13 +346,13 @@ final class WindowServerBorder {
         }
     }
 
-    /// Catches up with the target: a move only shifts the border window, a new size redraws it.
+    /// Catches up with the target: corners move, edges move and stretch, nothing is drawn.
     private func follow() {
         guard let targetWindowID, let bounds = SkyLight.bounds(of: targetWindowID, connection: connection), bounds != followedBounds else {
             return
         }
         lastChange = .now()
-        update(around: bounds, orderFront: false)
+        place(around: bounds, orderFront: false)
     }
 
     private func startPolling() {
@@ -303,97 +379,116 @@ final class WindowServerBorder {
         poller = nil
     }
 
-    /// The configured look, with the target's own corner radius when the window server reports one.
-    private var effectiveAppearance: FocusBorderAppearance? {
-        guard var appearance else {
-            return nil
-        }
-        if let windowRadius {
-            appearance.radius = windowRadius
-        }
-        return appearance
-    }
-
-    /// Puts the border around the bounds. Reshapes and redraws only when the size, the window's place inside the border window,
-    /// or the look changed, with the border window frozen so no half-done border shows; otherwise only moves it. Orders it in if
-    /// asked. Screen updates are never held: that paused the whole screen, and a window being resized showed blank between its
-    /// new size and its new content.
-    private func update(around bounds: CGRect, orderFront: Bool) {
-        guard let appearance = effectiveAppearance else {
-            return
-        }
-
-        // Whole points: the window server rounds a window's origin, which shifted a ring of 1.5 pt half a point left and up.
-        let frame = appearance.windowServerFrame(forWindowFrame: bounds)
-        guard frame.width > 0, frame.height > 0 else {
-            return
-        }
-        // Drawing coordinates have their origin bottom left.
-        let windowRect = CGRect(x: bounds.minX - frame.minX, y: frame.maxY - bounds.maxY, width: bounds.width, height: bounds.height)
-
-        if borderWindowID == 0 && !createWindow(size: frame.size) {
+    /// Moves every piece into place around the bounds in one transaction, so they never come apart on screen.
+    private func place(around bounds: CGRect, orderFront: Bool) {
+        guard let drawing else {
             return
         }
         followedBounds = bounds
-
-        let needsDrawing = frame.size != drawnSize || windowRect != drawnWindowRect || appearance != drawnAppearance
-        if needsDrawing {
-            _ = SkyLight.freezeWindow?(connection, borderWindowID, nil)
-            // The offset places the window: at its final origin, never at the screen's corner.
-            if let region = SkyLight.region(CGRect(origin: .zero, size: frame.size)) {
-                _ = SkyLight.setWindowShape?(connection, borderWindowID, Float(frame.origin.x), Float(frame.origin.y), region)
-            }
-            if let context {
-                FocusBorderDrawing.draw(in: context, size: frame.size, windowRect: windowRect, appearance: appearance)
-                context.flush()
-            }
-            _ = SkyLight.flushWindowContentRegion?(connection, borderWindowID, nil)
-            _ = SkyLight.thawWindow?(connection, borderWindowID)
-            drawnSize = frame.size
-            drawnWindowRect = windowRect
-            drawnAppearance = appearance
-        }
-
+        let rects = drawing.pieces.rects(around: bounds)
         SkyLight.transaction(connection) { transaction in
-            _ = SkyLight.transactionMoveWindow?(transaction, borderWindowID, frame.origin)
-            if orderFront {
-                // One level above app windows: apps raise their own window whenever they like, which would cover a border kept
-                // just above it. Menus and floating panels sit higher and still cover the border.
-                _ = SkyLight.transactionSetWindowLevel?(transaction, borderWindowID, Int32(NSWindow.Level.normal.rawValue + 1))
-                _ = SkyLight.transactionOrderWindow?(transaction, borderWindowID, 1, 0)
+            for (piece, drawn) in pieces {
+                guard let rect = rects[piece] else {
+                    continue
+                }
+                self.position(drawn, in: rect, transaction: transaction, orderFront: orderFront)
             }
         }
     }
 
-    private func createWindow(size: CGSize) -> Bool {
+    private func position(_ drawn: DrawnPiece, in rect: CGRect, transaction: CFTypeRef, orderFront: Bool) {
+        _ = SkyLight.transactionMoveWindow?(transaction, drawn.windowID, rect.origin)
+        _ = SkyLight.transactionSetWindowTransform?(
+            transaction, drawn.windowID, 0, 0, FocusBorderPieces.transform(showing: drawn.drawnSize, in: rect)
+        )
+        if orderFront {
+            // One level above app windows: apps raise their own window whenever they like, which would cover a border kept
+            // just above it. Menus and floating panels sit higher and still cover the border.
+            _ = SkyLight.transactionSetWindowLevel?(transaction, drawn.windowID, Int32(NSWindow.Level.normal.rawValue + 1))
+            _ = SkyLight.transactionOrderWindow?(transaction, drawn.windowID, 1, 0)
+        }
+    }
+
+    /// Draws a new set of pieces off screen and swaps it in for the old one in one transaction: no frame shows half a border.
+    private func replacePieces(drawing: Drawing, around bounds: CGRect, scale: CGFloat) {
+        let overlay = drawing.appearance.windowServerFrame(forWindowFrame: bounds)
+        // Drawing coordinates have their origin bottom left.
+        let windowRect = CGRect(x: bounds.minX - overlay.minX, y: overlay.maxY - bounds.maxY, width: bounds.width, height: bounds.height)
+        let rects = drawing.pieces.rects(around: bounds)
+
+        var newPieces: [FocusBorderPieces.Piece: DrawnPiece] = [:]
+        for (piece, rect) in rects {
+            // A zero-long edge is drawn one point long and squeezed.
+            let size = CGSize(width: max(rect.width, 1), height: max(rect.height, 1))
+            guard let drawn = createPiece(size: size, scale: scale) else {
+                release(Array(newPieces.values))
+                return
+            }
+            drawn.context.saveGState()
+            drawn.context.translateBy(x: -(rect.minX - overlay.minX), y: -(overlay.maxY - rect.maxY))
+            FocusBorderDrawing.draw(in: drawn.context, size: overlay.size, windowRect: windowRect, appearance: drawing.appearance)
+            drawn.context.restoreGState()
+            drawn.context.flush()
+            _ = SkyLight.flushWindowContentRegion?(connection, drawn.windowID, nil)
+            newPieces[piece] = drawn
+        }
+        moveToSpace(newPieces.values.map(\.windowID))
+
+        let oldPieces = Array(pieces.values)
+        SkyLight.transaction(connection) { transaction in
+            for (piece, drawn) in newPieces {
+                guard let rect = rects[piece] else {
+                    continue
+                }
+                self.position(drawn, in: rect, transaction: transaction, orderFront: true)
+            }
+            for old in oldPieces {
+                _ = SkyLight.transactionOrderWindow?(transaction, old.windowID, 0, 0)
+            }
+        }
+        release(oldPieces)
+
+        pieces = newPieces
+        self.drawing = drawing
+        followedBounds = bounds
+    }
+
+    private func createPiece(size: CGSize, scale: CGFloat) -> DrawnPiece? {
         guard let region = SkyLight.region(CGRect(origin: .zero, size: size)), let newWindow = SkyLight.newWindow else {
-            return false
+            return nil
         }
 
         var windowID: UInt32 = 0
         guard newWindow(connection, 2 /* kCGBackingStoreBuffered */, -9999, -9999, region, &windowID) == 0, windowID != 0 else {
-            log.warning("Focus border: couldn't create the border window")
-            return false
+            log.warning("Focus border: couldn't create a border window")
+            return nil
         }
 
-        borderWindowID = windowID
         _ = SkyLight.setWindowResolution?(connection, windowID, Double(scale))
         // The tags window tools set on overlay windows (click-through, kept out of window lists).
         var tags: UInt64 = (1 << 1) | (1 << 9)
         _ = SkyLight.setWindowTags?(connection, windowID, &tags, 64)
         _ = SkyLight.setWindowOpacity?(connection, windowID, false)
         _ = SkyLight.setShadowProperties?(windowID, ["com.apple.WindowShadowDensity": 0] as CFDictionary)
-        context = SkyLight.windowContextCreate?(connection, windowID, nil)?.takeRetainedValue()
-        context?.interpolationQuality = .none
-        moveToSpace()
-        return context != nil
+        guard let context = SkyLight.windowContextCreate?(connection, windowID, nil)?.takeRetainedValue() else {
+            _ = SkyLight.releaseWindow?(connection, windowID)
+            return nil
+        }
+        context.interpolationQuality = .none
+        return DrawnPiece(windowID: windowID, context: context, drawnSize: size)
     }
 
-    /// Puts the border on the target's Space, so it slides away with a Space switch like the window does.
-    private func moveToSpace() {
-        guard borderWindowID != 0, let spaceID, let moveWindows = SkyLight.moveWindowsToManagedSpace else {
+    private func release(_ drawnPieces: [DrawnPiece]) {
+        for drawn in drawnPieces {
+            _ = SkyLight.releaseWindow?(connection, drawn.windowID)
+        }
+    }
+
+    /// Puts the pieces on the target's Space, so they slide away with a Space switch like the window does.
+    private func moveToSpace(_ windowIDs: [UInt32]) {
+        guard !windowIDs.isEmpty, let spaceID, let moveWindows = SkyLight.moveWindowsToManagedSpace else {
             return
         }
-        _ = moveWindows(connection, [NSNumber(value: borderWindowID)] as CFArray, UInt64(spaceID))
+        _ = moveWindows(connection, windowIDs.map { NSNumber(value: $0) } as CFArray, UInt64(spaceID))
     }
 }

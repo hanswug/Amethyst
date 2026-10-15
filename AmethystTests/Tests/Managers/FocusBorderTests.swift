@@ -79,6 +79,44 @@ class FocusBorderTests: QuickSpec {
             }
         }
 
+        describe("the border pieces") {
+            let appearance = FocusBorderAppearance(style: .gradient, width: 1.5, radius: 16, color: .accent, gradient: [])
+            let window = CGRect(x: 100, y: 50, width: 800, height: 600)
+            let pieces = FocusBorderPieces(windowFrame: window, appearance: appearance)
+
+            it("reaches as far as the overlay, in whole points") {
+                // 1.5 pt rounds out to 2 on every side.
+                expect([pieces.left, pieces.top, pieces.right, pieces.bottom]).to(equal([2, 2, 2, 2]))
+                expect(pieces.corner).to(equal(16))
+            }
+
+            it("tiles the overlay's outline without gaps") {
+                let rects = pieces.rects(around: window)
+                expect(rects[.topLeft]).to(equal(CGRect(x: 98, y: 48, width: 18, height: 18)))
+                expect(rects[.top]).to(equal(CGRect(x: 116, y: 48, width: 768, height: 2)))
+                expect(rects[.topRight]).to(equal(CGRect(x: 884, y: 48, width: 18, height: 18)))
+                expect(rects[.right]).to(equal(CGRect(x: 900, y: 66, width: 2, height: 568)))
+                expect(rects[.bottomRight]).to(equal(CGRect(x: 884, y: 634, width: 18, height: 18)))
+                expect(rects[.bottom]).to(equal(CGRect(x: 116, y: 650, width: 768, height: 2)))
+                expect(rects[.bottomLeft]).to(equal(CGRect(x: 98, y: 634, width: 18, height: 18)))
+                expect(rects[.left]).to(equal(CGRect(x: 98, y: 66, width: 2, height: 568)))
+            }
+
+            it("keeps the corners and stretches the edges when the window resizes") {
+                let rects = pieces.rects(around: CGRect(x: 100, y: 50, width: 1000, height: 600))
+                expect(rects[.topLeft]?.size).to(equal(CGSize(width: 18, height: 18)))
+                expect(rects[.top]?.width).to(equal(968))
+                expect(rects[.topRight]?.minX).to(equal(1084))
+            }
+
+            it("maps screen points onto a piece drawn at another length") {
+                let transform = FocusBorderPieces.transform(showing: CGSize(width: 768, height: 2), in: CGRect(x: 116, y: 48, width: 968, height: 2))
+                expect(CGPoint(x: 116, y: 48).applying(transform)).to(equal(.zero))
+                expect(CGPoint(x: 1084, y: 50).applying(transform).x).to(beCloseTo(768))
+                expect(CGPoint(x: 1084, y: 50).applying(transform).y).to(beCloseTo(2))
+            }
+        }
+
         describe("the drawing") {
             let size = CGSize(width: 120, height: 100)
 
