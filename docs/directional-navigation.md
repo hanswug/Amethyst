@@ -9,7 +9,7 @@ The commands are unbound until the config binds them. With vim keys, the modifie
 ```yaml
 mod1: [option, control]             # everyday: focus
 mod2: [option, control, command]    # moving windows: warp
-mod3: [option, control, shift]      # swap
+mod3: [control, command]            # swap
 
 focus-west:  {mod: mod1, key: h}
 focus-south: {mod: mod1, key: j}

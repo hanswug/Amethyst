@@ -39,11 +39,11 @@ mod2:
   - control
   - command
 
-# Third mod: swap (shift + control + option). Warp has command (mod2): it moves windows more naturally.
+# Third mod: swap (control + command). Warp has mod2: it moves windows more naturally.
+# (shift + control + option never reached Ametrine: another app holds those keys.)
 mod3:
-  - option
   - control
-  - shift
+  - command
 
 # Commands:
 # special key values
