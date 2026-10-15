@@ -125,7 +125,7 @@ Binary Space Partitioning keeps a tree of windows: a new window splits the focus
 - **Closing one of the first windows no longer reshuffles the layout:** the windows next to it take over its space.
 - **Quitting an app frees all its tiles**, including windows opened after Ametrine started. This applies to every layout.
 
-Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one.
+Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one. When a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main shrinks instead of pulling in a side window; a window coming back arrives at `main-arrival-position`.
 
 ## Build and install
 
@@ -162,6 +162,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 3.2.2 | `swap-main` from the main window swaps back after a relaunch; the focus border stays on top after a click inside its window |
 | 3.2.3 | Fewer accessibility calls: windows already in place aren't set again, and an app switch lays out once; the main pane stays within 5–95% of the screen |
 | 4.0.0 | `new-windows-to-main: true \| false` is now `main-arrival-position: first \| last` (rename it in your config); `toggle-main-arrival-position`. The focus border is rebuilt: it follows each window's own corners and keeps up with drags and resizes, and the palette shows its state and style. `--log` traces each layout pass |
+| 4.1.0 | Main shrinks when one of its windows leaves view (closed, quit, hidden, minimised, another Space, floated), and a window coming back arrives at `main-arrival-position`; the focus border catches a window moved right after it was focused |
 
 ## Credits and licence
 
