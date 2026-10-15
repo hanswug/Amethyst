@@ -236,8 +236,8 @@ select-fullscreen-layout:
 # Switch this Space between its layout and Fullscreen: the focused window comes to the front (it doesn't become main),
 # and going back puts every window in the tile it had. Works whether or not fullscreen is in layouts.
 toggle-fullscreen:
-  mod: <NONE>
-  key: <NONE>
+  mod: mod1
+  key: z
 
 # Select two-pane-a layout
 select-two-pane-a-layout:
