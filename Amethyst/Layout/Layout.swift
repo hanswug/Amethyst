@@ -158,10 +158,16 @@ class PaneCountedLayout<Window: WindowType>: Layout<Window> {
         return fittedPaneCounts(windowCount: windowCount).warpIntoMain(from: index, intoMainAtFront: intoMainAtFront)
     }
 
-    /// Takes the sizes after a warp moved a window. A warp into a full main raises the maximum to match.
+    /// Takes the sizes after a warp moved a window. A warp into a full main raises the maximum to match; a warp out of
+    /// main lowers it by one (Hans, 2026-10-14), so the maximum follows how main is arranged instead of only growing.
     func applyWarp(_ counts: PaneCounts) {
+        let mainBefore = fittedPaneCounts(windowCount: counts.total).main
         paneState.setCounts(counts)
-        mainPaneCount = max(mainPaneCount, counts.main)
+        if counts.main < mainBefore {
+            mainPaneCount = max(1, mainPaneCount - 1)
+        } else {
+            mainPaneCount = max(mainPaneCount, counts.main)
+        }
     }
 
     /// "x of y": the windows main holds and its maximum.

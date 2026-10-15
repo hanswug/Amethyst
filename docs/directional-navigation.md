@@ -66,7 +66,7 @@ In 3Column Left with a main window, three windows in the middle column and one o
 The rules, the same in every layout:
 
 * **Another pane:** the window joins it, right after the neighbour (below it, or to its right where a pane's windows are side by side). The neighbour is found as for focus, so it can be the window you used last in that column rather than the nearest one. If that isn't the spot you wanted, swap from there.
-* **Into main:** the window lands on top of main with `main-arrival-position: first`, at the bottom with `last`, wherever its neighbour is. A warp into a full main raises the maximum by one.
+* **Into main:** the window lands on top of main with `main-arrival-position: first`, at the bottom with `last`, wherever its neighbour is. A warp into a full main raises the maximum by one, and a warp out of main lowers it by one, so the maximum follows how you arrange main.
 * **The same pane:** a swap.
 * **The last window of a pane** swaps instead: a warp never empties a pane.
 * **An empty side column** (3Column, 4Column) can be warped into; the window becomes its only window. Focus and swap skip it.
@@ -82,4 +82,4 @@ Pane sizes are remembered per layout and Space, and survive a relaunch:
 
 * A new window goes to the shorter side column (ties to the first), or into main while main has room and the side panes are still empty. Opened one at a time, windows get the usual balanced split.
 * A window that leaves view (closed, quit, hidden, minimised, moved to another Space, floated) shrinks only its own pane. An emptied side column takes a window from the next one (1/0/2 becomes 1/1/1). A window coming back arrives like a new one, at `main-arrival-position`, not in its old column.
-* `increase-main` and `set-main-pane-count` set the most windows main may hold; nothing moves. The HUD and the palette show "x of y": the windows in main, of the maximum. `decrease-main` below what main holds moves the extra windows to the first side pane.
+* `increase-main` and `set-main-pane-count` set the most windows main may hold; nothing moves. Warps in and out move it by one; a window leaving view doesn't, so its slot stays free for a window coming back. The HUD and the palette show "x of y": the windows in main, of the maximum. `decrease-main` below what main holds moves the extra windows to the first side pane.

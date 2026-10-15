@@ -318,9 +318,26 @@ class TallLayoutTests: QuickSpec {
                     CGRect(x: 1000, y: 0, width: 1000, height: 1000)
                 ])
 
-                // Warp east from main's bottom window: it joins the stack after its neighbour.
+                // Warp east from main's bottom window: it joins the stack after its neighbour, and the maximum drops back.
                 expect(layout.warpPlan(from: 1, to: .window(2), windowCount: 3, intoMainAtFront: false))
                     .to(equal(.move(toIndex: 2, counts: PaneCounts([1, 2]))))
+                layout.applyWarp(PaneCounts([1, 2]))
+                expect(layout.mainPaneCount).to(equal(1))
+                expect(layout.mainPaneCountDescription).to(equal("1 of 1"))
+            }
+
+            it("keeps a free main slot when warping out of a main that isn't full") {
+                let windowIDs = (0..<4).map { _ in TestWindow(element: nil)!.id() }
+                let layout = TallLayout<TestWindow>()
+                layout.setMainPaneCount(3)
+                _ = layout.reconcile(windowIDs: windowIDs)
+                expect(layout.paneCounts.counts).to(equal([3, 1]))
+
+                // A main window closes: 2 of 3. Warping one out then gives 1 of 2.
+                _ = layout.reconcile(windowIDs: Array(windowIDs.dropFirst()))
+                expect(layout.mainPaneCountDescription).to(equal("2 of 3"))
+                layout.applyWarp(PaneCounts([1, 2]))
+                expect(layout.mainPaneCountDescription).to(equal("1 of 2"))
             }
 
             it("decodes a layout saved before warp and keeps the sizes it saves") {
