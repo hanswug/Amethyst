@@ -81,8 +81,8 @@ extension WidescreenTallLayout: PanedLayout {}
 
 class WidescreenTallLayoutLeft<Window: WindowType>: WidescreenTallLayout<Window> {
     override class var isRight: Bool { return false }
-    override static var layoutName: String { return "Widescreen Tall" }
-    override static var layoutKey: String { return "widescreen-tall" }
+    override static var layoutName: String { return "Widescreen Tall Left" }
+    override static var layoutKey: String { return "widescreen-tall-left" }
 }
 
 class WidescreenTallLayoutRight<Window: WindowType>: WidescreenTallLayout<Window> {

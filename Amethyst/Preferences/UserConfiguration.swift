@@ -82,6 +82,7 @@ extension UserDefaults: ConfigurationStorage {
 
 enum ConfigurationKey: String {
     case layouts = "layouts"
+    case layoutNames = "layout-names"
     case commandMod = "mod"
     case commandKey = "key"
     case mod1 = "mod1"
@@ -375,7 +376,9 @@ class UserConfiguration: NSObject {
 
     func loadConfiguration() {
         for key in ConfigurationKey.allCases {
-            let value: Any? = configurationValueForKey(key, fallbackToDefault: false)
+            let rawValue: Any? = configurationValueForKey(key, fallbackToDefault: false)
+            // Layout names are cleaned up first: a YAML null inside the map can't be stored.
+            let value: Any? = key == .layoutNames ? UserConfiguration.layoutNames(from: rawValue) : rawValue
             let defaultValue = defaultConfiguration?[key.rawValue]
             let existingValue = storage.object(forKey: key)
 
@@ -661,6 +664,40 @@ class UserConfiguration: NSObject {
 
     func hasCustomConfiguration() -> Bool {
         return configurationYAML != nil || configurationJSON != nil
+    }
+
+    /// The name shown for a layout: its `layout-names` entry, or the layout key when it has no usable one.
+    func layoutDisplayName(forKey layoutKey: String) -> String {
+        guard let name = (storage.object(forKey: .layoutNames) as? [String: String])?[layoutKey], !name.isEmpty else {
+            return layoutKey
+        }
+
+        return name
+    }
+
+    /// `layout-names` as stored: text names trimmed, anything else (empty, a number, a list) kept as "" so the key is shown.
+    static func layoutNames(from value: Any?) -> [String: String]? {
+        guard let value else {
+            return nil
+        }
+
+        guard let entries = value as? [String: Any] else {
+            log.warning("layout-names must map layout keys to names; ignoring it")
+            return nil
+        }
+
+        var names: [String: String] = [:]
+        for (layoutKey, name) in entries {
+            let text = (name as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if text.isEmpty {
+                log.warning("layout-names: \(layoutKey) needs a name; showing the key")
+            }
+            if case .custom = LayoutType<AXWindow>.from(key: layoutKey), !LayoutType<AXWindow>.customLayoutKeys().contains(layoutKey) {
+                log.warning("layout-names: \(layoutKey) is not a layout key")
+            }
+            names[layoutKey] = text
+        }
+        return names
     }
 
     func layoutKeys() -> [String] {

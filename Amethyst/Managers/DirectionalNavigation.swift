@@ -129,4 +129,35 @@ enum DirectionalNavigation {
     private static func centreDistance(_ lhs: CGRect, _ rhs: CGRect) -> CGFloat {
         return hypot(lhs.midX - rhs.midX, lhs.midY - rhs.midY)
     }
+
+    /**
+     Browsing a stack of windows that share one tile (Two Pane's secondary pane): the next or previous window, wrapping around.
+
+     - Parameters:
+        - stack: The stacked windows in window order.
+        - current: The focused window. From outside the stack (main), the step starts at `front`, or at the first window.
+        - front: The stacked window in front, if known.
+        - forward: Next (`true`) or previous.
+     */
+    static func stackStep<ID: Hashable>(stack: [ID], current: ID, front: ID?, forward: Bool) -> ID? {
+        guard !stack.isEmpty else {
+            return nil
+        }
+
+        let start = stack.firstIndex(of: current) ?? front.flatMap { stack.firstIndex(of: $0) } ?? 0
+        return stack[(start + (forward ? 1 : stack.count - 1)) % stack.count]
+    }
+
+    /// Whether `direction` browses Two Pane's stack: forward, backward, or `nil` when it stays spatial. The browsing axis is the one that
+    /// crosses no pane: north/south when the panes sit side by side (landscape), west/east when they're stacked (portrait).
+    static func stackBrowse(_ direction: Direction, isLandscape: Bool) -> Bool? {
+        switch (direction, isLandscape) {
+        case (.north, true), (.west, false):
+            return false
+        case (.south, true), (.east, false):
+            return true
+        default:
+            return nil
+        }
+    }
 }

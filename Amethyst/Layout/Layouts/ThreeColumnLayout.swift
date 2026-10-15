@@ -265,8 +265,7 @@ class ThreeColumnLeftLayout<Window: WindowType>: ThreeColumnLayout<Window>, Pane
 
 class ThreeColumnMiddleLayout<Window: WindowType>: ThreeColumnLayout<Window>, PanedLayout {
     override static var layoutName: String { return "3Column Middle" }
-    // for backwards compatibility with users who still have 'middle-wide' in their active layouts
-    override static var layoutKey: String { return "middle-wide" }
+    override static var layoutKey: String { return "3column-middle" }
     override static var mainColumn: Column { return .middle }
 }
 

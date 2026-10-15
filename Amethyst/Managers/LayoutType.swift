@@ -45,6 +45,7 @@ enum LayoutType<Window: WindowType> {
     case tall
     case tallRight
     case wide
+    case wideBottom
     case twoPane
     case twoPaneRight
     case threeColumnLeft
@@ -54,7 +55,9 @@ enum LayoutType<Window: WindowType> {
     case fourColumnRight
     case fullscreen
     case column
+    case columnRight
     case row
+    case rowBottom
     case floating
     case widescreenTallLeft
     case widescreenTallRight
@@ -67,6 +70,7 @@ enum LayoutType<Window: WindowType> {
             .tall,
             .tallRight,
             .wide,
+            .wideBottom,
             .twoPane,
             .twoPaneRight,
             .threeColumnLeft,
@@ -76,7 +80,9 @@ enum LayoutType<Window: WindowType> {
             .fourColumnRight,
             .fullscreen,
             .column,
+            .columnRight,
             .row,
+            .rowBottom,
             .floating,
             .widescreenTallLeft,
             .widescreenTallRight,
@@ -87,19 +93,21 @@ enum LayoutType<Window: WindowType> {
     var key: String {
         switch self {
         case .tall:
-            return "tall"
+            return "tall-left"
         case .tallRight:
             return "tall-right"
         case .wide:
-            return "wide"
+            return "wide-top"
+        case .wideBottom:
+            return "wide-bottom"
         case .twoPane:
-            return "two-pane"
+            return "two-pane-a"
         case .twoPaneRight:
-            return "two-pane-right"
+            return "two-pane-b"
         case .threeColumnLeft:
             return "3column-left"
         case .threeColumnMiddle:
-            return "middle-wide"
+            return "3column-middle"
         case .threeColumnRight:
             return "3column-right"
         case .fourColumnLeft:
@@ -109,13 +117,17 @@ enum LayoutType<Window: WindowType> {
         case .fullscreen:
             return "fullscreen"
         case .column:
-            return "column"
+            return "column-left"
+        case .columnRight:
+            return "column-right"
         case .row:
-            return "row"
+            return "row-top"
+        case .rowBottom:
+            return "row-bottom"
         case .floating:
             return "floating"
         case .widescreenTallLeft:
-            return "widescreen-tall"
+            return "widescreen-tall-left"
         case .widescreenTallRight:
             return "widescreen-tall-right"
         case .binarySpacePartitioning:
@@ -133,6 +145,8 @@ enum LayoutType<Window: WindowType> {
             return TallRightLayout<Window>.self
         case .wide:
             return WideLayout<Window>.self
+        case .wideBottom:
+            return WideBottomLayout<Window>.self
         case .twoPane:
             return TwoPaneLayout<Window>.self
         case .twoPaneRight:
@@ -151,8 +165,12 @@ enum LayoutType<Window: WindowType> {
             return FullscreenLayout<Window>.self
         case .column:
             return ColumnLayout<Window>.self
+        case .columnRight:
+            return ColumnRightLayout<Window>.self
         case .row:
             return RowLayout<Window>.self
+        case .rowBottom:
+            return RowBottomLayout<Window>.self
         case .floating:
             return FloatingLayout<Window>.self
         case .widescreenTallLeft:
@@ -167,44 +185,7 @@ enum LayoutType<Window: WindowType> {
     }
 
     static func from(key: String) -> LayoutType<Window> {
-        switch key {
-        case "tall":
-            return .tall
-        case "tall-right":
-            return .tallRight
-        case "wide":
-            return .wide
-        case "two-pane":
-            return .twoPane
-        case "two-pane-right":
-            return .twoPaneRight
-        case "3column-left":
-            return .threeColumnLeft
-        case "middle-wide":
-            return .threeColumnMiddle
-        case "3column-right":
-            return .threeColumnRight
-        case "4column-left":
-            return .fourColumnLeft
-        case "4column-right":
-            return .fourColumnRight
-        case "fullscreen":
-            return .fullscreen
-        case "column":
-            return .column
-        case "row":
-            return .row
-        case "floating":
-            return .floating
-        case "widescreen-tall":
-            return .widescreenTallLeft
-        case "widescreen-tall-right":
-            return .widescreenTallRight
-        case "bsp":
-            return .binarySpacePartitioning
-        default:
-            return .custom(key: key)
-        }
+        return standardLayouts.first { $0.key == key } ?? .custom(key: key)
     }
 
     static func layoutForKey(_ layoutKey: String) -> Layout<Window>? {
@@ -241,7 +222,7 @@ enum LayoutType<Window: WindowType> {
         return standardLayouts.compactMap { $0.layoutClass }
     }
 
-    // Returns a list of (key, name) pairs
+    // Returns a list of (key, name) pairs, with the names shown to the user (`layout-names`)
     static func availableLayoutStrings() -> [(key: String, name: String)] {
         var layoutTypes = standardLayouts
             .compactMap { $0.layoutClass }
@@ -250,7 +231,9 @@ enum LayoutType<Window: WindowType> {
         let customLayouts = customLayoutKeys().map { ($0, layoutNameForKey($0)!) }
         layoutTypes.append(contentsOf: customLayouts)
 
-        return layoutTypes
+        return layoutTypes.map { key, _ in
+            (key, UserConfiguration.shared.layoutDisplayName(forKey: key))
+        }
     }
 
     /// The keys of the custom layouts: the names of the `.js` files in the layouts directory.

@@ -1,7 +1,7 @@
 function layout() {
     return {
         name: "Extended Tall",
-        extends: "tall",
+        extends: "tall-left",
         getFrameAssignments: (windows, screenFrame, state, extendedFrames) => {
             const maxX = Math.max(...extendedFrames.map(f => f.frame.x));
             const minX = Math.min(...extendedFrames.map(f => f.frame.x));

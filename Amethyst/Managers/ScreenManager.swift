@@ -128,7 +128,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         return layouts.enumerated().map { index, layout in
             LayoutMenuItemInfo(
                 key: layout.layoutKey,
-                name: layout.layoutName,
+                name: layout.displayName,
                 isSelected: index == currentLayoutIndex
             )
         }
@@ -578,7 +578,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return
         }
 
-        let currentLayoutName = currentLayout.flatMap({ $0.layoutName }) ?? "None"
+        let currentLayoutName = currentLayout.flatMap({ $0.displayName }) ?? "None"
         let currentLayoutDescription = currentLayout?.layoutDescription ?? ""
 
         displayCustomHUD(title: currentLayoutName, description: currentLayoutDescription)

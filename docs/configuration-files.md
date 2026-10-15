@@ -19,7 +19,8 @@ The first file that exists is used:
 
 | Key | Description |
 | -- | -- |
-| `layouts` | Ordered list of layouts to use, by layout key (default `tall`, `wide`, `fullscreen`, `column`). See the [README](../README.md#layouts) for the keys. |
+| `layouts` | Ordered list of layouts to use, by layout key (default `tall-left`, `wide-top`, `fullscreen`, `column-left`). See the [README](../README.md#layouts) for the keys. |
+| `layout-names` | The name shown for a layout in the menu bar, the HUD, the Layouts menu and the palette, by layout key, e.g. `tall-left: "Coding"`. A layout left out, or with an empty or non-text name, shows its key (default none, so every layout shows its key). |
 | `mod1` | First modifier combination, a list of `option`, `control`, `shift`, `command` (default `option` + `shift`). Required. |
 | `mod2` | Second modifier combination (default `option` + `shift` + `control`). Required. |
 | `mod3` | Third modifier combination (optional, none by default). |
@@ -92,7 +93,7 @@ cycle-layout:
 | ------- | ------------|
 | `cycle-layout` | Move to the next layout in the list. |
 | `cycle-layout-backward` | Move to the previous layout in the list. |
-| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
+| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-left-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
 | `shrink-main` | Shrink the main pane by `window-resize-step`, down to 5% of the screen (so neither pane disappears). Not every layout responds. |
 | `expand-main` | Expand the main pane by `window-resize-step`, up to 95% of the screen. Not every layout responds. |
 | `increase-main` | Raise the most windows the main pane may hold, and show "x of y" (the windows in main, of the maximum). Nothing moves: main fills by `warp-<direction>`, by a window arriving with `main-arrival-position: first`, or by new windows while the side panes are still empty. When a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main holds one fewer and the maximum stays; main never empties while there are windows. Warping a window out of main lowers the maximum by one; warping into a full main raises it by one. This is how Tall, Wide, Widescreen Tall, 3Column and 4Column work; in Column and Row the count is the number of main windows, lowered when one leaves view. |
@@ -112,7 +113,7 @@ cycle-layout:
 | `swap-ccw` | Swap the focused window with the next one counter-clockwise. |
 | `swap-cw` | Swap the focused window with the next one clockwise. |
 | `swap-main` | Swap the focused window with the main window. |
-| `focus-west` … `focus-south` | Focus the tiled window in that direction (`west`, `east`, `north`, `south`). Only visible windows count: of windows stacked in one tile (Two Pane's secondary) only the front one is reached. Ties go to the window used most recently. From a floating window it reaches the nearest tile in that direction; floating windows are never a target. At the screen edge nothing happens (no wrap-around, no other display). In Fullscreen, west/east cycle through the windows and north/south do nothing. See [directional focus and swap](directional-navigation.md). |
+| `focus-west` … `focus-south` | Focus the tiled window in that direction (`west`, `east`, `north`, `south`). Only visible windows count: of windows stacked in one tile (Two Pane's secondary) only the front one is reached. Ties go to the window used most recently. From a floating window it reaches the nearest tile in that direction; floating windows are never a target. At the screen edge nothing happens (no wrap-around, no other display). In Fullscreen, west/east cycle through the windows and north/south do nothing. In Two Pane, north/south browse the windows waiting behind the secondary pane, from main too (west/east on a portrait screen). See [directional focus and swap](directional-navigation.md). |
 | `swap-west` … `swap-south` | Swap the focused window with the tiled window in that direction (found as for `focus-<direction>`). Focus and, with `mouse-follows-focus`, the cursor go with the window. Nothing happens from a floating window or in Fullscreen. |
 | `warp-west` … `warp-south` | Move the focused window into the pane in that direction, so that pane grows by one and its own shrinks: it lands right after the neighbour (found as for `focus-<direction>`), or in main by `main-arrival-position`. A neighbour in the same pane, or the last window of a pane (a warp never empties one), swaps instead; so does every warp in Two Pane, Column and Row. A side column left without windows can be warped into. In BSP the window leaves its tile and splits the neighbour's. Focus and, with `mouse-follows-focus`, the cursor go with the window. Nothing happens from a floating window or in Fullscreen, Floating and custom layouts. See [warp](directional-navigation.md#warp). |
 | `warp-main` | Move the focused window into main from wherever it is: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; in Two Pane, Column and Row it swaps with main, like `swap-main`. Nothing happens from main, from a floating window, or in BSP, Fullscreen, Floating and custom layouts. |

@@ -101,7 +101,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Shows the current layout's name next to the menu bar icon.
     private func updateStatusItemTitle() {
         let screenManager = windowManager?.focusedScreenManager() ?? windowManager?.screenManager(at: 0)
-        let layoutName = screenManager?.currentLayout?.layoutName
+        let layoutName = screenManager?.currentLayout?.displayName
         statusItem?.button?.imagePosition = .imageLeft
         statusItem?.button?.title = layoutName.map { " \($0)" } ?? ""
     }

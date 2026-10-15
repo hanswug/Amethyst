@@ -1,9 +1,9 @@
 {
     "layouts": [
-        "tall",
-        "wide",
+        "tall-left",
+        "wide-top",
         "fullscreen",
-        "column"
+        "column-left"
     ],
     "mod1": [
         "option",
@@ -22,11 +22,11 @@
         "mod": "mod2",
         "key": "space"
     },
-    "select-tall-layout": {
+    "select-tall-left-layout": {
         "mod": "mod1",
         "key": "a"
     },
-    "select-wide-layout": {
+    "select-wide-top-layout": {
         "mod": "mod1",
         "key": "s"
     },
@@ -34,7 +34,7 @@
         "mod": "mod1",
         "key": "d"
     },
-    "select-column-layout": {
+    "select-column-left-layout": {
         "mod": "mod1",
         "key": "f"
     },

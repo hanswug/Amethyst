@@ -123,5 +123,43 @@ class DirectionalNavigationTests: QuickSpec {
                 expect(neighbor(of: "focused", .west, in: frames)).to(equal("near"))
             }
         }
+
+        describe("Two Pane stack browsing") {
+            let stack = ["a", "b", "c"]
+
+            it("steps to the next and previous window, wrapping around") {
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "a", front: "a", forward: true)).to(equal("b"))
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "c", front: "c", forward: true)).to(equal("a"))
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "a", front: "a", forward: false)).to(equal("c"))
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "b", front: "b", forward: false)).to(equal("a"))
+            }
+
+            it("enters the stack from main at the window after (or before) the one in front") {
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "main", front: "b", forward: true)).to(equal("c"))
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "main", front: "b", forward: false)).to(equal("a"))
+            }
+
+            it("starts at the first window when none is known to be in front") {
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "main", front: nil, forward: true)).to(equal("b"))
+                expect(DirectionalNavigation.stackStep(stack: stack, current: "main", front: "gone", forward: false)).to(equal("c"))
+            }
+
+            it("does nothing without a stack, and stays put with one window") {
+                expect(DirectionalNavigation.stackStep(stack: [String](), current: "main", front: nil, forward: true)).to(beNil())
+                expect(DirectionalNavigation.stackStep(stack: ["a"], current: "a", front: "a", forward: true)).to(equal("a"))
+            }
+
+            it("browses with north/south on a landscape screen and west/east on a portrait one") {
+                expect(DirectionalNavigation.stackBrowse(.north, isLandscape: true)).to(equal(false))
+                expect(DirectionalNavigation.stackBrowse(.south, isLandscape: true)).to(equal(true))
+                expect(DirectionalNavigation.stackBrowse(.west, isLandscape: true)).to(beNil())
+                expect(DirectionalNavigation.stackBrowse(.east, isLandscape: true)).to(beNil())
+
+                expect(DirectionalNavigation.stackBrowse(.west, isLandscape: false)).to(equal(false))
+                expect(DirectionalNavigation.stackBrowse(.east, isLandscape: false)).to(equal(true))
+                expect(DirectionalNavigation.stackBrowse(.north, isLandscape: false)).to(beNil())
+                expect(DirectionalNavigation.stackBrowse(.south, isLandscape: false)).to(beNil())
+            }
+        }
     }
 }

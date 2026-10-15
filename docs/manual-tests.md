@@ -22,6 +22,7 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 | With a terminal in front, use focus and swap shortcuts | They act on the terminal's window. |
 | 3Column 1/3/1: focus a lower middle window, focus west, then east | Back on the same middle window. |
 | Two Pane with three windows: from main, focus east, then west and east again | Only the visible secondary is reached. |
+| Two Pane A and B with four windows: from main, focus south three times, then north | The waiting windows come forward one by one in window order and wrap around; north goes back; main is never focused. |
 | From a floating Settings window, focus west | The nearest tile to the west gets focus. |
 | Fullscreen: focus west/east, then north/south | West/east cycle through all windows with wrap-around; north/south do nothing. |
 | Swap east from main | Main and its neighbour trade places; focus and the cursor stay on the moved window. |

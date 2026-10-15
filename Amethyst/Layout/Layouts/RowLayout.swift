@@ -9,8 +9,8 @@
 import Silica
 
 class RowLayout<Window: WindowType>: Layout<Window>, PanedLayout {
-    override static var layoutName: String { return "Row" }
-    override static var layoutKey: String { return "row" }
+    override class var layoutName: String { return "Row Top" }
+    override class var layoutKey: String { return "row-top" }
 
     enum CodingKeys: String, CodingKey {
         case mainPaneCount
@@ -98,5 +98,15 @@ class RowLayout<Window: WindowType>: Layout<Window>, PanedLayout {
 
             return assignments
         }
+    }
+}
+
+/// Row Top's twin: the first window is at the bottom and the order runs upwards.
+class RowBottomLayout<Window: WindowType>: RowLayout<Window> {
+    override static var layoutName: String { return "Row Bottom" }
+    override static var layoutKey: String { return "row-bottom" }
+
+    override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
+        return super.frameAssignments(windowSet, on: screen)?.map { $0.mirrored(.vertical) }
     }
 }

@@ -129,6 +129,21 @@ class FrameAssignmentOperation<Window: WindowType>: Operation {
     }
 }
 
+/// The axis a twin layout mirrors its original's frames across.
+enum MirrorAxis {
+    /// Left and right swap: the twin of a layout with main on the left has main on the right.
+    case horizontal
+    /// Top and bottom swap.
+    case vertical
+}
+
+extension FrameAssignmentOperation {
+    /// The same assignment with its frame mirrored inside its screen frame, for a twin layout.
+    func mirrored(_ axis: MirrorAxis) -> FrameAssignmentOperation<Window> {
+        return FrameAssignmentOperation(frameAssignment: frameAssignment.mirrored(axis), windowSet: windowSet)
+    }
+}
+
 /// Encapsulation of an assignment of a frame to a window.
 struct FrameAssignment<Window: WindowType> {
     /// The frame to apply to the window.
@@ -145,6 +160,24 @@ struct FrameAssignment<Window: WindowType> {
 
     /// If `true`, then  window margins won't be applied
     let disableWindowMargins: Bool
+
+    /// The same assignment with its frame mirrored inside the screen frame. Sizes don't change, so resize rules still apply.
+    func mirrored(_ axis: MirrorAxis) -> FrameAssignment<Window> {
+        var mirroredFrame = frame
+        switch axis {
+        case .horizontal:
+            mirroredFrame.origin.x = screenFrame.minX + screenFrame.maxX - frame.maxX
+        case .vertical:
+            mirroredFrame.origin.y = screenFrame.minY + screenFrame.maxY - frame.maxY
+        }
+        return FrameAssignment(
+            frame: mirroredFrame,
+            window: window,
+            screenFrame: screenFrame,
+            resizeRules: resizeRules,
+            disableWindowMargins: disableWindowMargins
+        )
+    }
 
     init(frame: CGRect, window: LayoutWindow<Window>, screenFrame: CGRect, resizeRules: ResizeRules) {
         self.frame = frame

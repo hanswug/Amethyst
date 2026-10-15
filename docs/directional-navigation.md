@@ -65,6 +65,7 @@ In 3Column Left with a main window, three windows in the middle column and one o
 * **From a floating window** (Settings, a dialog), focus goes to the nearest tile in that direction. Floating windows are never a target, and swap does nothing from one.
 * **Screen edge:** nothing happens. There's no wrap-around and no jump to another display.
 * **Fullscreen** is the exception: every window fills the screen, so west/east cycle through the windows (wrapping around) and north/south do nothing. Swap does nothing in Fullscreen.
+* **Two Pane** browses its stack: north/south step through the windows waiting behind the secondary pane, in window order and wrapping around; from main they enter the stack at the window after (or before) the one in front. Main is never part of it. On a portrait screen, where the panes are stacked, west/east browse instead and north/south cross between the panes.
 * Directions use the tiles the layout assigned, before window margins, so an app that won't shrink to its tile doesn't confuse them.
 
 ## Warp
@@ -78,11 +79,11 @@ The rules, the same in every layout:
 * **The same pane:** a swap.
 * **The last window of a pane** swaps instead: a warp never empties a pane.
 * **An empty side column** (3Column, 4Column) can be warped into; the window becomes its only window. Focus and swap skip it.
-* **Two Pane, Column, Row:** each pane holds one window, so warp swaps.
+* **Two Pane A/B, Column Left/Right, Row Top/Bottom:** each pane holds one window, so warp swaps.
 * **BSP:** the window leaves its tile and splits the neighbour's, on the side it came from.
 * **Fullscreen, Floating, custom layouts, a floating window:** nothing happens.
 
-**`warp-main`** moves the focused window into main from wherever it is, without having to be next to main: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; Two Pane, Column and Row swap with main, like `swap-main`. From main, and in BSP (no main pane), nothing happens.
+**`warp-main`** moves the focused window into main from wherever it is, without having to be next to main: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; Two Pane, Column and Row (both twins of each) swap with main, like `swap-main`. From main, and in BSP (no main pane), nothing happens.
 
 In 3Column Left with main, two windows in the middle column and two on the right (1/2/2), warping a right-column window west gives 1/3/1. Closing a middle window then gives 1/2/1: the right column keeps its window. In 3Column Middle with main count 3 and one window on the left, the right column is empty (1/3/0); warping a main window east gives 1/2/1.
 

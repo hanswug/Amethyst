@@ -5,24 +5,52 @@
 # A command is bound only if this file binds it. Settings left out get built-in defaults.
 # Reference: docs/configuration-files.md in the Ametrine repo.
 
-# layouts - Ordered list of layouts to use by layout key (default tall, wide, fullscreen, and column).
+# layouts - Ordered list of layouts to use by layout key (default tall-left, wide-top, fullscreen, and column-left).
 layouts:
   - fullscreen
   - floating
-  - tall
+  - tall-left
   - tall-right
-  - wide
-  - two-pane
+  - wide-top
+  - wide-bottom
+  - two-pane-a
+  - two-pane-b
   - 3column-left
-  - middle-wide # The legacy name of "3column-middle"
+  - 3column-middle
   - 3column-right
   - 4column-left
   - 4column-right
-  - column
-  - row
-  - widescreen-tall
+  - column-left
+  - column-right
+  - row-top
+  - row-bottom
+  - widescreen-tall-left
   - widescreen-tall-right
   - bsp
+
+# layout-names - The name shown for each layout (menu bar, HUD, Layouts menu, palette), by layout key.
+# A layout left out, or with an empty name, shows its key.
+layout-names:
+  fullscreen: "Fullscreen"
+  floating: "Floating"
+  tall-left: "Tall Left"
+  tall-right: "Tall Right"
+  wide-top: "Wide Top"
+  wide-bottom: "Wide Bottom"
+  two-pane-a: "Two Pane A"
+  two-pane-b: "Two Pane B"
+  3column-left: "3Column Left"
+  3column-middle: "3Column Middle"
+  3column-right: "3Column Right"
+  4column-left: "4Column Left"
+  4column-right: "4Column Right"
+  column-left: "Column Left"
+  column-right: "Column Right"
+  row-top: "Row Top"
+  row-bottom: "Row Bottom"
+  widescreen-tall-left: "Widescreen Tall Left"
+  widescreen-tall-right: "Widescreen Tall Right"
+  bsp: "Binary Space Partitioning"
 
 # First mod (default control + option). Every day commands
 mod1:
@@ -205,13 +233,13 @@ select-fullscreen-layout:
   mod: mod1
   key: '1'
 
-# Select two-pane layout
-select-two-pane-layout:
+# Select two-pane-a layout
+select-two-pane-a-layout:
   mod: mod1
   key: '2'
 
 # Select 3column-middle layout
-select-middle-wide-layout:
+select-3column-middle-layout:
   mod: mod1
   key: '3'
 
@@ -223,18 +251,18 @@ select-3column-left-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select tall layout
-select-tall-layout:
+# Select tall-left layout
+select-tall-left-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select wide layout.
-select-wide-layout:
+# Select wide-top layout.
+select-wide-top-layout:
   mod: <NONE>
   key: <NONE>
 
-# Select column layout.
-select-column-layout:
+# Select column-left layout.
+select-column-left-layout:
   mod: <NONE>
   key: <NONE>
 

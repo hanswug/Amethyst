@@ -29,14 +29,19 @@ class Layout<Window: WindowType>: Codable {
         case key
     }
 
-    /// The display name of the layout.
+    /// The layout's own name, for logs. What the user sees is `displayName`.
     class var layoutName: String { fatalError("Must be implemented by subclass") }
 
     /// The configuration key of the layout.
     class var layoutKey: String { fatalError("Must be implemented by subclass") }
 
-    /// The display name of the layout.
+    /// The layout's own name, for logs. What the user sees is `displayName`.
     var layoutName: String { return type(of: self).layoutName }
+
+    /// The name shown in the menu bar, HUD, Layouts menu and palette: the `layout-names` entry, or the layout key.
+    var displayName: String {
+        return UserConfiguration.shared.layoutDisplayName(forKey: layoutKey)
+    }
 
     /// The configuration key of the layout.
     var layoutKey: String { return type(of: self).layoutKey }

@@ -499,6 +499,54 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("layout names") {
+            func loadedConfiguration(_ yaml: String) -> UserConfiguration {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+                configuration.configurationYAML = try! Yams.load(yaml: yaml) as? [String: Any]
+                configuration.configurationJSON = nil
+                configuration.defaultConfiguration = JSON([String: Any]())
+                configuration.loadConfiguration()
+                return configuration
+            }
+
+            let yaml = """
+            layout-names:
+              tall-left: coding
+              tall-right: "  coding (flipped)  "
+              wide-top: ""
+              3column-middle: 27
+              row-top:
+              not-a-layout: ignored
+            """
+
+            it("shows the configured name, trimmed") {
+                let configuration = loadedConfiguration(yaml)
+
+                expect(configuration.layoutDisplayName(forKey: "tall-left")).to(equal("coding"))
+                expect(configuration.layoutDisplayName(forKey: "tall-right")).to(equal("coding (flipped)"))
+            }
+
+            it("shows the key for a layout without an entry") {
+                expect(loadedConfiguration(yaml).layoutDisplayName(forKey: "bsp")).to(equal("bsp"))
+            }
+
+            it("shows the key without a layout-names block") {
+                expect(loadedConfiguration("layouts: [bsp]").layoutDisplayName(forKey: "bsp")).to(equal("bsp"))
+            }
+
+            it("shows the key when the name is empty, missing or not text") {
+                let configuration = loadedConfiguration(yaml)
+
+                expect(configuration.layoutDisplayName(forKey: "wide-top")).to(equal("wide-top"))
+                expect(configuration.layoutDisplayName(forKey: "row-top")).to(equal("row-top"))
+                expect(configuration.layoutDisplayName(forKey: "3column-middle")).to(equal("3column-middle"))
+            }
+
+            it("shows the key when layout-names isn't a map") {
+                expect(loadedConfiguration("layout-names: [coding]").layoutDisplayName(forKey: "tall-left")).to(equal("tall-left"))
+            }
+        }
+
         describe("window overflow") {
             it("minimises unless the configuration says float") {
                 let storage = TestConfigurationStorage()
