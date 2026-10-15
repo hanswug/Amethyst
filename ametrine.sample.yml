@@ -39,6 +39,12 @@ mod2:
   - control
   - command
 
+# Third mod: warp (shift + control + option).
+mod3:
+  - option
+  - control
+  - shift
+
 # Commands:
 # special key values
 # space
@@ -163,6 +169,23 @@ swap-north:
 
 swap-east:
   mod: mod2
+  key: l
+
+# Warp the focused window into the pane in that direction (joins it; swaps within a pane).
+warp-west:
+  mod: mod3
+  key: h
+
+warp-south:
+  mod: mod3
+  key: j
+
+warp-north:
+  mod: mod3
+  key: k
+
+warp-east:
+  mod: mod3
   key: l
 
 # Select wide layout
@@ -333,7 +356,7 @@ focus-border: true
 # glow (soft, like the macOS focus ring), solid or gradient (default glow). cycle-focus-border-style switches live.
 focus-border-style: glow
 # Points: the ring width for solid and gradient, how far the glow reaches (default 5).
-focus-border-width: 5
+focus-border-width: 2
 # accent (the system accent colour), "#RRGGBB" or "#AARRGGBB" (default accent). JankyBorders used "#FF453A".
 focus-border-color: accent
 # The two gradient colours, top left to bottom right (default purple to gold).
@@ -360,8 +383,7 @@ floating: [
   "pro.betterdisplay.BetterDisplay",
   "com.apple.systempreferences",
   "com.apple.finder",
-  # md.obsidian title rule replaced by floating-secondary-windows (phase 3):
-  # {id: "md.obsidian", window-titles: ["^(Settings|Community plugins|Community themes) - .+ - Obsidian"]},
+  "com.apple.ActivityMonitor",
   {id: "*", window-titles: ["^(Open|Save)$"]}]
 
 # Boolean flag determining behavior of the floating list. true if the applications should be floating and all others tiled. false if the applications should be tiled and all others floating (default true).
