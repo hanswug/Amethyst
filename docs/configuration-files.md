@@ -20,7 +20,7 @@ The first file that exists is used:
 | Key | Description |
 | -- | -- |
 | `layouts` | Ordered list of layouts to use, by layout key (default `tall-left`, `wide-top`, `fullscreen`, `column-left`). See the [README](../README.md#layouts) for the keys. |
-| `layout-names` | The name shown for a layout in the menu bar, the HUD, the Layouts menu and the palette, by layout key, e.g. `tall-left: coding`. Layouts left out show their built-in name; an empty or non-text name shows the key (default none). |
+| `layout-names` | The name shown for a layout in the menu bar, the HUD, the Layouts menu and the palette, by layout key, e.g. `tall-left: "Coding"`. A layout left out, or with an empty or non-text name, shows its key (default none, so every layout shows its key). |
 | `mod1` | First modifier combination, a list of `option`, `control`, `shift`, `command` (default `option` + `shift`). Required. |
 | `mod2` | Second modifier combination (default `option` + `shift` + `control`). Required. |
 | `mod3` | Third modifier combination (optional, none by default). |

@@ -519,32 +519,31 @@ class UserConfigurationTests: QuickSpec {
               not-a-layout: ignored
             """
 
-            it("shows the configured name") {
+            it("shows the configured name, trimmed") {
                 let configuration = loadedConfiguration(yaml)
 
-                expect(configuration.layoutDisplayName(forKey: "tall-left", builtInName: "Tall Left")).to(equal("coding"))
-                expect(configuration.layoutDisplayName(forKey: "tall-right", builtInName: "Tall Right")).to(equal("coding (flipped)"))
+                expect(configuration.layoutDisplayName(forKey: "tall-left")).to(equal("coding"))
+                expect(configuration.layoutDisplayName(forKey: "tall-right")).to(equal("coding (flipped)"))
             }
 
-            it("shows the built-in name for a layout without an entry") {
-                let configuration = loadedConfiguration(yaml)
+            it("shows the key for a layout without an entry") {
+                expect(loadedConfiguration(yaml).layoutDisplayName(forKey: "bsp")).to(equal("bsp"))
+            }
 
-                expect(configuration.layoutDisplayName(forKey: "bsp", builtInName: "Binary Space Partitioning")).to(equal("Binary Space Partitioning"))
-                expect(loadedConfiguration("layouts: [bsp]").layoutDisplayName(forKey: "bsp", builtInName: "BSP")).to(equal("BSP"))
+            it("shows the key without a layout-names block") {
+                expect(loadedConfiguration("layouts: [bsp]").layoutDisplayName(forKey: "bsp")).to(equal("bsp"))
             }
 
             it("shows the key when the name is empty, missing or not text") {
                 let configuration = loadedConfiguration(yaml)
 
-                expect(configuration.layoutDisplayName(forKey: "wide-top", builtInName: "Wide Top")).to(equal("wide-top"))
-                expect(configuration.layoutDisplayName(forKey: "row-top", builtInName: "Row Top")).to(equal("row-top"))
-                expect(configuration.layoutDisplayName(forKey: "3column-middle", builtInName: "3Column Middle")).to(equal("3column-middle"))
+                expect(configuration.layoutDisplayName(forKey: "wide-top")).to(equal("wide-top"))
+                expect(configuration.layoutDisplayName(forKey: "row-top")).to(equal("row-top"))
+                expect(configuration.layoutDisplayName(forKey: "3column-middle")).to(equal("3column-middle"))
             }
 
-            it("ignores layout-names that isn't a map") {
-                let configuration = loadedConfiguration("layout-names: [coding]")
-
-                expect(configuration.layoutDisplayName(forKey: "tall-left", builtInName: "Tall Left")).to(equal("Tall Left"))
+            it("shows the key when layout-names isn't a map") {
+                expect(loadedConfiguration("layout-names: [coding]").layoutDisplayName(forKey: "tall-left")).to(equal("tall-left"))
             }
         }
 

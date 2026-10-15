@@ -231,8 +231,8 @@ enum LayoutType<Window: WindowType> {
         let customLayouts = customLayoutKeys().map { ($0, layoutNameForKey($0)!) }
         layoutTypes.append(contentsOf: customLayouts)
 
-        return layoutTypes.map { key, name in
-            (key, UserConfiguration.shared.layoutDisplayName(forKey: key, builtInName: name))
+        return layoutTypes.map { key, _ in
+            (key, UserConfiguration.shared.layoutDisplayName(forKey: key))
         }
     }
 

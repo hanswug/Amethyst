@@ -666,13 +666,13 @@ class UserConfiguration: NSObject {
         return configurationYAML != nil || configurationJSON != nil
     }
 
-    /// The name shown for a layout: its `layout-names` entry, its key when that entry isn't usable text, or the built-in name.
-    func layoutDisplayName(forKey layoutKey: String, builtInName: String) -> String {
-        guard let name = (storage.object(forKey: .layoutNames) as? [String: String])?[layoutKey] else {
-            return builtInName
+    /// The name shown for a layout: its `layout-names` entry, or the layout key when it has no usable one.
+    func layoutDisplayName(forKey layoutKey: String) -> String {
+        guard let name = (storage.object(forKey: .layoutNames) as? [String: String])?[layoutKey], !name.isEmpty else {
+            return layoutKey
         }
 
-        return name.isEmpty ? layoutKey : name
+        return name
     }
 
     /// `layout-names` as stored: text names trimmed, anything else (empty, a number, a list) kept as "" so the key is shown.

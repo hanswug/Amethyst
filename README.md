@@ -123,7 +123,7 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
 | Custom | file name | JavaScript layouts in `~/Library/Application Support/Amethyst/Layouts/*.js`; see [docs/custom-layouts.md](docs/custom-layouts.md) |
 
-Each name says where main is. The pairs are twins, the same layout mirrored; the flip commands (coming) switch between them. `layout-names` can give any layout your own name, e.g. `tall-left: coding`.
+Each name says where main is. The pairs are twins, the same layout mirrored; the flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
 
 ### BSP in Ametrine
 
