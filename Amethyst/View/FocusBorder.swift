@@ -2,7 +2,8 @@
 //  FocusBorder.swift
 //  Amethyst
 //
-//  A border around the focused window, drawn by a click-through overlay just outside the window's frame.
+//  A border around the focused window, drawn by a click-through overlay just outside the window's frame
+//  (see WindowServerBorder.swift for the window-server version).
 //
 
 import Cocoa
@@ -88,6 +89,11 @@ struct FocusBorderAppearance: Equatable {
         let flipped = CGRect(x: windowFrame.minX, y: primaryScreenHeight - windowFrame.maxY, width: windowFrame.width, height: windowFrame.height)
         return flipped.insetBy(dx: -reach, dy: -reach)
     }
+
+    /// The overlay's frame in window-server coordinates (origin top left, like the window frame), in whole points.
+    func windowServerFrame(forWindowFrame windowFrame: CGRect) -> CGRect {
+        return windowFrame.insetBy(dx: -reach, dy: -reach).integral
+    }
 }
 
 final class FocusBorderPanel: NSPanel {
@@ -101,6 +107,10 @@ final class FocusBorderPanel: NSPanel {
         hidesOnDeactivate = false
         animationBehavior = .none
         collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenNone]
+        // One level above app windows: apps raise their own window whenever they like (a click, CotEditor while selecting text),
+        // which covered a border kept just above the window. The focused window is the frontmost app window, so nothing else
+        // shows under the ring; menus and floating panels (Raycast, …) sit higher and still cover it.
+        level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue + 1)
 
         let view = NSView()
         view.wantsLayer = true
@@ -116,8 +126,10 @@ final class FocusBorderPanel: NSPanel {
     }
 }
 
-/// The overlay that draws the focus border. Main thread only.
+/// The focus border. Main thread only. A window of its own in the window server when the private calls are there
+/// (`WindowServerBorder`, it keeps up with drags and resizes); otherwise an AppKit panel that follows Accessibility events.
 final class FocusBorder {
+    private let windowServerBorder = WindowServerBorder()
     private lazy var panel = FocusBorderPanel()
     private var appearance: FocusBorderAppearance?
     private var windowFrame: CGRect?
@@ -125,48 +137,41 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// A click raises the clicked window above the border without a focus change; this puts the border back on top.
-    private var clickMonitor: Any?
-
     init() {
-        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown]) { [weak self] _ in
-            // After the click's own raise has landed.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self?.raiseAboveWindow()
-            }
+        if windowServerBorder == nil {
+            log.warning("Focus border: window-server calls unavailable, using a panel that follows Accessibility events")
         }
     }
 
-    deinit {
-        if let clickMonitor {
-            NSEvent.removeMonitor(clickMonitor)
-        }
-    }
-
-    private func raiseAboveWindow() {
-        guard let currentWindowID else {
+    func show(around windowFrame: CGRect, above windowID: CGWindowID, onSpace spaceID: Int?, appearance: FocusBorderAppearance) {
+        currentWindowID = windowID
+        if let windowServerBorder {
+            let scale = NSScreen.screens.map(\.backingScaleFactor).max() ?? 2
+            windowServerBorder.show(windowID: windowID, appearance: appearance, spaceID: spaceID, scale: scale)
             return
         }
 
-        panel.order(.above, relativeTo: Int(currentWindowID))
-    }
-
-    func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
-        currentWindowID = windowID
         move(to: windowFrame, force: true)
-        panel.order(.above, relativeTo: Int(windowID))
+        panel.orderFrontRegardless()
     }
 
-    /// Follows the window while it moves or resizes.
+    /// Follows the window on its Accessibility moved and resized events; the window-server border follows the window server's own.
     func move(to windowFrame: CGRect) {
+        guard windowServerBorder == nil else {
+            return
+        }
         move(to: windowFrame, force: false)
     }
 
     func hide() {
         currentWindowID = nil
         windowFrame = nil
-        panel.orderOut(nil)
+        if let windowServerBorder {
+            windowServerBorder.hide()
+        } else {
+            panel.orderOut(nil)
+        }
     }
 
     private func move(to windowFrame: CGRect, force: Bool) {

@@ -1371,7 +1371,12 @@ extension WindowManager {
             return
         }
 
-        focusBorder.show(around: window.frame(), above: window.cgID(), appearance: userConfiguration.focusBorderAppearance())
+        focusBorder.show(
+            around: window.frame(),
+            above: window.cgID(),
+            onSpace: CGWindowsInfo<Window>.windowSpace(window),
+            appearance: userConfiguration.focusBorderAppearance()
+        )
     }
 
     /// Keeps the border on its window while the window moves or resizes.

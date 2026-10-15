@@ -333,7 +333,7 @@ focus-border-width: 5
 focus-border-color: accent
 # The two gradient colours, top left to bottom right (default purple to gold).
 focus-border-gradient: ["#9B5DE5", "#F4B942"]
-# Corner radius in points (default 12).
+# Corner radius in points (default 12), when the window server doesn't report the window's own; normally each window's own is used.
 focus-border-radius: 12
 
 # The smallest height that a window can be sized to regardless of its layout frame (in px, default 0).

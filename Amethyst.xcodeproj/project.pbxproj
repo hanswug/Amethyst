@@ -47,6 +47,7 @@
 		401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */; };
 		A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */; };
 		A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000049 /* FocusBorder.swift */; };
+		A3E1C0DE5EC0000000000052 /* WindowServerBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000051 /* WindowServerBorder.swift */; };
 		4029C4F11C112478001E4788 /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4029C4F01C112478001E4788 /* Layout.swift */; };
 		402DA3D72F53DCDB00B08CA2 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 402DA3D62F53DCDB00B08CA2 /* Silica */; };
 		402DA3DA2F53DCFE00B08CA2 /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 402DA3D92F53DCFE00B08CA2 /* Silica */; };
@@ -183,6 +184,7 @@
 		401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigation.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000049 /* FocusBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorder.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000051 /* WindowServerBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowServerBorder.swift; sourceTree = "<group>"; };
 		4029C4F01C112478001E4788 /* Layout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
 		402DB6DE1742E41A00D1C936 /* Amethyst.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Amethyst.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		402DB6E11742E41A00D1C936 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -586,6 +588,7 @@
 				40B3927B1814967F009A296B /* LayoutNameWindow.xib */,
 				401BC8A51CE8E65D00F89B3F /* LayoutNameWindow.swift */,
 				A3E1C0DE5EC0000000000049 /* FocusBorder.swift */,
+				A3E1C0DE5EC0000000000051 /* WindowServerBorder.swift */,
 				A3E1C0DE5EC0000000000011 /* CommandPalette.swift */,
 				4058C46E1C4B119500B19D26 /* LayoutNameWindowController.swift */,
 			);
@@ -826,6 +829,7 @@
 				401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */,
 				A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */,
 				A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */,
+				A3E1C0DE5EC0000000000052 /* WindowServerBorder.swift in Sources */,
 				40CF37C429BAC18300CDB07A /* ScreensInfo.swift in Sources */,
 				4062AD371C1FA83300DB612B /* RowLayout.swift in Sources */,
 				4006CF8E1CDFFE90004CA512 /* AppDelegate.swift in Sources */,

@@ -53,7 +53,7 @@ The first file that exists is used:
 | `focus-border-width` | Points: the ring width for `solid` and `gradient`, and how far the glow reaches (default `5`). |
 | `focus-border-color` | `accent` (the system accent colour, following System Settings), `"#RRGGBB"` or `"#AARRGGBB"` (default `accent`). Quote hex colours in YAML. |
 | `focus-border-gradient` | The two colours of the `gradient` style, top left to bottom right (default `["#9B5DE5", "#F4B942"]`, purple to gold). |
-| `focus-border-radius` | Corner radius in points (default `12`). macOS doesn't expose each window's own radius, so one value applies to all. |
+| `focus-border-radius` | Corner radius in points (default `12`), used when the window server doesn't report the window's own radius; normally the border follows each window's own corners. |
 | `new-windows-to-main` | `true` to insert new windows in the first position, `false` for the last (default `false`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
 | `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |
