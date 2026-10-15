@@ -65,6 +65,42 @@ class FocusBorderTests: QuickSpec {
                 expect(appearance.overlayFrame(forWindowFrame: windowFrame, primaryScreenHeight: 2160))
                     .to(equal(CGRect(x: 88.5, y: 1498.5, width: 823, height: 623)))
             }
+
+            it("stays in top-left coordinates for the window server") {
+                let appearance = FocusBorderAppearance(style: .solid, width: 5, radius: 12, color: .accent, gradient: [])
+
+                expect(appearance.windowServerFrame(forWindowFrame: windowFrame)).to(equal(CGRect(x: 95, y: 45, width: 810, height: 610)))
+            }
+        }
+
+        describe("the drawing") {
+            let size = CGSize(width: 120, height: 100)
+
+            func alpha(at point: CGPoint, style: FocusBorderStyle) -> UInt8 {
+                let appearance = FocusBorderAppearance(
+                    style: style, width: 5, radius: 12, color: .rgba(red: 1, green: 0, blue: 0, alpha: 1),
+                    gradient: FocusBorderAppearance.defaultGradient
+                )
+                let context = CGContext(
+                    data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
+                    space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                )!
+                FocusBorderDrawing.draw(in: context, size: size, appearance: appearance)
+                let pixels = context.data!.assumingMemoryBound(to: UInt8.self)
+                // Bitmap rows run top to bottom; the drawing's origin is bottom left.
+                let row = Int(size.height) - 1 - Int(point.y)
+                return pixels[row * context.bytesPerRow + Int(point.x) * 4 + 3]
+            }
+
+            it("draws the ring just outside the window and nothing over the window") {
+                for style in FocusBorderStyle.allCases {
+                    let reach = FocusBorderAppearance(style: style, width: 5, radius: 12, color: .accent, gradient: []).reach
+                    // Just outside the left edge, half way up; then the window's centre.
+                    expect(alpha(at: CGPoint(x: reach - 1, y: 50), style: style)).to(beGreaterThan(0), description: style.rawValue)
+                    expect(alpha(at: CGPoint(x: 60, y: 50), style: style)).to(equal(0), description: style.rawValue)
+                    expect(alpha(at: CGPoint(x: reach + 1, y: 50), style: style)).to(equal(0), description: style.rawValue)
+                }
+            }
         }
     }
 }

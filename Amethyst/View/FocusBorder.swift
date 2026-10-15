@@ -2,11 +2,11 @@
 //  FocusBorder.swift
 //  Amethyst
 //
-//  A border around the focused window, drawn by a click-through overlay just outside the window's frame.
+//  A border around the focused window, drawn by a click-through overlay just outside the window's frame
+//  (see WindowServerBorder.swift for the window-server version).
 //
 
 import Cocoa
-import Darwin
 import QuartzCore
 
 enum FocusBorderStyle: String, CaseIterable {
@@ -89,6 +89,11 @@ struct FocusBorderAppearance: Equatable {
         let flipped = CGRect(x: windowFrame.minX, y: primaryScreenHeight - windowFrame.maxY, width: windowFrame.width, height: windowFrame.height)
         return flipped.insetBy(dx: -reach, dy: -reach)
     }
+
+    /// The overlay's frame in window-server coordinates (origin top left, like the window frame).
+    func windowServerFrame(forWindowFrame windowFrame: CGRect) -> CGRect {
+        return windowFrame.insetBy(dx: -reach, dy: -reach)
+    }
 }
 
 final class FocusBorderPanel: NSPanel {
@@ -121,62 +126,10 @@ final class FocusBorderPanel: NSPanel {
     }
 }
 
-/// Private SkyLight calls for following a window as the window server moves it, looked up at runtime: if a macOS update removes
-/// them, the border falls back to Accessibility events. Signatures as used by window tools such as JankyBorders and yabai.
-private enum WindowServer {
-    typealias NotifyHandler = @convention(c) (UInt32, UnsafeMutableRawPointer?, Int, UnsafeMutableRawPointer?) -> Void
-
-    private typealias MainConnectionID = @convention(c) () -> Int32
-    private typealias RegisterNotifyProc = @convention(c) (NotifyHandler, UInt32, UnsafeMutableRawPointer?) -> Int32
-    private typealias RequestNotificationsForWindows = @convention(c) (Int32, UnsafeMutablePointer<UInt32>, Int32) -> Int32
-    private typealias GetWindowBounds = @convention(c) (Int32, UInt32, UnsafeMutablePointer<CGRect>) -> Int32
-
-    static let windowMoved: UInt32 = 806
-    static let windowResized: UInt32 = 807
-
-    private static let skyLight = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_LAZY)
-
-    private static func function<T>(_ name: String, _ type: T.Type) -> T? {
-        guard let skyLight, let pointer = dlsym(skyLight, name) else {
-            return nil
-        }
-        return unsafeBitCast(pointer, to: type)
-    }
-
-    private static let mainConnectionID = function("SLSMainConnectionID", MainConnectionID.self)
-    private static let registerNotifyProc = function("SLSRegisterNotifyProc", RegisterNotifyProc.self)
-    private static let requestNotificationsForWindows = function("SLSRequestNotificationsForWindows", RequestNotificationsForWindows.self)
-    private static let getWindowBounds = function("SLSGetWindowBounds", GetWindowBounds.self)
-
-    /// Registers the handler for the events; false if any call is missing or fails.
-    static func register(_ handler: NotifyHandler, for events: [UInt32]) -> Bool {
-        guard let registerNotifyProc, mainConnectionID != nil, requestNotificationsForWindows != nil, getWindowBounds != nil else {
-            return false
-        }
-        return events.allSatisfy { registerNotifyProc(handler, $0, nil) == 0 }
-    }
-
-    /// Asks for the registered events of this window (replacing the window asked for before).
-    static func requestNotifications(for windowID: CGWindowID) {
-        guard let mainConnectionID, let requestNotificationsForWindows else {
-            return
-        }
-        var windowIDs = [UInt32(windowID)]
-        _ = requestNotificationsForWindows(mainConnectionID(), &windowIDs, 1)
-    }
-
-    /// The window's frame, top-left origin like Accessibility frames.
-    static func bounds(of windowID: CGWindowID) -> CGRect? {
-        guard let mainConnectionID, let getWindowBounds else {
-            return nil
-        }
-        var bounds = CGRect.zero
-        return getWindowBounds(mainConnectionID(), UInt32(windowID), &bounds) == 0 ? bounds : nil
-    }
-}
-
-/// The overlay that draws the focus border. Main thread only.
+/// The focus border. Main thread only. A window of its own in the window server when the private calls are there
+/// (`WindowServerBorder`, it keeps up with drags and resizes); otherwise an AppKit panel that follows Accessibility events.
 final class FocusBorder {
+    private let windowServerBorder = WindowServerBorder()
     private lazy var panel = FocusBorderPanel()
     private var appearance: FocusBorderAppearance?
     private var windowFrame: CGRect?
@@ -184,51 +137,28 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// Whether the border follows the window-server's own move and resize events, which come every frame, also mid-drag.
-    /// Without them it follows Accessibility events, which come late and in bursts.
-    private var followsWindowServer = false
-    /// Accessibility frames lag behind the window server's; while its events keep coming, they'd pull the border back.
-    private var lastWindowServerEvent: Date?
+    init() {
+        if windowServerBorder == nil {
+            log.warning("Focus border: window-server calls unavailable, using a panel that follows Accessibility events")
+        }
+    }
 
-    /// Receives the window-server events; a C callback can't capture, so it finds the border here.
-    private static weak var followed: FocusBorder?
-
-    private static let windowServerHandler: WindowServer.NotifyHandler = { _, data, length, _ in
-        guard let data, length >= MemoryLayout<UInt32>.size else {
+    func show(around windowFrame: CGRect, above windowID: CGWindowID, onSpace spaceID: Int?, appearance: FocusBorderAppearance) {
+        currentWindowID = windowID
+        if let windowServerBorder {
+            let scale = NSScreen.screens.map(\.backingScaleFactor).max() ?? 2
+            windowServerBorder.show(windowID: windowID, appearance: appearance, spaceID: spaceID, scale: scale)
             return
         }
 
-        let windowID = data.loadUnaligned(as: UInt32.self)
-        let follow: () -> Void = { FocusBorder.followed?.windowServerDidChange(windowID) }
-        if Thread.isMainThread {
-            follow()
-        } else {
-            DispatchQueue.main.async(execute: follow)
-        }
-    }
-
-    init() {
-        followsWindowServer = WindowServer.register(FocusBorder.windowServerHandler, for: [WindowServer.windowMoved, WindowServer.windowResized])
-        FocusBorder.followed = self
-        if !followsWindowServer {
-            log.warning("Focus border: window-server events unavailable, following Accessibility events")
-        }
-    }
-
-    func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
-        if followsWindowServer && windowID != currentWindowID {
-            WindowServer.requestNotifications(for: windowID)
-            lastWindowServerEvent = nil
-        }
-        currentWindowID = windowID
         move(to: windowFrame, force: true)
         panel.orderFrontRegardless()
     }
 
-    /// Follows the window on its Accessibility moved and resized events, unless the window server is already reporting them.
+    /// Follows the window on its Accessibility moved and resized events; the window-server border follows the window server's own.
     func move(to windowFrame: CGRect) {
-        if let lastWindowServerEvent, Date().timeIntervalSince(lastWindowServerEvent) < 0.5 {
+        guard windowServerBorder == nil else {
             return
         }
         move(to: windowFrame, force: false)
@@ -237,25 +167,11 @@ final class FocusBorder {
     func hide() {
         currentWindowID = nil
         windowFrame = nil
-        panel.orderOut(nil)
-    }
-
-    private func windowServerDidChange(_ windowID: CGWindowID) {
-        guard windowID == currentWindowID, let appearance, let bounds = WindowServer.bounds(of: windowID) else {
-            return
+        if let windowServerBorder {
+            windowServerBorder.hide()
+        } else {
+            panel.orderOut(nil)
         }
-
-        lastWindowServerEvent = Date()
-        guard let windowFrame, bounds.size == windowFrame.size else {
-            // A resize redraws the ring.
-            move(to: bounds, force: false)
-            return
-        }
-
-        // A move only shifts the overlay, without drawing.
-        self.windowFrame = bounds
-        let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
-        panel.setFrameOrigin(appearance.overlayFrame(forWindowFrame: bounds, primaryScreenHeight: primaryScreenHeight).origin)
     }
 
     private func move(to windowFrame: CGRect, force: Bool) {
