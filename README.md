@@ -88,10 +88,14 @@ focus-west:  {mod: mod1, key: h}         # h/j/k/l = direction, modifier = verb
 focus-south: {mod: mod1, key: j}
 focus-north: {mod: mod1, key: k}
 focus-east:  {mod: mod1, key: l}
-swap-west:   {mod: mod2, key: h}
-swap-south:  {mod: mod2, key: j}
-swap-north:  {mod: mod2, key: k}
-swap-east:   {mod: mod2, key: l}
+warp-west:   {mod: mod2, key: h}
+warp-south:  {mod: mod2, key: j}
+warp-north:  {mod: mod2, key: k}
+warp-east:   {mod: mod2, key: l}
+swap-west:   {mod: mod3, key: h}
+swap-south:  {mod: mod3, key: j}
+swap-north:  {mod: mod3, key: k}
+swap-east:   {mod: mod3, key: l}
 
 focus-cw: false           # unbound, same as leaving it out or <NONE>
 ```

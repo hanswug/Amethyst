@@ -8,17 +8,25 @@ The commands are unbound until the config binds them. With vim keys, the modifie
 
 ```yaml
 mod1: [option, control]             # everyday: focus
-mod2: [option, control, command]    # transformations: swap
+mod2: [option, control, command]    # moving windows: warp
+mod3: [option, control, shift]      # swap
 
 focus-west:  {mod: mod1, key: h}
 focus-south: {mod: mod1, key: j}
 focus-north: {mod: mod1, key: k}
 focus-east:  {mod: mod1, key: l}
 
-swap-west:   {mod: mod2, key: h}
-swap-south:  {mod: mod2, key: j}
-swap-north:  {mod: mod2, key: k}
-swap-east:   {mod: mod2, key: l}
+warp-west:   {mod: mod2, key: h}
+warp-south:  {mod: mod2, key: j}
+warp-north:  {mod: mod2, key: k}
+warp-east:   {mod: mod2, key: l}
+warp-main:   {mod: mod2, key: m}
+
+swap-west:   {mod: mod3, key: h}
+swap-south:  {mod: mod3, key: j}
+swap-north:  {mod: mod3, key: k}
+swap-east:   {mod: mod3, key: l}
+swap-main:   {mod: mod3, key: m}
 
 focus-ccw: false      # previous/next freed h and l
 focus-cw:  false
@@ -26,7 +34,7 @@ swap-ccw:  false
 swap-cw:   false
 ```
 
-Arrow keys work too (`left`, `down`, `up`, `right`). All eight commands are also in the command palette and on the command URL, e.g. `open -g "ametrine://command/focus-east"`. `warp-west`, `warp-east`, `warp-north`, `warp-south` and `warp-main` (below) bind the same way; swap and warp shouldn't share a modifier.
+Arrow keys work too (`left`, `down`, `up`, `right`). All of them are also in the command palette and on the command URL, e.g. `open -g "ametrine://command/focus-east"`. Swap and warp shouldn't share a modifier; warp (below) is the more natural way to move windows, so it gets the easier one here.
 
 ## What it does
 
