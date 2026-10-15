@@ -63,6 +63,16 @@ enum SkyLight {
     static let transactionCommit = function("SLSTransactionCommit", (@convention(c) (CFTypeRef, Int32) -> Int32).self)
     static let moveWindowsToManagedSpace = function("SLSMoveWindowsToManagedSpace", (@convention(c) (Int32, CFArray, UInt64) -> Int32).self)
 
+    // Optional: without them the configured `focus-border-radius` is used.
+    static let windowQueryWindows = function("SLSWindowQueryWindows", (@convention(c) (Int32, CFArray, UInt32) -> Unmanaged<CFTypeRef>?).self)
+    static let windowQueryResultCopyWindows = function(
+        "SLSWindowQueryResultCopyWindows", (@convention(c) (CFTypeRef) -> Unmanaged<CFTypeRef>?).self
+    )
+    static let windowIteratorAdvance = function("SLSWindowIteratorAdvance", (@convention(c) (CFTypeRef) -> Bool).self)
+    static let windowIteratorGetCornerRadii = function(
+        "SLSWindowIteratorGetCornerRadii", (@convention(c) (CFTypeRef) -> Unmanaged<CFArray>?).self
+    )
+
     static let isAvailable: Bool = {
         let calls: [Any?] = [
             mainConnectionID, newConnection, registerNotifyProc, requestNotificationsForWindows, getWindowBounds, newRegionWithRect,
@@ -80,6 +90,19 @@ enum SkyLight {
             return nil
         }
         return bounds
+    }
+
+    /// The window's own corner radius (it differs per app on macOS 27), if the window server reports one.
+    static func cornerRadius(of windowID: CGWindowID, connection: Int32) -> CGFloat? {
+        guard let windowQueryWindows, let windowQueryResultCopyWindows, let windowIteratorAdvance, let windowIteratorGetCornerRadii,
+              let query = windowQueryWindows(connection, [NSNumber(value: windowID)] as CFArray, 0)?.takeRetainedValue(),
+              let iterator = windowQueryResultCopyWindows(query)?.takeRetainedValue(),
+              windowIteratorAdvance(iterator),
+              let radii = windowIteratorGetCornerRadii(iterator)?.takeRetainedValue() as? [NSNumber],
+              let radius = radii.first?.doubleValue, radius > 0 else {
+            return nil
+        }
+        return CGFloat(radius)
     }
 
     static func region(_ rect: CGRect) -> CFTypeRef? {
@@ -165,6 +188,11 @@ final class WindowServerBorder {
     private var appearance: FocusBorderAppearance?
     private var spaceID: Int?
     private var scale: CGFloat = 2
+    /// The target's own corner radius, read when the border moves to it.
+    private var windowRadius: CGFloat?
+    /// Events arrive faster than a redraw during a resize; they're folded into one pass over the latest bounds.
+    private var isChangeScheduled = false
+    private var pendingResize = false
 
     /// The window-server events arrive through a C callback, which can't capture; it finds the border here.
     private static weak var followed: WindowServerBorder?
@@ -202,6 +230,9 @@ final class WindowServerBorder {
         }
 
         queue.async {
+            if windowID != self.targetWindowID {
+                self.windowRadius = SkyLight.cornerRadius(of: windowID, connection: self.connection)
+            }
             self.targetWindowID = windowID
             self.appearance = appearance
             self.scale = scale
@@ -228,12 +259,34 @@ final class WindowServerBorder {
             guard windowID == self.targetWindowID else {
                 return
             }
-            if resized {
-                self.update(orderFront: false)
-            } else {
-                self.move()
+            self.pendingResize = self.pendingResize || resized
+            guard !self.isChangeScheduled else {
+                return
+            }
+            self.isChangeScheduled = true
+            // Runs after the events already queued, so one pass covers them all.
+            self.queue.async {
+                self.isChangeScheduled = false
+                let resized = self.pendingResize
+                self.pendingResize = false
+                if resized {
+                    self.update(orderFront: false)
+                } else {
+                    self.move()
+                }
             }
         }
+    }
+
+    /// The configured look, with the target's own corner radius when the window server reports one.
+    private var effectiveAppearance: FocusBorderAppearance? {
+        guard var appearance else {
+            return nil
+        }
+        if let windowRadius {
+            appearance.radius = windowRadius
+        }
+        return appearance
     }
 
     /// The overlay's frame for the target's current bounds, origin top left.
@@ -255,7 +308,7 @@ final class WindowServerBorder {
     /// Reshapes and redraws when the size or look changed, with screen updates held so no half-done frame shows; then moves it
     /// into place, and orders it in if asked.
     private func update(orderFront: Bool) {
-        guard let frame = overlayFrame(), let appearance, frame.width > 0, frame.height > 0 else {
+        guard let frame = overlayFrame(), let appearance = effectiveAppearance, frame.width > 0, frame.height > 0 else {
             return
         }
 
@@ -267,8 +320,9 @@ final class WindowServerBorder {
         if needsDrawing {
             _ = SkyLight.disableUpdate?(connection)
             _ = SkyLight.freezeWindow?(connection, borderWindowID, nil)
+            // The offset places the window: at its final origin, never at the screen's corner.
             if let region = SkyLight.region(CGRect(origin: .zero, size: frame.size)) {
-                _ = SkyLight.setWindowShape?(connection, borderWindowID, 0, 0, region)
+                _ = SkyLight.setWindowShape?(connection, borderWindowID, Float(frame.origin.x), Float(frame.origin.y), region)
             }
             if let context {
                 FocusBorderDrawing.draw(in: context, size: frame.size, appearance: appearance)
