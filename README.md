@@ -175,6 +175,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.2.0 | Warp: `warp-west/east/north/south` moves a window into the pane in that direction (3Column 1/2/2 → 1/3/1), into an empty column too, and `warp-main` into main from anywhere; swaps where a pane would empty or holds one window; splits the neighbour's tile in BSP. Pane sizes are remembered per layout and survive a relaunch. The main pane count is a maximum: `increase-main` moves nothing, warps in and out move it by one, and the HUD shows "x of y" |
 | 4.3.0 | Padding modes per Space: each Space keeps the mode picked on it, also across restarts, and starts on `padding-mode` until one is picked; the padding commands and the Padding menu act on the current Space. `--log` logs how long each Space change takes |
 | 4.3.1 | Upstream leftovers removed: fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries (the app shrinks from 32 to 28 MB). No visible change |
+| 5.0.0 | Layouts named by where main is: `tall-left`, `wide-top`, `two-pane-a`/`-b`, `3column-middle`, `widescreen-tall-left`, `column-left`, `row-top` (**config edit**: rename the keys in `layouts:` and `select-<key>-layout`). New twins Wide Bottom, Column Right and Row Bottom; Two Pane B is A mirrored along the long side. `layout-names` sets the name shown for each layout (without one, its key). In Two Pane, focus north/south browses the windows behind the secondary pane |
 
 ## Credits and licence
 
