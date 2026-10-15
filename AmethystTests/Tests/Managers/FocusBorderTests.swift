@@ -71,6 +71,12 @@ class FocusBorderTests: QuickSpec {
 
                 expect(appearance.windowServerFrame(forWindowFrame: windowFrame)).to(equal(CGRect(x: 95, y: 45, width: 810, height: 610)))
             }
+
+            it("rounds out to whole points, as the window server places windows") {
+                let appearance = FocusBorderAppearance(style: .gradient, width: 1.5, radius: 12, color: .accent, gradient: [])
+
+                expect(appearance.windowServerFrame(forWindowFrame: windowFrame)).to(equal(CGRect(x: 98, y: 48, width: 804, height: 604)))
+            }
         }
 
         describe("the drawing") {
@@ -85,7 +91,8 @@ class FocusBorderTests: QuickSpec {
                     data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
                     space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
                 )!
-                FocusBorderDrawing.draw(in: context, size: size, appearance: appearance)
+                let windowRect = CGRect(origin: .zero, size: size).insetBy(dx: appearance.reach, dy: appearance.reach)
+                FocusBorderDrawing.draw(in: context, size: size, windowRect: windowRect, appearance: appearance)
                 let pixels = context.data!.assumingMemoryBound(to: UInt8.self)
                 // Bitmap rows run top to bottom; the drawing's origin is bottom left.
                 let row = Int(size.height) - 1 - Int(point.y)

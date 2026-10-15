@@ -90,9 +90,9 @@ struct FocusBorderAppearance: Equatable {
         return flipped.insetBy(dx: -reach, dy: -reach)
     }
 
-    /// The overlay's frame in window-server coordinates (origin top left, like the window frame).
+    /// The overlay's frame in window-server coordinates (origin top left, like the window frame), in whole points.
     func windowServerFrame(forWindowFrame windowFrame: CGRect) -> CGRect {
-        return windowFrame.insetBy(dx: -reach, dy: -reach)
+        return windowFrame.insetBy(dx: -reach, dy: -reach).integral
     }
 }
 

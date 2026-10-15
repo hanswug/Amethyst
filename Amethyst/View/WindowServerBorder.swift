@@ -124,14 +124,13 @@ enum SkyLight {
     }
 }
 
-/// Draws the border into an overlay of `size`, origin bottom left, with the window inset by `appearance.reach` on every side.
+/// Draws the border into an overlay of `size` around `windowRect`, both with origin bottom left.
 /// Nothing is drawn over the window itself, not even the inner half of the glow.
 enum FocusBorderDrawing {
-    static func draw(in context: CGContext, size: CGSize, appearance: FocusBorderAppearance) {
+    static func draw(in context: CGContext, size: CGSize, windowRect: CGRect, appearance: FocusBorderAppearance) {
         let bounds = CGRect(origin: .zero, size: size)
         context.clear(bounds)
 
-        let windowRect = bounds.insetBy(dx: appearance.reach, dy: appearance.reach)
         guard windowRect.width > 0, windowRect.height > 0 else {
             return
         }
@@ -183,6 +182,7 @@ final class WindowServerBorder {
     private var borderWindowID: UInt32 = 0
     private var context: CGContext?
     private var drawnSize: CGSize?
+    private var drawnWindowRect: CGRect?
     private var drawnAppearance: FocusBorderAppearance?
     private var targetWindowID: CGWindowID?
     private var appearance: FocusBorderAppearance?
@@ -190,19 +190,23 @@ final class WindowServerBorder {
     private var scale: CGFloat = 2
     /// The target's own corner radius, read when the border moves to it.
     private var windowRadius: CGFloat?
-    /// Events arrive faster than a redraw during a resize; they're folded into one pass over the latest bounds.
-    private var isChangeScheduled = false
-    private var pendingResize = false
+    /// The target's bounds the border was last put around.
+    private var followedBounds: CGRect?
+    /// Move and resize events reach Ametrine through its main thread, which is busy with the same window's Accessibility events
+    /// during a drag or resize, so they come late. After an event, this timer asks the window server for the window's bounds
+    /// about 120 times a second, on the border's queue, until the window has been still for a quarter of a second.
+    private var poller: DispatchSourceTimer?
+    private var lastChange = DispatchTime.now()
 
     /// The window-server events arrive through a C callback, which can't capture; it finds the border here.
     private static weak var followed: WindowServerBorder?
 
-    private static let handler: SkyLight.NotifyHandler = { event, data, length, _ in
+    private static let handler: SkyLight.NotifyHandler = { _, data, length, _ in
         guard let data, length >= MemoryLayout<UInt32>.size else {
             return
         }
         let windowID = data.loadUnaligned(as: UInt32.self)
-        WindowServerBorder.followed?.windowDidChange(windowID, resized: event == SkyLight.windowResized)
+        WindowServerBorder.followed?.windowDidChange(windowID)
     }
 
     /// Nil when the private calls aren't there.
@@ -240,13 +244,17 @@ final class WindowServerBorder {
                 self.spaceID = spaceID
                 self.moveToSpace()
             }
-            self.update(orderFront: true)
+            guard let bounds = SkyLight.bounds(of: windowID, connection: self.connection) else {
+                return
+            }
+            self.update(around: bounds, orderFront: true)
         }
     }
 
     func hide() {
         queue.async {
             self.targetWindowID = nil
+            self.stopPolling()
             guard self.borderWindowID != 0, let orderWindow = SkyLight.transactionOrderWindow else {
                 return
             }
@@ -254,28 +262,47 @@ final class WindowServerBorder {
         }
     }
 
-    private func windowDidChange(_ windowID: CGWindowID, resized: Bool) {
+    private func windowDidChange(_ windowID: CGWindowID) {
         queue.async {
             guard windowID == self.targetWindowID else {
                 return
             }
-            self.pendingResize = self.pendingResize || resized
-            guard !self.isChangeScheduled else {
+            self.follow()
+            self.startPolling()
+        }
+    }
+
+    /// Catches up with the target: a move only shifts the border window, a new size redraws it.
+    private func follow() {
+        guard let targetWindowID, let bounds = SkyLight.bounds(of: targetWindowID, connection: connection), bounds != followedBounds else {
+            return
+        }
+        lastChange = .now()
+        update(around: bounds, orderFront: false)
+    }
+
+    private func startPolling() {
+        guard poller == nil else {
+            return
+        }
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now(), repeating: .nanoseconds(1_000_000_000 / 120), leeway: .milliseconds(1))
+        timer.setEventHandler { [weak self] in
+            guard let self else {
                 return
             }
-            self.isChangeScheduled = true
-            // Runs after the events already queued, so one pass covers them all.
-            self.queue.async {
-                self.isChangeScheduled = false
-                let resized = self.pendingResize
-                self.pendingResize = false
-                if resized {
-                    self.update(orderFront: false)
-                } else {
-                    self.move()
-                }
+            self.follow()
+            if DispatchTime.now().uptimeNanoseconds - self.lastChange.uptimeNanoseconds > 250_000_000 {
+                self.stopPolling()
             }
         }
+        poller = timer
+        timer.resume()
+    }
+
+    private func stopPolling() {
+        poller?.cancel()
+        poller = nil
     }
 
     /// The configured look, with the target's own corner radius when the window server reports one.
@@ -289,34 +316,27 @@ final class WindowServerBorder {
         return appearance
     }
 
-    /// The overlay's frame for the target's current bounds, origin top left.
-    private func overlayFrame() -> CGRect? {
-        guard let targetWindowID, let appearance, let bounds = SkyLight.bounds(of: targetWindowID, connection: connection) else {
-            return nil
-        }
-        return appearance.windowServerFrame(forWindowFrame: bounds)
-    }
-
-    /// A move only shifts the border window, without drawing.
-    private func move() {
-        guard borderWindowID != 0, let frame = overlayFrame(), let moveWindow = SkyLight.transactionMoveWindow else {
+    /// Puts the border around the bounds. Reshapes and redraws only when the size, the window's place inside the border window,
+    /// or the look changed, with screen updates held so no half-done frame shows; otherwise only moves it. Orders it in if asked.
+    private func update(around bounds: CGRect, orderFront: Bool) {
+        guard let appearance = effectiveAppearance else {
             return
         }
-        SkyLight.transaction(connection) { _ = moveWindow($0, self.borderWindowID, frame.origin) }
-    }
 
-    /// Reshapes and redraws when the size or look changed, with screen updates held so no half-done frame shows; then moves it
-    /// into place, and orders it in if asked.
-    private func update(orderFront: Bool) {
-        guard let frame = overlayFrame(), let appearance = effectiveAppearance, frame.width > 0, frame.height > 0 else {
+        // Whole points: the window server rounds a window's origin, which shifted a ring of 1.5 pt half a point left and up.
+        let frame = appearance.windowServerFrame(forWindowFrame: bounds)
+        guard frame.width > 0, frame.height > 0 else {
             return
         }
+        // Drawing coordinates have their origin bottom left.
+        let windowRect = CGRect(x: bounds.minX - frame.minX, y: frame.maxY - bounds.maxY, width: bounds.width, height: bounds.height)
 
         if borderWindowID == 0 && !createWindow(size: frame.size) {
             return
         }
+        followedBounds = bounds
 
-        let needsDrawing = frame.size != drawnSize || appearance != drawnAppearance
+        let needsDrawing = frame.size != drawnSize || windowRect != drawnWindowRect || appearance != drawnAppearance
         if needsDrawing {
             _ = SkyLight.disableUpdate?(connection)
             _ = SkyLight.freezeWindow?(connection, borderWindowID, nil)
@@ -325,12 +345,13 @@ final class WindowServerBorder {
                 _ = SkyLight.setWindowShape?(connection, borderWindowID, Float(frame.origin.x), Float(frame.origin.y), region)
             }
             if let context {
-                FocusBorderDrawing.draw(in: context, size: frame.size, appearance: appearance)
+                FocusBorderDrawing.draw(in: context, size: frame.size, windowRect: windowRect, appearance: appearance)
                 context.flush()
             }
             _ = SkyLight.flushWindowContentRegion?(connection, borderWindowID, nil)
             _ = SkyLight.thawWindow?(connection, borderWindowID)
             drawnSize = frame.size
+            drawnWindowRect = windowRect
             drawnAppearance = appearance
         }
 
