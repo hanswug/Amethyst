@@ -1,15 +1,6 @@
 {
-  "originHash" : "0bdfbd20a0602e0ca7fe7531ef1f5ef5df49b4edc989a6121656a1209da2ca9e",
+  "originHash" : "34791e1f7d935da23d759a4ff26b041ebf76fc7feb0a8753437dada92b15a527",
   "pins" : [
-    {
-      "identity" : "cartography",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/robb/Cartography",
-      "state" : {
-        "revision" : "b75197ea134f42b5feafb04b526b37eb1a41034b",
-        "version" : "4.0.0"
-      }
-    },
     {
       "identity" : "cwlcatchexception",
       "kind" : "remoteSourceControl",
@@ -47,15 +38,6 @@
       }
     },
     {
-      "identity" : "masshortcut",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/shpakovski/MASShortcut",
-      "state" : {
-        "branch" : "master",
-        "revision" : "6f2603c6b6cc18f64a799e5d2c9d3bbc467c413a"
-      }
-    },
-    {
       "identity" : "nimble",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Quick/Nimble",
@@ -83,12 +65,12 @@
       }
     },
     {
-      "identity" : "sparkle",
+      "identity" : "silica",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sparkle-project/Sparkle",
+      "location" : "https://github.com/ianyh/silica",
       "state" : {
-        "revision" : "f0ceaf5cc9f3f23daa0ccb6dcebd79fc96ccc7d9",
-        "version" : "2.5.0"
+        "branch" : "master",
+        "revision" : "ebead82a28486e7719b7ed69633ecfed8a4fe2d2"
       }
     },
     {

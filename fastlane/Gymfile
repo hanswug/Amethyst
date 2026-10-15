@@ -1,3 +1,0 @@
-archive_path("./build/Amethyst")
-scheme("Amethyst")
-output_directory("./build")

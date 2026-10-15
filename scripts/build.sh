@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 #
 # Builds the fork in Release, signed with the local self-signed certificate,
-# and installs it to /Applications. Don't use the fastlane lane: it exports
-# with upstream's Developer ID team.
+# and installs it to /Applications.
 #
 # One-time setup per Mac: create a self-signed "Code Signing" certificate named
 # $SIGNING_IDENTITY in Keychain Access and set it to "Always Trust" for code
