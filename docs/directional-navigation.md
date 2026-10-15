@@ -65,6 +65,7 @@ In 3Column Left with a main window, three windows in the middle column and one o
 * **From a floating window** (Settings, a dialog), focus goes to the nearest tile in that direction. Floating windows are never a target, and swap does nothing from one.
 * **Screen edge:** nothing happens. There's no wrap-around and no jump to another display.
 * **Fullscreen** is the exception: every window fills the screen, so west/east cycle through the windows (wrapping around) and north/south do nothing. Swap does nothing in Fullscreen.
+* **Two Pane** browses its stack: north/south step through the windows waiting behind the secondary pane, in window order and wrapping around; from main they enter the stack at the window after (or before) the one in front. Main is never part of it. On a portrait screen, where the panes are stacked, west/east browse instead and north/south cross between the panes.
 * Directions use the tiles the layout assigned, before window margins, so an app that won't shrink to its tile doesn't confuse them.
 
 ## Warp

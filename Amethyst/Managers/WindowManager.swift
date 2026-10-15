@@ -1379,6 +1379,27 @@ extension WindowManager {
         return screenManager(for: screen)?.currentLayout is FullscreenLayout<Window>
     }
 
+    /// In Two Pane, the focus direction that crosses no pane browses the windows waiting behind the secondary pane, from main too.
+    /// `nil` in other layouts and for the other directions, which stay spatial.
+    func stackNeighbor(of window: Window, toward direction: Direction) -> Window? {
+        guard let screen = window.screen(),
+              let layout = screenManager(for: screen)?.currentLayout as? TwoPaneLayout<Window>,
+              !isWindowFloating(window) else {
+            return nil
+        }
+
+        let screenFrame = screen.adjustedFrame()
+        guard let forward = DirectionalNavigation.stackBrowse(direction, isLandscape: screenFrame.width >= screenFrame.height) else {
+            return nil
+        }
+
+        let stack = Array(activeWindows(on: screen).dropFirst(layout.mainPaneCount))
+        let stackIDs = Set(stack.map { $0.id() })
+        let front = frontToBack(stack).first { stackIDs.contains($0) }
+        let nextID = DirectionalNavigation.stackStep(stack: stack.map { $0.id() }, current: window.id(), front: front, forward: forward)
+        return stack.first { $0.id() == nextID }
+    }
+
     /// The windows' IDs in on-screen order, frontmost first.
     private func frontToBack(_ windows: [Window]) -> [Window.WindowID] {
         guard let info = CGWindowsInfo<Window>(options: .optionOnScreenOnly, windowID: CGWindowID(0)) else {
