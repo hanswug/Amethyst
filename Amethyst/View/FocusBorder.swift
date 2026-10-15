@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Darwin
 import QuartzCore
 
 enum FocusBorderStyle: String, CaseIterable {
@@ -120,6 +121,60 @@ final class FocusBorderPanel: NSPanel {
     }
 }
 
+/// Private SkyLight calls for following a window as the window server moves it, looked up at runtime: if a macOS update removes
+/// them, the border falls back to Accessibility events. Signatures as used by window tools such as JankyBorders and yabai.
+private enum WindowServer {
+    typealias NotifyHandler = @convention(c) (UInt32, UnsafeMutableRawPointer?, Int, UnsafeMutableRawPointer?) -> Void
+
+    private typealias MainConnectionID = @convention(c) () -> Int32
+    private typealias RegisterNotifyProc = @convention(c) (NotifyHandler, UInt32, UnsafeMutableRawPointer?) -> Int32
+    private typealias RequestNotificationsForWindows = @convention(c) (Int32, UnsafeMutablePointer<UInt32>, Int32) -> Int32
+    private typealias GetWindowBounds = @convention(c) (Int32, UInt32, UnsafeMutablePointer<CGRect>) -> Int32
+
+    static let windowMoved: UInt32 = 806
+    static let windowResized: UInt32 = 807
+
+    private static let skyLight = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_LAZY)
+
+    private static func function<T>(_ name: String, _ type: T.Type) -> T? {
+        guard let skyLight, let pointer = dlsym(skyLight, name) else {
+            return nil
+        }
+        return unsafeBitCast(pointer, to: type)
+    }
+
+    private static let mainConnectionID = function("SLSMainConnectionID", MainConnectionID.self)
+    private static let registerNotifyProc = function("SLSRegisterNotifyProc", RegisterNotifyProc.self)
+    private static let requestNotificationsForWindows = function("SLSRequestNotificationsForWindows", RequestNotificationsForWindows.self)
+    private static let getWindowBounds = function("SLSGetWindowBounds", GetWindowBounds.self)
+
+    /// Registers the handler for the events; false if any call is missing or fails.
+    static func register(_ handler: NotifyHandler, for events: [UInt32]) -> Bool {
+        guard let registerNotifyProc, mainConnectionID != nil, requestNotificationsForWindows != nil, getWindowBounds != nil else {
+            return false
+        }
+        return events.allSatisfy { registerNotifyProc(handler, $0, nil) == 0 }
+    }
+
+    /// Asks for the registered events of this window (replacing the window asked for before).
+    static func requestNotifications(for windowID: CGWindowID) {
+        guard let mainConnectionID, let requestNotificationsForWindows else {
+            return
+        }
+        var windowIDs = [UInt32(windowID)]
+        _ = requestNotificationsForWindows(mainConnectionID(), &windowIDs, 1)
+    }
+
+    /// The window's frame, top-left origin like Accessibility frames.
+    static func bounds(of windowID: CGWindowID) -> CGRect? {
+        guard let mainConnectionID, let getWindowBounds else {
+            return nil
+        }
+        var bounds = CGRect.zero
+        return getWindowBounds(mainConnectionID(), UInt32(windowID), &bounds) == 0 ? bounds : nil
+    }
+}
+
 /// The overlay that draws the focus border. Main thread only.
 final class FocusBorder {
     private lazy var panel = FocusBorderPanel()
@@ -129,115 +184,78 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// Moved events arrive late and in bursts while a window is dragged, so the border would trail it. During a drag that started on
-    /// the window or its edge, each drag event asks the window server where the window is; once it has moved or resized, the border
-    /// hides until the mouse is released. A text selection doesn't move the window, so the border stays.
-    private var isHiddenForDrag = false
-    private var mouseDownLocation: CGPoint?
-    /// The window's window-server frame at the first drag event, to compare later ones with.
-    private var dragStartFrame: (windowID: CGWindowID, frame: CGRect)?
-    private var mouseMonitor: Any?
+    /// Whether the border follows the window-server's own move and resize events, which come every frame, also mid-drag.
+    /// Without them it follows Accessibility events, which come late and in bursts.
+    private var followsWindowServer = false
+    /// Accessibility frames lag behind the window server's; while its events keep coming, they'd pull the border back.
+    private var lastWindowServerEvent: Date?
+
+    /// Receives the window-server events; a C callback can't capture, so it finds the border here.
+    private static weak var followed: FocusBorder?
+
+    private static let windowServerHandler: WindowServer.NotifyHandler = { _, data, length, _ in
+        guard let data, length >= MemoryLayout<UInt32>.size else {
+            return
+        }
+
+        let windowID = data.loadUnaligned(as: UInt32.self)
+        let follow: () -> Void = { FocusBorder.followed?.windowServerDidChange(windowID) }
+        if Thread.isMainThread {
+            follow()
+        } else {
+            DispatchQueue.main.async(execute: follow)
+        }
+    }
 
     init() {
-        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp]) { [weak self] event in
-            let type = event.type
-            let location = NSEvent.mouseLocation
-            DispatchQueue.main.async {
-                self?.handleMouse(type, at: location)
-            }
+        followsWindowServer = WindowServer.register(FocusBorder.windowServerHandler, for: [WindowServer.windowMoved, WindowServer.windowResized])
+        FocusBorder.followed = self
+        if !followsWindowServer {
+            log.warning("Focus border: window-server events unavailable, following Accessibility events")
         }
-    }
-
-    deinit {
-        if let mouseMonitor {
-            NSEvent.removeMonitor(mouseMonitor)
-        }
-    }
-
-    /// - Parameter location: In screen coordinates, origin bottom left (`NSEvent.mouseLocation`).
-    private func handleMouse(_ type: NSEvent.EventType, at location: CGPoint) {
-        switch type {
-        case .leftMouseDown:
-            mouseDownLocation = location
-            dragStartFrame = nil
-        case .leftMouseDragged:
-            // Checked now, not on mouse-down: a click on another window moves the border there first.
-            guard let mouseDownLocation, !isHiddenForDrag, isOnWindow(mouseDownLocation),
-                  let currentWindowID, let liveFrame = FocusBorder.windowServerFrame(of: currentWindowID) else {
-                return
-            }
-            guard let dragStartFrame, dragStartFrame.windowID == currentWindowID else {
-                dragStartFrame = (currentWindowID, liveFrame)
-                return
-            }
-            if !liveFrame.approximatelyEqual(to: dragStartFrame.frame, within: CGRect(x: 1, y: 1, width: 1, height: 1)) {
-                isHiddenForDrag = true
-                panel.orderOut(nil)
-            }
-        case .leftMouseUp:
-            mouseDownLocation = nil
-            dragStartFrame = nil
-            endDrag()
-        default:
-            break
-        }
-    }
-
-    /// Where the window server has the window right now, in the same top-left coordinates as Accessibility frames.
-    /// Cheap, and current during a drag, unlike the window's Accessibility frame.
-    private static func windowServerFrame(of windowID: CGWindowID) -> CGRect? {
-        guard let descriptions = CGWindowListCreateDescriptionFromArray([windowID] as CFArray) as? [[String: Any]],
-              let bounds = descriptions.first?[kCGWindowBounds as String] as? [String: Any] else {
-            return nil
-        }
-
-        return CGRect(dictionaryRepresentation: bounds as CFDictionary)
-    }
-
-    /// Whether a point is on the bordered window or within a few points of its edge, where a resize starts.
-    private func isOnWindow(_ location: CGPoint) -> Bool {
-        guard let windowFrame, currentWindowID != nil else {
-            return false
-        }
-
-        let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
-        let flipped = CGRect(x: windowFrame.minX, y: primaryScreenHeight - windowFrame.maxY, width: windowFrame.width, height: windowFrame.height)
-        return flipped.insetBy(dx: -6, dy: -6).contains(location)
     }
 
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
+        if followsWindowServer && windowID != currentWindowID {
+            WindowServer.requestNotifications(for: windowID)
+            lastWindowServerEvent = nil
+        }
         currentWindowID = windowID
         move(to: windowFrame, force: true)
-        if !isHiddenForDrag {
-            panel.orderFrontRegardless()
-        }
+        panel.orderFrontRegardless()
     }
 
-    /// Follows the window while it moves or resizes.
+    /// Follows the window on its Accessibility moved and resized events, unless the window server is already reporting them.
     func move(to windowFrame: CGRect) {
+        if let lastWindowServerEvent, Date().timeIntervalSince(lastWindowServerEvent) < 0.5 {
+            return
+        }
         move(to: windowFrame, force: false)
     }
 
     func hide() {
         currentWindowID = nil
         windowFrame = nil
-        isHiddenForDrag = false
         panel.orderOut(nil)
     }
 
-    private func endDrag() {
-        guard isHiddenForDrag else {
+    private func windowServerDidChange(_ windowID: CGWindowID) {
+        guard windowID == currentWindowID, let appearance, let bounds = WindowServer.bounds(of: windowID) else {
             return
         }
 
-        isHiddenForDrag = false
-        guard let windowFrame, currentWindowID != nil else {
+        lastWindowServerEvent = Date()
+        guard let windowFrame, bounds.size == windowFrame.size else {
+            // A resize redraws the ring.
+            move(to: bounds, force: false)
             return
         }
 
-        move(to: windowFrame, force: true)
-        panel.orderFrontRegardless()
+        // A move only shifts the overlay, without drawing.
+        self.windowFrame = bounds
+        let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
+        panel.setFrameOrigin(appearance.overlayFrame(forWindowFrame: bounds, primaryScreenHeight: primaryScreenHeight).origin)
     }
 
     private func move(to windowFrame: CGRect, force: Bool) {
@@ -246,16 +264,6 @@ final class FocusBorder {
         }
 
         self.windowFrame = windowFrame
-
-        // The window moves under the mouse: a drag by its title bar or edge.
-        if !force && NSEvent.pressedMouseButtons & 1 != 0 {
-            isHiddenForDrag = true
-            panel.orderOut(nil)
-        }
-        if isHiddenForDrag {
-            return
-        }
-
         let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
         panel.setFrame(appearance.overlayFrame(forWindowFrame: windowFrame, primaryScreenHeight: primaryScreenHeight), display: false)
         draw(appearance)
