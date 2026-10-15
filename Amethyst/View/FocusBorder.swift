@@ -129,10 +129,13 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
-    /// Moved events arrive in bursts while a window is dragged, so the border would trail it. It's hidden from the first drag event
-    /// that starts on the window or its edge (a move, a resize, also a text selection) until the mouse is released.
+    /// Moved events arrive late and in bursts while a window is dragged, so the border would trail it. During a drag that started on
+    /// the window or its edge, each drag event asks the window server where the window is; once it has moved or resized, the border
+    /// hides until the mouse is released. A text selection doesn't move the window, so the border stays.
     private var isHiddenForDrag = false
     private var mouseDownLocation: CGPoint?
+    /// The window's window-server frame at the first drag event, to compare later ones with.
+    private var dragStartFrame: (windowID: CGWindowID, frame: CGRect)?
     private var mouseMonitor: Any?
 
     init() {
@@ -156,18 +159,39 @@ final class FocusBorder {
         switch type {
         case .leftMouseDown:
             mouseDownLocation = location
+            dragStartFrame = nil
         case .leftMouseDragged:
             // Checked now, not on mouse-down: a click on another window moves the border there first.
-            if let mouseDownLocation, !isHiddenForDrag, isOnWindow(mouseDownLocation) {
+            guard let mouseDownLocation, !isHiddenForDrag, isOnWindow(mouseDownLocation),
+                  let currentWindowID, let liveFrame = FocusBorder.windowServerFrame(of: currentWindowID) else {
+                return
+            }
+            guard let dragStartFrame, dragStartFrame.windowID == currentWindowID else {
+                dragStartFrame = (currentWindowID, liveFrame)
+                return
+            }
+            if !liveFrame.approximatelyEqual(to: dragStartFrame.frame, within: CGRect(x: 1, y: 1, width: 1, height: 1)) {
                 isHiddenForDrag = true
                 panel.orderOut(nil)
             }
         case .leftMouseUp:
             mouseDownLocation = nil
+            dragStartFrame = nil
             endDrag()
         default:
             break
         }
+    }
+
+    /// Where the window server has the window right now, in the same top-left coordinates as Accessibility frames.
+    /// Cheap, and current during a drag, unlike the window's Accessibility frame.
+    private static func windowServerFrame(of windowID: CGWindowID) -> CGRect? {
+        guard let descriptions = CGWindowListCreateDescriptionFromArray([windowID] as CFArray) as? [[String: Any]],
+              let bounds = descriptions.first?[kCGWindowBounds as String] as? [String: Any] else {
+            return nil
+        }
+
+        return CGRect(dictionaryRepresentation: bounds as CFDictionary)
     }
 
     /// Whether a point is on the bordered window or within a few points of its edge, where a resize starts.
