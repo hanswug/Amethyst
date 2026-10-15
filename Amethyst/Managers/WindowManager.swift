@@ -1512,4 +1512,12 @@ extension WindowManager: ScreenManagerDelegate {
     func activeWindowSet(forScreenManager screenManager: ScreenManager<WindowManager<Application>>, on screen: Screen) -> WindowSet<Window> {
         return windows.windowSet(forActiveWindowsOnScreen: screen)
     }
+
+    func windowsLeftView(_ windowIDs: [Window.WindowID]) {
+        windows.noteDeparted(windowIDs)
+    }
+
+    func windowsCameBack(_ windowIDs: [Window.WindowID]) -> Bool {
+        return windows.arriveReturning(windowIDs, atFront: userConfiguration.mainArrivalPosition() == .first)
+    }
 }

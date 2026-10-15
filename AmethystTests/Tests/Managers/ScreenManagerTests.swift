@@ -30,6 +30,12 @@ private final class TestDelegate: ScreenManagerDelegate {
     func onReflowCompletion() {
         fatalError()
     }
+    func windowsLeftView(_ windowIDs: [TestWindow.WindowID]) {
+        fatalError()
+    }
+    func windowsCameBack(_ windowIDs: [TestWindow.WindowID]) -> Bool {
+        fatalError()
+    }
 }
 
 class ScreenManagerTests: QuickSpec {
@@ -221,6 +227,56 @@ class ScreenManagerTests: QuickSpec {
                 }
             }
         }
+        describe("windows leaving and coming back into view") {
+            // Main count 3: left 1, main 3, right 1 in list order main | left | right.
+            let previous = ["m1", "m2", "m3", "left", "right"]
+
+            it("shrinks main when a main window leaves, whatever the reason") {
+                let change = VisibleWindowChange(previous: previous, previousMainCount: 3, current: ["m1", "m3", "left", "right"])
+                expect(change.left).to(equal(["m2"]))
+                expect(change.mainShrink).to(equal(1))
+            }
+
+            it("leaves main alone when a side window leaves") {
+                let change = VisibleWindowChange(previous: previous, previousMainCount: 3, current: ["m1", "m2", "m3", "left"])
+                expect(change.mainShrink).to(equal(0))
+            }
+
+            it("shrinks by every main window that left at once (an app hidden)") {
+                let change = VisibleWindowChange(previous: previous, previousMainCount: 3, current: ["m3", "left", "right"])
+                expect(change.mainShrink).to(equal(2))
+            }
+
+            it("treats a tab switch as one window in another's place") {
+                let change = VisibleWindowChange(previous: previous, previousMainCount: 3, current: ["m1", "tab", "m3", "left", "right"])
+                expect(change.left).to(beEmpty())
+                expect(change.appeared).to(beEmpty())
+                expect(change.mainShrink).to(equal(0))
+            }
+
+            it("leaves main alone when a window closes and another opens in the same pass") {
+                let change = VisibleWindowChange(previous: previous, previousMainCount: 3, current: ["m1", "m3", "left", "right", "new"])
+                expect(change.mainShrink).to(equal(0))
+                expect(change.appeared).to(equal(["new"]))
+            }
+
+            it("reports windows that appeared") {
+                let change = VisibleWindowChange(previous: ["m1", "left"], previousMainCount: 1, current: ["m1", "back", "left"])
+                expect(change.appeared).to(equal(["back"]))
+                expect(change.mainShrink).to(equal(0))
+            }
+        }
+
+        describe("windows arriving again") {
+            it("go last, in their order") {
+                expect(WindowArrival.order(["a", "b", "c", "d"], returning: ["c", "a"], atFront: false)).to(equal(["b", "d", "a", "c"]))
+            }
+
+            it("go first, in their order") {
+                expect(WindowArrival.order(["a", "b", "c", "d"], returning: ["d", "b"], atFront: true)).to(equal(["b", "d", "a", "c"]))
+            }
+        }
+
     }
 }
 
