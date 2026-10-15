@@ -14,6 +14,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 ## What it does
 
 - **Tiles windows per Space**, using the layouts listed in the config. Daily set: Fullscreen, Two Pane A, 3Column Left, 3Column Middle, Tall Left.
+- **Fullscreen toggle:** `toggle-fullscreen` switches a Space between its layout and Fullscreen with the focused window in front, and back with every window in its tile.
 - **The config file is the only source of settings and keys.**
   - It's read from `~/.config/ametrine/ametrine.yml` (or `~/.ametrine.yml`, or `~/.ametrine`).
   - There's no preferences window: the menu has **Edit Config…** (opens the file) and **Reload Config** (relaunches).
@@ -178,6 +179,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.3.0 | Padding modes per Space: each Space keeps the mode picked on it, also across restarts, and starts on `padding-mode` until one is picked; the padding commands and the Padding menu act on the current Space. `--log` logs how long each Space change takes |
 | 4.3.1 | Upstream leftovers removed: fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries (the app shrinks from 32 to 28 MB). No visible change |
 | 5.0.0 | Layouts named by where main is: `tall-left`, `wide-top`, `two-pane-a`/`-b`, `3column-middle`, `widescreen-tall-left`, `column-left`, `row-top` (**config edit**: rename the keys in `layouts:` and `select-<key>-layout`). New twins Wide Bottom, Column Right and Row Bottom; Two Pane B is A mirrored along the long side. `layout-names` sets the name shown for each layout (without one, its key). In Two Pane, focus north/south browses the windows behind the secondary pane |
+| 5.1.0 | `toggle-fullscreen`: a Space's layout ↔ Fullscreen in place, the focused window in front without becoming main, and back with every window in its tile (works without `fullscreen` in `layouts`). Selecting the current layout again goes back to the previous one per Space |
 
 ## Credits and licence
 

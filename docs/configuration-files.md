@@ -93,7 +93,8 @@ cycle-layout:
 | ------- | ------------|
 | `cycle-layout` | Move to the next layout in the list. |
 | `cycle-layout-backward` | Move to the previous layout in the list. |
-| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-left-layout`. Only works for layouts listed in `layouts`. Custom layouts too. |
+| `select-<layout-key>-layout` | Switch to that layout, e.g. `select-tall-left-layout`; selecting the current layout again goes back to the one used before it on this Space. Only works for layouts listed in `layouts`. Custom layouts too. |
+| `toggle-fullscreen` | Switch this Space between its layout and Fullscreen. The focused window comes to the front without becoming main, and going back puts every window in the tile it had, with the layout's main count and pane sizes. Works whether or not `fullscreen` is in `layouts`. |
 | `shrink-main` | Shrink the main pane by `window-resize-step`, down to 5% of the screen (so neither pane disappears). Not every layout responds. |
 | `expand-main` | Expand the main pane by `window-resize-step`, up to 95% of the screen. Not every layout responds. |
 | `increase-main` | Raise the most windows the main pane may hold, and show "x of y" (the windows in main, of the maximum). Nothing moves: main fills by `warp-<direction>`, by a window arriving with `main-arrival-position: first`, or by new windows while the side panes are still empty. When a main window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), main holds one fewer and the maximum stays; main never empties while there are windows. Warping a window out of main lowers the maximum by one; warping into a full main raises it by one. This is how Tall, Wide, Widescreen Tall, 3Column and 4Column work; in Column and Row the count is the number of main windows, lowered when one leaves view. |

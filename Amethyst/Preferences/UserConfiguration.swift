@@ -171,6 +171,7 @@ enum CommandKey: String {
     case warpMain = "warp-main"
     case toggleFloat = "toggle-float"
     case displayCurrentLayout = "display-current-layout"
+    case toggleFullscreen = "toggle-fullscreen"
     case toggleTiling = "toggle-tiling"
     case enableTiling = "enable-tiling"
     case disableTiling = "disable-tiling"
