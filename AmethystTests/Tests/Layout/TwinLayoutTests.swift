@@ -77,6 +77,38 @@ class TwinLayoutTests: QuickSpec {
                 }
             }
 
+            it("mirrors Two Pane A along the screen's long side for Two Pane B") {
+                let landscape = TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000))
+                let portrait = TestScreen(frame: CGRect(x: 100, y: 100, width: 1000, height: 2000))
+
+                for (screen, axis) in [(landscape, MirrorAxis.horizontal), (portrait, MirrorAxis.vertical)] {
+                    TestScreen.availableScreens = [screen]
+                    for windowCount in [1, 2, 4] {
+                        let expected = frames(TwoPaneLayout<TestWindow>(), windowCount: windowCount, on: screen).map {
+                            mirrored($0, axis, in: screen.adjustedFrame())
+                        }
+
+                        expect(frames(TwoPaneRightLayout<TestWindow>(), windowCount: windowCount, on: screen)).to(equal(expected))
+                    }
+                }
+            }
+
+            it("keeps every other window waiting behind Two Pane B's secondary pane, main second") {
+                let landscape = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 1000))
+                TestScreen.availableScreens = [landscape]
+                let landscapeFrames = frames(TwoPaneRightLayout<TestWindow>(), windowCount: 4, on: landscape)
+
+                expect(landscapeFrames[0]).to(equal(CGRect(x: 1000, y: 0, width: 1000, height: 1000)))
+                expect(Set(landscapeFrames[1...].map { NSStringFromRect($0) })).to(equal([NSStringFromRect(CGRect(x: 0, y: 0, width: 1000, height: 1000))]))
+
+                let portrait = TestScreen(frame: CGRect(x: 0, y: 0, width: 1000, height: 2000))
+                TestScreen.availableScreens = [portrait]
+                let portraitFrames = frames(TwoPaneRightLayout<TestWindow>(), windowCount: 4, on: portrait)
+
+                expect(portraitFrames[0]).to(equal(CGRect(x: 0, y: 1000, width: 1000, height: 1000)))
+                expect(Set(portraitFrames[1...].map { NSStringFromRect($0) })).to(equal([NSStringFromRect(CGRect(x: 0, y: 0, width: 1000, height: 1000))]))
+            }
+
             it("puts Wide Bottom's main pane at the bottom") {
                 let screen = TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000))
                 TestScreen.availableScreens = [screen]

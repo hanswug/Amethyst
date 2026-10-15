@@ -112,7 +112,7 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 |---|---|---|
 | Tall Left / Right | `tall-left`, `tall-right` | Main pane on the left (or right), the rest stacked in rows beside it |
 | Wide Top / Bottom | `wide-top`, `wide-bottom` | Main pane on top (or at the bottom), the rest in columns beside it |
-| Two Pane A / B | `two-pane-a`, `two-pane-b` | Main pane plus one visible secondary pane; the other windows wait behind it. A puts main first (left, or top on a portrait screen), B second |
+| Two Pane A / B | `two-pane-a`, `two-pane-b` | Main pane plus one visible secondary pane; every other window waits behind it, ready to come forward. A puts main first (left, or top on a portrait screen), B second (right, or bottom) |
 | 3Column Left / Middle / Right | `3column-left`, `3column-middle`, `3column-right` | Main pane plus two side columns, shared out as evenly as possible |
 | 4Column Left / Right | `4column-left`, `4column-right` | Main pane plus three side columns |
 | Widescreen Tall Left / Right | `widescreen-tall-left`, `widescreen-tall-right` | Tall Left (or Right), but several main windows split into columns |

@@ -14,6 +14,7 @@ layouts:
   - wide-top
   - wide-bottom
   - two-pane-a
+  - two-pane-b
   - 3column-left
   - 3column-middle
   - 3column-right
