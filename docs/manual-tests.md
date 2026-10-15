@@ -30,6 +30,7 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 | Click inside the focused window (Safari: the address bar, then the page) | The border stays on top, with no window shadow over it. |
 | In CotEditor, select text with the mouse and with Shift+arrows; focus another app and move back (`focus-<direction>`, Alt-Tab) | The border stays on top of CotEditor throughout. |
 | Drag a floating window (System Settings) around quickly, then resize it by an edge | The border stays visible and moves with the window, without trailing or flicker. |
+| 3Column, main count 3: close the focused main window | The border goes to the newly focused window; no border is left behind at a window's old place. |
 | Open a floating Settings window | It gets the border; the tile behind loses it. |
 | Switch to the Fullscreen layout, then open a native full-screen app | No border in either. |
 | ⌘H the focused app; switch Space | The border moves to the newly focused window (or disappears). |
