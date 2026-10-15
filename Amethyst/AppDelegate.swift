@@ -149,9 +149,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ]
 
         if let panedLayout = windowManager?.focusedScreenManager()?.currentLayout as? PanedLayout {
-            notes[CommandKey.increaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
-            notes[CommandKey.decreaseMain.rawValue] = "now \(panedLayout.mainPaneCount)"
-            notes[CommandKey.setMainPaneCount.rawValue] = "now \(panedLayout.mainPaneCount)"
+            notes[CommandKey.increaseMain.rawValue] = "now \(panedLayout.mainPaneCountDescription)"
+            notes[CommandKey.decreaseMain.rawValue] = "now \(panedLayout.mainPaneCountDescription)"
+            notes[CommandKey.setMainPaneCount.rawValue] = "now \(panedLayout.mainPaneCountDescription)"
         }
 
         return notes

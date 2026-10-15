@@ -1251,6 +1251,10 @@ extension WindowManager: WindowTransitionTarget {
             if let screen = screens.screenManagers.first?.screen {
                 executeTransition(.focusScreen(screen))
             }
+        case let .warpWindow(window, direction):
+            warp(window, toward: direction)
+        case let .warpWindowToMain(window):
+            warpToMain(window)
         }
     }
 
@@ -1298,30 +1302,46 @@ extension WindowManager: WindowTransitionTarget {
 extension WindowManager {
     /// The tiled window in `direction` from `window` on its screen, or `nil` at the edge. A floating window starts from its live frame.
     func directionalNeighbor(of window: Window, toward direction: Direction) -> Window? {
+        guard case let .window(neighbor) = directionalTarget(of: window, toward: direction, emptyPaneFrames: [:]) else {
+            return nil
+        }
+        return neighbor
+    }
+
+    /// What lies in `direction` from `window`: a tiled window, or (for warp) a side pane without windows, given by `emptyPaneFrames`.
+    private func directionalTarget(of window: Window, toward direction: Direction, emptyPaneFrames: [Int: CGRect]) -> DirectionalTarget<Window>? {
         guard let screen = window.screen(), let screenManager = screenManager(for: screen) else {
             return nil
         }
 
         let assignedFrames = screenManager.lastAssignedFrames
         let candidates = activeWindows(on: screen).filter { $0.id() != window.id() }
-        let frames = Dictionary(
-            candidates.compactMap { candidate in assignedFrames[candidate.id()].map { (candidate.id(), $0) } },
+        var frames = Dictionary(
+            candidates.compactMap { candidate in assignedFrames[candidate.id()].map { (DirectionalCandidate.window(candidate.id()), $0) } },
             uniquingKeysWith: { first, _ in first }
         )
+        for (pane, frame) in emptyPaneFrames {
+            frames[.emptyPane(pane)] = frame
+        }
         let start = isWindowFloating(window) ? window.frame() : (assignedFrames[window.id()] ?? window.frame())
         let mru = CGWindowsInfo.windowSpace(window).flatMap { windows.recentlyFocused[$0] } ?? []
 
-        guard let neighborID = DirectionalNavigation.neighbor(
+        let neighbor = DirectionalNavigation.neighbor(
             of: start,
             direction: direction,
             frames: frames,
-            frontToBack: frontToBack(candidates),
-            mru: mru
-        ) else {
+            frontToBack: frontToBack(candidates).map { .window($0) } + emptyPaneFrames.keys.sorted().map { .emptyPane($0) },
+            mru: mru.map { .window($0) }
+        )
+
+        switch neighbor {
+        case let .window(neighborID):
+            return candidates.first { $0.id() == neighborID }.map { .window($0) }
+        case let .emptyPane(pane):
+            return .emptyPane(pane)
+        case nil:
             return nil
         }
-
-        return candidates.first { $0.id() == neighborID }
     }
 
     /// The window's frame in the last layout pass, before margins.
@@ -1347,6 +1367,157 @@ extension WindowManager {
         return info.descriptions.compactMap { description in
             (description[kCGWindowNumber as String] as? NSNumber).flatMap { idsByCGID[CGWindowID($0.uint32Value)] }
         }
+    }
+}
+
+/// A neighbour for directional navigation: a window, or a side pane without windows (warp only).
+private enum DirectionalCandidate<WindowID: Hashable>: Hashable {
+    case window(WindowID)
+    case emptyPane(Int)
+}
+
+enum DirectionalTarget<Window: WindowType> {
+    case window(Window)
+    case emptyPane(Int)
+}
+
+// MARK: Warp
+extension WindowManager {
+    /**
+     Warps the window toward `direction` (handover §5.5): it joins the neighbour's pane, or swaps where that's the rule.
+
+     - Layouts with stored pane sizes (Tall, Wide, Widescreen Tall, 3Column, 4Column): `PaneCounts.warp`.
+     - BSP: the window leaves its tile and splits the neighbour's.
+     - Fullscreen, Floating, custom layouts: nothing.
+     - Every other layout (Two Pane, Column, Row) holds one window per pane: swap.
+     */
+    func warp(_ window: Window, toward direction: Direction) {
+        guard let screen = window.screen(), let screenManager = screenManager(for: screen), let layout = screenManager.currentLayout else {
+            return
+        }
+
+        switch layout {
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is CustomLayout<Window>:
+            return
+        case let paneCountedLayout as PaneCountedLayout<Window>:
+            warp(window, toward: direction, in: paneCountedLayout, on: screen)
+        case let bspLayout as BinarySpacePartitioningLayout<Window>:
+            guard let neighbor = directionalNeighbor(of: window, toward: direction),
+                  bspLayout.warp(window.id(), onto: neighbor.id(), toward: direction) else {
+                return
+            }
+            log.debug("Warp \(direction): \(window.title() ?? "") #\(window.cgID()) splits #\(neighbor.cgID())'s tile")
+            followWithCursor(window, in: layout, on: screen)
+            markScreenForReflow(screen)
+        default:
+            guard let neighbor = directionalNeighbor(of: window, toward: direction) else {
+                return
+            }
+            swapForWarp(window, with: neighbor)
+        }
+    }
+
+    private func warp(_ window: Window, toward direction: Direction, in layout: PaneCountedLayout<Window>, on screen: Screen) {
+        let windowIDs = windows.windowSet(forActiveWindowsOnScreen: screen).windows.map(\.id)
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return
+        }
+
+        let emptyPaneFrames = layout.emptyPaneFrames(windowCount: windowIDs.count, on: screen)
+        let target: PaneCounts.WarpTarget
+        switch directionalTarget(of: window, toward: direction, emptyPaneFrames: emptyPaneFrames) {
+        case let .window(neighbor):
+            guard let neighborIndex = windowIDs.firstIndex(of: neighbor.id()) else {
+                return
+            }
+            target = .window(neighborIndex)
+        case let .emptyPane(pane):
+            target = .emptyPane(pane)
+        case nil:
+            return
+        }
+
+        let atFront = userConfiguration.mainArrivalPosition() == .first
+        let plan = layout.warpPlan(from: index, to: target, windowCount: windowIDs.count, intoMainAtFront: atFront)
+        apply(plan, to: window, among: windowIDs, in: layout, on: screen)
+    }
+
+    /**
+     `warp-main`: the window joins main from wherever it is (agreed 2026-10-14).
+
+     - Layouts with stored pane sizes: `PaneCounts.warpIntoMain`; the last window of a side pane swaps with main's top window.
+     - Two Pane, Column, Row: a swap with main's top window, like `swap-main`.
+     - Already in main, BSP (no main pane), Fullscreen, Floating, custom layouts: nothing.
+     */
+    func warpToMain(_ window: Window) {
+        guard let screen = window.screen(), let screenManager = screenManager(for: screen), let layout = screenManager.currentLayout else {
+            return
+        }
+
+        let windowIDs = windows.windowSet(forActiveWindowsOnScreen: screen).windows.map(\.id)
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return
+        }
+
+        switch layout {
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is CustomLayout<Window>, is BinarySpacePartitioningLayout<Window>:
+            return
+        case let paneCountedLayout as PaneCountedLayout<Window>:
+            let atFront = userConfiguration.mainArrivalPosition() == .first
+            let plan = paneCountedLayout.warpIntoMainPlan(from: index, windowCount: windowIDs.count, intoMainAtFront: atFront)
+            apply(plan, to: window, among: windowIDs, in: paneCountedLayout, on: screen)
+        default:
+            let mainCount = (layout as? PanedLayout).map { min($0.mainPaneCount, windowIDs.count) } ?? 1
+            guard index >= mainCount, let mainWindow = windows.window(withID: windowIDs[0]) else {
+                return
+            }
+            swapForWarp(window, with: mainWindow)
+        }
+    }
+
+    /// Carries out a warp plan for the window among this screen's `windowIDs`.
+    private func apply(_ plan: PaneCounts.WarpPlan?, to window: Window, among windowIDs: [Window.WindowID], in layout: PaneCountedLayout<Window>, on screen: Screen) {
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return
+        }
+
+        switch plan {
+        case let .swap(otherIndex):
+            guard let otherWindow = windows.window(withID: windowIDs[otherIndex]) else {
+                return
+            }
+            swapForWarp(window, with: otherWindow)
+        case let .move(destination, counts):
+            var order = windowIDs
+            order.remove(at: index)
+            order.insert(window.id(), at: destination)
+            let before = layout.paneCounts
+            windows.reorder(order)
+            layout.applyWarp(counts)
+            log.debug("Warp: \(window.title() ?? "") #\(window.cgID()) panes \(before) → \(counts)")
+            followWithCursor(window, in: layout, on: screen)
+            markScreenForReflow(screen)
+        case nil:
+            return
+        }
+    }
+
+    /// The swap a warp falls back to; the cursor goes with the window, as with `swap-<direction>`.
+    private func swapForWarp(_ window: Window, with otherWindow: Window) {
+        let destination = assignedFrame(of: otherWindow)
+        executeTransition(.switchWindows(window, otherWindow))
+        if let destination, userConfiguration.mouseFollowsFocus() {
+            Cursor.move(to: CGPoint(x: destination.midX, y: destination.midY))
+        }
+    }
+
+    /// Moves the cursor to the tile the window gets at the next layout pass.
+    private func followWithCursor(_ window: Window, in layout: Layout<Window>, on screen: Screen) {
+        guard userConfiguration.mouseFollowsFocus(),
+              let frame = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen)?.frame else {
+            return
+        }
+        Cursor.move(to: CGPoint(x: frame.midX, y: frame.midY))
     }
 }
 
@@ -1519,5 +1690,9 @@ extension WindowManager: ScreenManagerDelegate {
 
     func windowsCameBack(_ windowIDs: [Window.WindowID]) -> Bool {
         return windows.arriveReturning(windowIDs, atFront: userConfiguration.mainArrivalPosition() == .first)
+    }
+
+    func reorderWindows(_ windowIDs: [Window.WindowID]) -> Bool {
+        return windows.reorder(windowIDs)
     }
 }

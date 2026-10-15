@@ -67,6 +67,127 @@ class Layout<Window: WindowType>: Codable {
     func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
         fatalError("Must be implemented by subclass")
     }
+
+    /**
+     Brings the layout's stored state in line with the windows of a layout pass, once per pass before `frameAssignments`.
+
+     - Returns: The windows in a new order when some must move in the list (a new window joining its pane), `nil` otherwise.
+     */
+    func reconcile(windowIDs: [Window.WindowID]) -> [Window.WindowID]? {
+        return nil
+    }
+}
+
+/**
+ A layout whose panes each hold several windows, with their sizes stored (`PaneCounts`) so warp can grow and shrink them.
+
+ `mainPaneCount` is the maximum main holds; `paneCounts.main` is what it holds now. Subclasses override `paneCount` and lay
+ windows out with `paneCounts(forWindowCount:)`.
+ */
+class PaneCountedLayout<Window: WindowType>: Layout<Window> {
+    /// How many panes the layout has, main included.
+    class var paneCount: Int { fatalError("Must be implemented by subclass") }
+
+    private enum CodingKeys: String, CodingKey {
+        case mainPaneCount
+        case mainPaneRatio
+        case paneCounts
+    }
+
+    private(set) var mainPaneCount: Int = 1
+    private(set) var mainPaneRatio: CGFloat = 0.5
+    private var paneState = PaneState<Window.WindowID>(counts: PaneCounts([]))
+
+    /// The windows per pane at the last layout pass, main first.
+    var paneCounts: PaneCounts { paneState.counts }
+
+    required init() {
+        super.init()
+        paneState = PaneState(counts: PaneCounts(paneCount: type(of: self).paneCount))
+    }
+
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.mainPaneCount = try values.decode(Int.self, forKey: .mainPaneCount)
+        self.mainPaneRatio = try values.decode(CGFloat.self, forKey: .mainPaneRatio)
+        let savedCounts = try values.decodeIfPresent(PaneCounts.self, forKey: .paneCounts)
+        super.init()
+
+        // Saved before warp, or by a layout with another number of panes: the balanced split.
+        let paneCount = type(of: self).paneCount
+        if let savedCounts, savedCounts.paneCount == paneCount {
+            paneState = PaneState(counts: savedCounts, restored: true)
+        } else {
+            paneState = PaneState(counts: PaneCounts(paneCount: paneCount))
+        }
+    }
+
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(mainPaneCount, forKey: .mainPaneCount)
+        try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
+        try container.encode(paneState.counts, forKey: .paneCounts)
+    }
+
+    /// The pane sizes to lay out this many windows with: the stored ones, fitted if the window set differs from the last pass.
+    func fittedPaneCounts(windowCount: Int) -> PaneCounts {
+        return paneState.counts.fitted(to: windowCount, maxMain: mainPaneCount)
+    }
+
+    override func reconcile(windowIDs: [Window.WindowID]) -> [Window.WindowID]? {
+        let before = paneState.counts
+        let reconciliation = paneState.reconcile(windowIDs: windowIDs, maxMain: mainPaneCount)
+        if reconciliation.counts != before {
+            log.debug("\(layoutName) panes \(before) → \(reconciliation.counts) (main max \(mainPaneCount))")
+        }
+        return reconciliation.reorderedIDs
+    }
+
+    /// The frames of side panes that hold no window but keep their column: warp can move a window into them.
+    func emptyPaneFrames(windowCount: Int, on screen: Screen) -> [Int: CGRect] {
+        return [:]
+    }
+
+    /// What warping the window at `index` to `target` does, among `windowCount` windows (`PaneCounts.warp`).
+    func warpPlan(from index: Int, to target: PaneCounts.WarpTarget, windowCount: Int, intoMainAtFront: Bool) -> PaneCounts.WarpPlan? {
+        return fittedPaneCounts(windowCount: windowCount).warp(from: index, to: target, intoMainAtFront: intoMainAtFront)
+    }
+
+    /// What `warp-main` does with the window at `index` among `windowCount` windows (`PaneCounts.warpIntoMain`).
+    func warpIntoMainPlan(from index: Int, windowCount: Int, intoMainAtFront: Bool) -> PaneCounts.WarpPlan? {
+        return fittedPaneCounts(windowCount: windowCount).warpIntoMain(from: index, intoMainAtFront: intoMainAtFront)
+    }
+
+    /// Takes the sizes after a warp moved a window. A warp into a full main raises the maximum to match; a warp out of
+    /// main lowers it by one (Hans, 2026-10-14), so the maximum follows how main is arranged instead of only growing.
+    func applyWarp(_ counts: PaneCounts) {
+        let mainBefore = fittedPaneCounts(windowCount: counts.total).main
+        paneState.setCounts(counts)
+        if counts.main < mainBefore {
+            mainPaneCount = max(1, mainPaneCount - 1)
+        } else {
+            mainPaneCount = max(mainPaneCount, counts.main)
+        }
+    }
+
+    /// "x of y": the windows main holds and its maximum.
+    var mainPaneCountDescription: String {
+        return "\(min(paneState.counts.main, mainPaneCount)) of \(mainPaneCount)"
+    }
+
+    func recommendMainPaneRawRatio(rawRatio: CGFloat) {
+        mainPaneRatio = rawRatio
+    }
+
+    /// Raises the maximum only; nothing moves. Main fills by warp or by windows arriving at `main-arrival-position: first`.
+    func increaseMainPaneCount() {
+        mainPaneCount += 1
+    }
+
+    /// Lowers the maximum; windows main holds beyond it go to the first side pane at the next pass.
+    func decreaseMainPaneCount() {
+        mainPaneCount = max(1, mainPaneCount - 1)
+    }
 }
 
 /// Errors occurring when decoding a layout
@@ -166,6 +287,9 @@ protocol PanedLayout {
 
     /// Decreases the number of windows that make up the main pane.
     func decreaseMainPaneCount()
+
+    /// The main pane count for the palette and the HUD: "x of y" where main's size is stored (warp), otherwise the count.
+    var mainPaneCountDescription: String { get }
 }
 
 extension PanedLayout {
@@ -183,6 +307,10 @@ extension PanedLayout {
                 return
             }
         }
+    }
+
+    var mainPaneCountDescription: String {
+        return "\(mainPaneCount)"
     }
 
     /// The default debug layout description for paned layouts. It describes the ratio and number of main pane windows.

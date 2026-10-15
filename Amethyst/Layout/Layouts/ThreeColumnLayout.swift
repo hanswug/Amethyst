@@ -50,6 +50,23 @@ struct TriplePaneArrangement {
         - mainPaneRatio: ratio of the screen taken by main pane
      */
     init(mainPane: Column, numWindows: UInt, numMainPane: UInt, screenSize: CGSize, mainPaneRatio: CGFloat) {
+        // calculate how many are in each type
+        let mainPaneCount = min(numWindows, numMainPane)
+        let nonMainCount: UInt = numWindows - mainPaneCount
+        // we do tertiary first because a single window produces a zero in integer division by 2
+        let tertiaryPaneCount = nonMainCount >> 1
+        let secondaryPaneCount = nonMainCount - tertiaryPaneCount
+        self.init(mainPane: mainPane, counts: [mainPaneCount, secondaryPaneCount, tertiaryPaneCount], screenSize: screenSize, mainPaneRatio: mainPaneRatio)
+    }
+
+    /**
+     - Parameters:
+        - mainPane: which Column is the main Pane
+        - counts: how many windows each pane holds: main, secondary, tertiary
+        - screenSize: total size of the screen
+        - mainPaneRatio: ratio of the screen taken by main pane
+     */
+    init(mainPane: Column, counts: [UInt], screenSize: CGSize, mainPaneRatio: CGFloat) {
         // forward and reverse mapping of columns to their designations
         self.panePosition = {
             switch mainPane {
@@ -61,12 +78,9 @@ struct TriplePaneArrangement {
         // swap keys and values for reverse lookup
         self.columnDesignation = Dictionary(uniqueKeysWithValues: panePosition.map({ ($1, $0) }))
 
-        // calculate how many are in each type
-        let mainPaneCount = min(numWindows, numMainPane)
-        let nonMainCount: UInt = numWindows - mainPaneCount
-        // we do tertiary first because a single window produces a zero in integer division by 2
-        let tertiaryPaneCount = nonMainCount >> 1
-        let secondaryPaneCount = nonMainCount - tertiaryPaneCount
+        let mainPaneCount = counts[0]
+        let secondaryPaneCount = counts[1]
+        let tertiaryPaneCount = counts[2]
         self.paneCount = [.main: mainPaneCount, .secondary: secondaryPaneCount, .tertiary: tertiaryPaneCount]
 
         // calculate heights
@@ -142,35 +156,53 @@ struct TriplePaneArrangement {
     func widthsLeftToRight() -> (CGFloat, CGFloat, CGFloat) {
         return (width(pane(ofColumn: .left)), width(pane(ofColumn: .middle)), width(pane(ofColumn: .right)))
     }
+
+    /// How far the pane's column starts from the screen's left edge.
+    func offsetX(ofPane pane: Pane) -> CGFloat {
+        let (leftPaneWidth, middlePaneWidth, _) = widthsLeftToRight()
+        switch column(ofPane: pane) {
+        case .left: return 0.0
+        case .middle: return leftPaneWidth
+        case .right: return leftPaneWidth + middlePaneWidth
+        }
+    }
 }
 
 // not an actual Layout, just a base class for the three actual Layouts below
-class ThreeColumnLayout<Window: WindowType>: Layout<Window> {
+class ThreeColumnLayout<Window: WindowType>: PaneCountedLayout<Window> {
     class var mainColumn: Column { fatalError("Must be implemented by subclass") }
 
-    enum CodingKeys: String, CodingKey {
-        case mainPaneCount
-        case mainPaneRatio
+    override class var paneCount: Int { return 3 }
+
+    private static var panes: [Pane] { [.main, .secondary, .tertiary] }
+
+    private func arrangement(windowCount: Int, screenSize: CGSize) -> TriplePaneArrangement {
+        return TriplePaneArrangement(
+            mainPane: type(of: self).mainColumn,
+            counts: fittedPaneCounts(windowCount: windowCount).counts.map { UInt($0) },
+            screenSize: screenSize,
+            mainPaneRatio: mainPaneRatio
+        )
     }
 
-    private(set) var mainPaneCount: Int = 1
-    private(set) var mainPaneRatio: CGFloat = 0.5
+    /// A side column left without windows keeps its width (e.g. main count 3 took a side window into main).
+    override func emptyPaneFrames(windowCount: Int, on screen: Screen) -> [Int: CGRect] {
+        guard windowCount > 0 else {
+            return [:]
+        }
 
-    required init() {
-        super.init()
-    }
-
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.mainPaneCount = try values.decode(Int.self, forKey: .mainPaneCount)
-        self.mainPaneRatio = try values.decode(CGFloat.self, forKey: .mainPaneRatio)
-        super.init()
-    }
-
-    override func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(mainPaneCount, forKey: .mainPaneCount)
-        try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
+        let screenFrame = screen.adjustedFrame()
+        let paneArrangement = arrangement(windowCount: windowCount, screenSize: screenFrame.size)
+        var frames: [Int: CGRect] = [:]
+        for (index, pane) in Self.panes.enumerated() where pane != .main && paneArrangement.count(pane) == 0 && paneArrangement.width(pane) > 0 {
+            frames[index] = CGRect(
+                x: screenFrame.origin.x + paneArrangement.offsetX(ofPane: pane),
+                y: screenFrame.origin.y,
+                width: paneArrangement.width(pane),
+                height: screenFrame.height
+            )
+        }
+        return frames
     }
 
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
@@ -181,13 +213,7 @@ class ThreeColumnLayout<Window: WindowType>: Layout<Window> {
         }
 
         let screenFrame = screen.adjustedFrame()
-        let paneArrangement = TriplePaneArrangement(
-            mainPane: type(of: self).mainColumn,
-            numWindows: UInt(windows.count),
-            numMainPane: UInt(mainPaneCount),
-            screenSize: screenFrame.size,
-            mainPaneRatio: mainPaneRatio
-        )
+        let paneArrangement = arrangement(windowCount: windows.count, screenSize: screenFrame.size)
 
         return windows.reduce([]) { frameAssignments, window -> [FrameAssignmentOperation<Window>] in
             var assignments = frameAssignments
@@ -197,17 +223,8 @@ class ThreeColumnLayout<Window: WindowType>: Layout<Window> {
             let (pane, paneIndex) = paneArrangement.coordinates(at: windowIndex)
 
             let (windowHeight, windowWidth): (CGFloat, CGFloat) = paneArrangement.windowDimensions(inPane: pane)
-            let column: Column = paneArrangement.column(ofPane: pane)
 
-            let (leftPaneWidth, middlePaneWidth, _): (CGFloat, CGFloat, CGFloat) = paneArrangement.widthsLeftToRight()
-
-            let xorigin: CGFloat = screenFrame.origin.x + {
-                switch column {
-                case .left: return 0.0
-                case .middle: return leftPaneWidth
-                case .right: return leftPaneWidth + middlePaneWidth
-                }
-            }()
+            let xorigin: CGFloat = screenFrame.origin.x + paneArrangement.offsetX(ofPane: pane)
 
             let scaleFactor: CGFloat = screenFrame.width / {
                 if pane == .main {
@@ -235,20 +252,6 @@ class ThreeColumnLayout<Window: WindowType>: Layout<Window> {
 
             return assignments
         }
-    }
-}
-
-extension ThreeColumnLayout {
-    func recommendMainPaneRawRatio(rawRatio: CGFloat) {
-        mainPaneRatio = rawRatio
-    }
-
-    func increaseMainPaneCount() {
-        mainPaneCount += 1
-    }
-
-    func decreaseMainPaneCount() {
-        mainPaneCount = max(1, mainPaneCount - 1)
     }
 }
 

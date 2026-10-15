@@ -166,7 +166,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             listedAfter: CommandKey.decreaseMain.rawValue,
             prompt: {
                 let panedLayout = windowManager.focusedScreenManager()?.currentLayout as? PanedLayout
-                return "Main pane count" + (panedLayout.map { " · now \($0.mainPaneCount)" } ?? "")
+                return "Main pane count" + (panedLayout.map { " · now \($0.mainPaneCountDescription)" } ?? "")
             },
             handler: { count in
                 let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
@@ -256,6 +256,18 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             constructCommandWithCommandKey(commandKey.rawValue) {
                 windowManager.windowTransitionCoordinator.swapFocusedWindow(direction)
             }
+        }
+
+        for (commandKey, direction) in [
+            (CommandKey.warpWest, Direction.west), (.warpEast, .east), (.warpNorth, .north), (.warpSouth, .south)
+        ] {
+            constructCommandWithCommandKey(commandKey.rawValue) {
+                windowManager.windowTransitionCoordinator.warpFocusedWindow(direction)
+            }
+        }
+
+        constructCommandWithCommandKey(CommandKey.warpMain.rawValue) {
+            windowManager.windowTransitionCoordinator.warpFocusedWindowToMain()
         }
 
         constructCommandWithCommandKey(CommandKey.displayCurrentLayout.rawValue) {
@@ -598,6 +610,11 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Swap focused window east", CommandKey.swapEast.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window north", CommandKey.swapNorth.rawValue])
         hotKeyNameToDefaultsKey.append(["Swap focused window south", CommandKey.swapSouth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window west", CommandKey.warpWest.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window east", CommandKey.warpEast.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window north", CommandKey.warpNorth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window south", CommandKey.warpSouth.rawValue])
+        hotKeyNameToDefaultsKey.append(["Warp focused window into main", CommandKey.warpMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Force windows to be reevaluated", CommandKey.reevaluateWindows.rawValue])
 
         hotKeyNameToDefaultsKey.append(["Toggle float for focused window", CommandKey.toggleFloat.rawValue])

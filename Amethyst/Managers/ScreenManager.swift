@@ -30,6 +30,8 @@ protocol ScreenManagerDelegate: AnyObject {
     /// Windows that appeared on this screen's Space; those that had left view before arrive again at `main-arrival-position`.
     /// Returns whether any moved, so the pass reads the window set again.
     func windowsCameBack(_ windowIDs: [Window.WindowID]) -> Bool
+    /// Puts this screen's windows in this order (the layout moved a window into its pane). Returns whether any moved.
+    func reorderWindows(_ windowIDs: [Window.WindowID]) -> Bool
 }
 
 /// What changed between two layout passes on the same Space and layout. Only visible windows are managed: a main window that
@@ -321,7 +323,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     }
 
     private func minimizeWindows() {
-        let mainPaneCount = (currentLayout as? PanedLayout)?.mainPaneCount ?? 0
+        let mainPaneCount = (currentLayout as? PaneCountedLayout<Window>)?.paneCounts.main ?? (currentLayout as? PanedLayout)?.mainPaneCount ?? 0
 
         guard UserConfiguration.shared.tilingEnabled, let windowLimit = UserConfiguration.shared.windowMaxCount() else {
             return
@@ -387,7 +389,8 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             if !change.left.isEmpty {
                 delegate?.windowsLeftView(change.left)
             }
-            if change.mainShrink > 0, let panedLayout = layout as? PanedLayout {
+            // Layouts with stored pane sizes shrink the pane a window left in `reconcile`; the others lower the maximum.
+            if change.mainShrink > 0, !(layout is PaneCountedLayout<Window>), let panedLayout = layout as? PanedLayout {
                 let mainCount = max(1, min(panedLayout.mainPaneCount, previous.mainCount) - change.mainShrink)
                 log.debug("Main count \(panedLayout.mainPaneCount) → \(mainCount): \(change.mainShrink) main window(s) left view")
                 while panedLayout.mainPaneCount > mainCount {
@@ -400,13 +403,20 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             }
         }
 
+        if let layout = currentLayout, let order = layout.reconcile(windowIDs: windows.windows.map(\.id)),
+           delegate?.reorderWindows(order) == true,
+           let rearranged = delegate?.activeWindowSet(forScreenManager: self, on: screen) {
+            windows = rearranged
+        }
+
         guard let layout = currentLayout, let frameAssignments = layout.frameAssignments(windows, on: screen) else {
             lastAssignedFrames = [:]
             return
         }
 
         let windowIDs = windows.windows.map(\.id)
-        let mainCount = (layout as? PanedLayout).map { min($0.mainPaneCount, windowIDs.count) } ?? 0
+        let mainCount = (layout as? PaneCountedLayout<Window>)?.paneCounts.main
+            ?? (layout as? PanedLayout).map { min($0.mainPaneCount, windowIDs.count) } ?? 0
         previousPasses[spaceUUID] = PreviousPass(windowIDs: windowIDs, mainCount: mainCount, layoutKey: layout.layoutKey)
 
         lastAssignedFrames = Dictionary(
@@ -459,6 +469,9 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         var header = "Reflow: \(layout.layoutName), \(windowSet.windows.count) windows"
         if let panedLayout = layout as? PanedLayout {
             header += String(format: ", main count %d, ratio %.2f", panedLayout.mainPaneCount, panedLayout.mainPaneRatio)
+        }
+        if let paneCountedLayout = layout as? PaneCountedLayout<Window> {
+            header += ", panes \(paneCountedLayout.paneCounts)"
         }
 
         let lines = frameAssignments.enumerated().map { index, operation -> String in
@@ -577,7 +590,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return
         }
 
-        let count = panedLayout.mainPaneCount
+        let count = panedLayout.mainPaneCountDescription
         DispatchQueue.main.async {
             self.displayCustomHUD(title: "Main pane count · \(count)")
         }

@@ -119,7 +119,8 @@ class TreeNode<Window: WindowType>: Codable {
         }
     }
 
-    func insertWindowID(_ windowID: WindowID) {
+    /// Splits this leaf: the new window takes the second half (right or bottom), or the first with `first`.
+    func insertWindowID(_ windowID: WindowID, first: Bool = false) {
         guard parent != nil || self.windowID != nil else {
             self.windowID = windowID
             return
@@ -132,8 +133,8 @@ class TreeNode<Window: WindowType>: Codable {
             newNode.parent = newParent
             newNode.windowID = windowID
 
-            newParent.left = self
-            newParent.right = newNode
+            newParent.left = first ? newNode : self
+            newParent.right = first ? self : newNode
             newParent.parent = parent
 
             if self == parent.left {
@@ -152,9 +153,9 @@ class TreeNode<Window: WindowType>: Codable {
 
             newNode.windowID = windowID
 
-            left = newSelf
+            left = first ? newNode : newSelf
             left?.parent = self
-            right = newNode
+            right = first ? newSelf : newNode
             right?.parent = self
         }
     }
@@ -300,6 +301,30 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
         case .applicationDeactivate, .applicationActivate, .spaceChange, .layoutChange, .none, .unknown:
             break
         }
+    }
+
+    /**
+     Warp: the window leaves its tile and splits the neighbour's, on the side it came from. Moving west or north it came
+     from the right or below, so it takes the second half; moving east or south, the first. Which way the tile splits
+     still follows the tile's shape.
+
+     - Returns: Whether the tree changed.
+     */
+    func warp(_ windowID: WindowID, onto neighborID: WindowID, toward direction: Direction) -> Bool {
+        guard windowID != neighborID, rootNode.findWindowID(windowID) != nil, rootNode.findWindowID(neighborID) != nil else {
+            return false
+        }
+
+        rootNode.removeWindowID(windowID)
+        guard let neighborNode = rootNode.findWindowID(neighborID) else {
+            log.error("Warp lost the neighbour \(neighborID) after removing \(windowID)")
+            rootNode.insertWindowIDAtEnd(windowID)
+            return true
+        }
+
+        neighborNode.insertWindowID(windowID, first: direction == .east || direction == .south)
+        lastKnownFocusedWindowID = windowID
+        return true
     }
 
     override func nextWindowIDCounterClockwise() -> WindowID? {
