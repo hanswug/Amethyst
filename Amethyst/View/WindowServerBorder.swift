@@ -297,6 +297,9 @@ final class WindowServerBorder {
             let spaceChanged = spaceID != self.spaceID
             self.spaceID = spaceID
             guard let bounds = SkyLight.bounds(of: windowID, connection: self.connection) else {
+                // Never leave the border where the last window was.
+                log.debug("Focus border: can't read the bounds of #\(windowID), hiding")
+                self.orderOutPieces()
                 return
             }
 
@@ -310,6 +313,7 @@ final class WindowServerBorder {
             let drawing = Drawing(targetWindowID: windowID, appearance: appearance, pieces: piecesLayout)
 
             if drawing != self.drawing || self.pieces.isEmpty {
+                log.debug("Focus border: drawing for #\(windowID) at \(bounds)")
                 self.replacePieces(drawing: drawing, around: bounds, scale: scale)
             } else {
                 if spaceChanged {
@@ -317,6 +321,10 @@ final class WindowServerBorder {
                 }
                 self.place(around: bounds, orderFront: true)
             }
+            // Ametrine often moves the window right after focusing it (a close pulls a window into main); its move events can
+            // arrive before the border switched to it and be dropped. Polling for a moment catches up either way.
+            self.lastChange = .now()
+            self.startPolling()
         }
     }
 
@@ -324,14 +332,18 @@ final class WindowServerBorder {
         queue.async {
             self.targetWindowID = nil
             self.stopPolling()
-            let windowIDs = self.pieces.values.map(\.windowID)
-            guard !windowIDs.isEmpty, let orderWindow = SkyLight.transactionOrderWindow else {
-                return
-            }
-            SkyLight.transaction(self.connection) { transaction in
-                for windowID in windowIDs {
-                    _ = orderWindow(transaction, windowID, 0, 0)
-                }
+            self.orderOutPieces()
+        }
+    }
+
+    private func orderOutPieces() {
+        let windowIDs = pieces.values.map(\.windowID)
+        guard !windowIDs.isEmpty, let orderWindow = SkyLight.transactionOrderWindow else {
+            return
+        }
+        SkyLight.transaction(connection) { transaction in
+            for windowID in windowIDs {
+                _ = orderWindow(transaction, windowID, 0, 0)
             }
         }
     }
