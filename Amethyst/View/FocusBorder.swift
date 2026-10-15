@@ -129,11 +129,31 @@ final class FocusBorder {
     /// The window the border is around, if it's showing.
     private(set) var currentWindowID: CGWindowID?
 
+    /// Moved events arrive in bursts while a window is dragged, so the border would trail it; it's hidden until the mouse is released.
+    private var isHiddenForDrag = false
+    private var mouseUpMonitor: Any?
+
+    init() {
+        mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.endDrag()
+            }
+        }
+    }
+
+    deinit {
+        if let mouseUpMonitor {
+            NSEvent.removeMonitor(mouseUpMonitor)
+        }
+    }
+
     func show(around windowFrame: CGRect, above windowID: CGWindowID, appearance: FocusBorderAppearance) {
         self.appearance = appearance
         currentWindowID = windowID
         move(to: windowFrame, force: true)
-        panel.orderFrontRegardless()
+        if !isHiddenForDrag {
+            panel.orderFrontRegardless()
+        }
     }
 
     /// Follows the window while it moves or resizes.
@@ -144,7 +164,22 @@ final class FocusBorder {
     func hide() {
         currentWindowID = nil
         windowFrame = nil
+        isHiddenForDrag = false
         panel.orderOut(nil)
+    }
+
+    private func endDrag() {
+        guard isHiddenForDrag else {
+            return
+        }
+
+        isHiddenForDrag = false
+        guard let windowFrame, currentWindowID != nil else {
+            return
+        }
+
+        move(to: windowFrame, force: true)
+        panel.orderFrontRegardless()
     }
 
     private func move(to windowFrame: CGRect, force: Bool) {
@@ -153,6 +188,16 @@ final class FocusBorder {
         }
 
         self.windowFrame = windowFrame
+
+        // The window moves under the mouse: a drag by its title bar or edge.
+        if !force && NSEvent.pressedMouseButtons & 1 != 0 {
+            isHiddenForDrag = true
+            panel.orderOut(nil)
+        }
+        if isHiddenForDrag {
+            return
+        }
+
         let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
         panel.setFrame(appearance.overlayFrame(forWindowFrame: windowFrame, primaryScreenHeight: primaryScreenHeight), display: false)
         draw(appearance)
