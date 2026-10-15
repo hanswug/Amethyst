@@ -319,7 +319,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let paddingModes = UserConfiguration.shared.paddingModes()
         paddingMenuItem.isHidden = paddingModes.isEmpty
 
-        let activeName = UserConfiguration.shared.activePaddingMode()?.name
+        let activeName = windowManager?.activePaddingMode()?.name
         for paddingMode in paddingModes {
             let menuItem = NSMenuItem(title: paddingMode.name, action: #selector(selectPaddingMode(_:)), keyEquivalent: "")
             menuItem.target = self

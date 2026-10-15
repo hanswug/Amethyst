@@ -452,8 +452,9 @@ screen-padding-top: 0   # padding modes below replace the old 540
 screen-padding-bottom: 0
 
 # --- Ametrine: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
-# Super+0 cycles full → wide → 27. The selected mode survives restarts;
-# padding-mode only applies until a mode has been selected.
+# Super+0 cycles full → wide → 27 on the current Space. Each Space keeps
+# its own mode, which survives restarts; padding-mode is where a Space
+# starts until a mode has been picked there.
 mod4:
   - option
   - control

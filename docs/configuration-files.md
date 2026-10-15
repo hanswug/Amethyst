@@ -56,8 +56,8 @@ The first file that exists is used:
 | `focus-border-radius` | Corner radius in points (default `12`), used when the window server doesn't report the window's own radius; normally the border follows each window's own corners. |
 | `main-arrival-position` | Where a window arriving in the main pane goes: `first` or `last` (default `last`). `first`: on top of main (left when main's windows are side by side); with main full, its last window moves out. `last`: at the end; it joins main only while main has room, so main stays as it is. A window coming back into view (unhidden, unminimised, back from another Space, tiled again) arrives the same way, and so does a window warped into main (`warp-<direction>`): on top with `first`, at the bottom with `last`, wherever its neighbour is. Swaps (`swap-main`, `swap-<direction>`) don't use it: they exchange two windows' places. Replaces `new-windows-to-main` (`true` = `first`, `false` = `last`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
-| `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |
-| `padding-mode` | The mode to use until one has been selected. After that, the last selected mode survives restarts (default none). |
+| `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu; each Space has its own (default none). |
+| `padding-mode` | The mode a Space uses until you pick one on it. Each Space keeps the mode picked there, also across restarts (default none). |
 | `screen-padding-left` | Space between windows and the left screen edge, used when no padding mode is active (in px, default `0`). |
 | `screen-padding-right` | Same for the right edge (in px, default `0`). |
 | `screen-padding-top` | Same for the top edge (in px, default `0`). |
@@ -124,9 +124,9 @@ cycle-layout:
 | `disable-tiling` | Turn tiling off. |
 | `reevaluate-windows` | Re-check which windows are managed and lay them out again. |
 | `toggle-focus-follows-mouse` | Turn `focus-follows-mouse` on or off. |
-| `cycle-padding-mode` | Switch to the next padding mode (wraps around). |
-| `cycle-padding-mode-backward` | Switch to the previous padding mode (wraps around). |
-| `select-<name>-padding-mode` | Switch to that padding mode, e.g. `select-wide-padding-mode`. |
+| `cycle-padding-mode` | Switch the current Space to the next padding mode (wraps around). |
+| `cycle-padding-mode-backward` | Switch the current Space to the previous padding mode (wraps around). |
+| `select-<name>-padding-mode` | Switch the current Space to that padding mode, e.g. `select-wide-padding-mode`. |
 | `show-command-palette` | Open (or close) the command palette. |
 | `relaunch-ametrine` | Quit and reopen Ametrine (also what Reload Config does). |
 | `command1` … `command4` | General-purpose commands for custom layouts. They exist only when at least one custom layout is installed. |

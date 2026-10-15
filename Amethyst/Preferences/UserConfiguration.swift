@@ -279,8 +279,10 @@ struct PaddingMode: Equatable {
 
 class UserConfiguration: NSObject {
     static let shared = UserConfiguration()
-    /// Defaults key for the selected padding mode. Deliberately not a `ConfigurationKey`, so loading the configuration never overwrites it.
-    static let activePaddingModeKey = "active-padding-mode"
+    /// Defaults key for the padding mode selected on each Space, by Space UUID. Deliberately not a `ConfigurationKey`, so loading the configuration never overwrites it.
+    static let paddingModeBySpaceKey = "padding-mode-by-space"
+    /// Defaults key of the single padding mode used before modes were per Space; removed on launch.
+    static let legacyActivePaddingModeKey = "active-padding-mode"
 
     private let storage: ConfigurationStorage
     private let stateDefaults: UserDefaults
@@ -312,6 +314,7 @@ class UserConfiguration: NSObject {
     init(storage: ConfigurationStorage, stateDefaults: UserDefaults = .standard) {
         self.storage = storage
         self.stateDefaults = stateDefaults
+        stateDefaults.removeObject(forKey: UserConfiguration.legacyActivePaddingModeKey)
     }
 
     override convenience init() {
@@ -965,20 +968,20 @@ class UserConfiguration: NSObject {
         return CGFloat(storage.float(forKey: .windowResizeStep) / 100.0)
     }
 
-    func screenPaddingTop() -> CGFloat {
-        return activePaddingMode()?.top ?? CGFloat(storage.float(forKey: .screenPaddingTop))
+    func screenPaddingTop(forSpaceUUID spaceUUID: String?) -> CGFloat {
+        return activePaddingMode(forSpaceUUID: spaceUUID)?.top ?? CGFloat(storage.float(forKey: .screenPaddingTop))
     }
 
-    func screenPaddingBottom() -> CGFloat {
-        return activePaddingMode()?.bottom ?? CGFloat(storage.float(forKey: .screenPaddingBottom))
+    func screenPaddingBottom(forSpaceUUID spaceUUID: String?) -> CGFloat {
+        return activePaddingMode(forSpaceUUID: spaceUUID)?.bottom ?? CGFloat(storage.float(forKey: .screenPaddingBottom))
     }
 
-    func screenPaddingLeft() -> CGFloat {
-        return activePaddingMode()?.left ?? CGFloat(storage.float(forKey: .screenPaddingLeft))
+    func screenPaddingLeft(forSpaceUUID spaceUUID: String?) -> CGFloat {
+        return activePaddingMode(forSpaceUUID: spaceUUID)?.left ?? CGFloat(storage.float(forKey: .screenPaddingLeft))
     }
 
-    func screenPaddingRight() -> CGFloat {
-        return activePaddingMode()?.right ?? CGFloat(storage.float(forKey: .screenPaddingRight))
+    func screenPaddingRight(forSpaceUUID spaceUUID: String?) -> CGFloat {
+        return activePaddingMode(forSpaceUUID: spaceUUID)?.right ?? CGFloat(storage.float(forKey: .screenPaddingRight))
     }
 
     /// The configured padding modes in order. Entries without a name and repeated names are skipped.
@@ -989,30 +992,31 @@ class UserConfiguration: NSObject {
             .filter { names.insert($0.name).inserted }
     }
 
-    /// The selected padding mode, falling back to `padding-mode` until one has been selected. `nil` if the name matches no configured mode, in which case the plain screen paddings apply.
-    func activePaddingMode() -> PaddingMode? {
+    /// The padding mode selected on the Space, falling back to `padding-mode` until one has been selected there (or when the Space is unknown). `nil` if the name matches no configured mode, in which case the plain screen paddings apply.
+    func activePaddingMode(forSpaceUUID spaceUUID: String?) -> PaddingMode? {
         let initialMode = storage.object(forKey: .paddingMode)
         let initialName = (initialMode as? String) ?? (initialMode as? NSNumber)?.stringValue
+        let selectedName = spaceUUID.flatMap { paddingModeNamesBySpace()[$0] }
 
-        guard let name = stateDefaults.string(forKey: UserConfiguration.activePaddingModeKey) ?? initialName else {
+        guard let name = selectedName ?? initialName else {
             return nil
         }
 
         return paddingModes().first { $0.name == name }
     }
 
-    /// Selects the padding mode with the given name. Returns the mode, or `nil` and changes nothing if no mode has that name.
-    @discardableResult func selectPaddingMode(named name: String) -> PaddingMode? {
+    /// Selects the padding mode with the given name on the Space. Returns the mode, or `nil` and changes nothing if no mode has that name.
+    @discardableResult func selectPaddingMode(named name: String, forSpaceUUID spaceUUID: String?) -> PaddingMode? {
         guard let paddingMode = paddingModes().first(where: { $0.name == name }) else {
             return nil
         }
 
-        stateDefaults.set(paddingMode.name, forKey: UserConfiguration.activePaddingModeKey)
+        store(paddingMode, forSpaceUUID: spaceUUID)
         return paddingMode
     }
 
-    /// Selects the next (or previous) padding mode in configuration order, wrapping around. Starts at the first (or last) mode when none is active. Returns `nil` if no modes are configured.
-    @discardableResult func cyclePaddingMode(forward: Bool) -> PaddingMode? {
+    /// Selects the next (or previous) padding mode in configuration order on the Space, wrapping around. Starts at the first (or last) mode when none is active. Returns `nil` if no modes are configured.
+    @discardableResult func cyclePaddingMode(forward: Bool, forSpaceUUID spaceUUID: String?) -> PaddingMode? {
         let paddingModes = self.paddingModes()
 
         guard !paddingModes.isEmpty else {
@@ -1020,15 +1024,30 @@ class UserConfiguration: NSObject {
         }
 
         let nextIndex: Int
-        if let activeName = activePaddingMode()?.name, let index = paddingModes.firstIndex(where: { $0.name == activeName }) {
+        if let activeName = activePaddingMode(forSpaceUUID: spaceUUID)?.name, let index = paddingModes.firstIndex(where: { $0.name == activeName }) {
             nextIndex = (index + (forward ? 1 : paddingModes.count - 1)) % paddingModes.count
         } else {
             nextIndex = forward ? 0 : paddingModes.count - 1
         }
 
         let paddingMode = paddingModes[nextIndex]
-        stateDefaults.set(paddingMode.name, forKey: UserConfiguration.activePaddingModeKey)
+        store(paddingMode, forSpaceUUID: spaceUUID)
         return paddingMode
+    }
+
+    private func paddingModeNamesBySpace() -> [String: String] {
+        return stateDefaults.dictionary(forKey: UserConfiguration.paddingModeBySpaceKey) as? [String: String] ?? [:]
+    }
+
+    /// Without a Space there is nowhere to keep the selection, so nothing is stored.
+    private func store(_ paddingMode: PaddingMode, forSpaceUUID spaceUUID: String?) {
+        guard let spaceUUID else {
+            return
+        }
+
+        var names = paddingModeNamesBySpace()
+        names[spaceUUID] = paddingMode.name
+        stateDefaults.set(names, forKey: UserConfiguration.paddingModeBySpaceKey)
     }
 
     func floatingBundleIdentifiersIsBlacklist() -> Bool {
