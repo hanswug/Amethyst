@@ -286,7 +286,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return
         }
 
-        let shouldInsertAtFront = UserConfiguration.shared.sendNewWindowsToMainPane()
+        let shouldInsertAtFront = UserConfiguration.shared.mainArrivalPosition() == .first
         delegate?.applyWindowLimit(forScreenManager: self, minimizingIn: { windowCount in
             if windowLimit > windowCount {
                 // Not enough windows to minimize.

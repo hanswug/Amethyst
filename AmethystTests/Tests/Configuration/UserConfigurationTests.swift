@@ -472,6 +472,33 @@ class UserConfigurationTests: QuickSpec {
             }
         }
 
+        describe("main arrival position") {
+            it("is last unless the configuration says first") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                expect(configuration.mainArrivalPosition()).to(equal(.last))
+
+                storage.set("first", forKey: .mainArrivalPosition)
+                expect(configuration.mainArrivalPosition()).to(equal(.first))
+
+                storage.set(true, forKey: .mainArrivalPosition)
+                expect(configuration.mainArrivalPosition()).to(equal(.last))
+
+                storage.set("top", forKey: .mainArrivalPosition)
+                expect(configuration.mainArrivalPosition()).to(equal(.last))
+            }
+
+            it("toggles between last and first") {
+                let configuration = UserConfiguration(storage: TestConfigurationStorage())
+
+                expect(configuration.toggleMainArrivalPosition()).to(equal(.first))
+                expect(configuration.mainArrivalPosition()).to(equal(.first))
+                expect(configuration.toggleMainArrivalPosition()).to(equal(.last))
+                expect(configuration.mainArrivalPosition()).to(equal(.last))
+            }
+        }
+
         describe("window overflow") {
             it("minimises unless the configuration says float") {
                 let storage = TestConfigurationStorage()
@@ -619,6 +646,18 @@ class UserConfigurationTests: QuickSpec {
 
                 expect(configuration.layoutKeys()).to(equal(["tall"]))
                 expect(storage.object(forKey: .screenPaddingTop)).to(beNil())
+            }
+
+            it("reads main-arrival-position from a configuration file") {
+                let storage = TestConfigurationStorage()
+                let configuration = UserConfiguration(storage: storage)
+
+                configuration.configurationYAML = ["main-arrival-position": "first"]
+                configuration.configurationJSON = nil
+                configuration.defaultConfiguration = JSON(["main-arrival-position": "last"])
+                configuration.loadConfiguration()
+
+                expect(configuration.mainArrivalPosition()).to(equal(.first))
             }
 
             it("local json configuration does override existing configuration") {

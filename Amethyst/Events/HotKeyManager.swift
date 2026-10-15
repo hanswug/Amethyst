@@ -329,7 +329,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             let enabled = self.userConfiguration.toggleFocusBorder()
             DispatchQueue.main.async {
                 windowManager.updateFocusBorder()
-                windowManager.displayFocusBorderHUD(title: "Focus border · \(enabled ? "on" : "off")")
+                windowManager.displaySettingHUD(title: "Focus border · \(enabled ? "on" : "off")")
             }
         }
 
@@ -337,7 +337,14 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             let style = self.userConfiguration.cycleFocusBorderStyle()
             DispatchQueue.main.async {
                 windowManager.updateFocusBorder()
-                windowManager.displayFocusBorderHUD(title: "Focus border · \(style.rawValue)")
+                windowManager.displaySettingHUD(title: "Focus border · \(style.rawValue)")
+            }
+        }
+
+        constructCommandWithCommandKey(CommandKey.toggleMainArrivalPosition.rawValue) {
+            let position = self.userConfiguration.toggleMainArrivalPosition()
+            DispatchQueue.main.async {
+                windowManager.displaySettingHUD(title: "Main arrival · \(position.rawValue)")
             }
         }
 
@@ -570,6 +577,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Toggle overflow window size", CommandKey.toggleWindowOverflowSize.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle focus border", CommandKey.toggleFocusBorder.rawValue])
         hotKeyNameToDefaultsKey.append(["Cycle focus border style (glow, solid, gradient)", CommandKey.cycleFocusBorderStyle.rawValue])
+        hotKeyNameToDefaultsKey.append(["Toggle main arrival position (first or last)", CommandKey.toggleMainArrivalPosition.rawValue])
         if !customLayoutKeys.isEmpty {
             hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
             hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])

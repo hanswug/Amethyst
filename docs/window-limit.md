@@ -36,7 +36,7 @@ window-overflow-height: 1100
 ## Behavior
 
 * Floating windows aren't counted or minimised.
-* Main-pane windows aren't minimised. With `new-windows-to-main: true`, the oldest window cycles out. With `false`, the main pane acts as a persistent workspace and the oldest of the other windows is minimised.
+* Main-pane windows aren't minimised. With `main-arrival-position: first`, the oldest window cycles out. With `last`, the main pane acts as a persistent workspace and the oldest of the other windows is minimised.
 * In layouts without a main pane (Fullscreen, Floating, …), windows are minimised from the back of the list.
 * The limit applies per screen.
 * Turning tiling off (`toggle-tiling`, `disable-tiling`) turns the limit off too. Use the Floating layout to keep the limit without tiling.

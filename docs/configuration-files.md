@@ -54,7 +54,7 @@ The first file that exists is used:
 | `focus-border-color` | `accent` (the system accent colour, following System Settings), `"#RRGGBB"` or `"#AARRGGBB"` (default `accent`). Quote hex colours in YAML. |
 | `focus-border-gradient` | The two colours of the `gradient` style, top left to bottom right (default `["#9B5DE5", "#F4B942"]`, purple to gold). |
 | `focus-border-radius` | Corner radius in points (default `12`), used when the window server doesn't report the window's own radius; normally the border follows each window's own corners. |
-| `new-windows-to-main` | `true` to insert new windows in the first position, `false` for the last (default `false`). |
+| `main-arrival-position` | Where a window arriving in the main pane goes: `first` or `last` (default `last`). `first`: on top of main (left when main's windows are side by side); with main full, its last window moves out. `last`: at the end; it joins main only while main has room, so main stays as it is. Swaps (`swap-main`, `swap-<direction>`) don't use it: they exchange two windows' places. Replaces `new-windows-to-main` (`true` = `first`, `false` = `last`). |
 | `window-resize-step` | Percentage of the screen size by which `shrink-main` and `expand-main` change the main pane (default `5`). |
 | `padding-modes` | Named sets of screen paddings, e.g. `- {name: wide, top: 540}`. Sides left out are `0`. Switch with the padding commands or the Padding menu (default none). |
 | `padding-mode` | The mode to use until one has been selected. After that, the last selected mode survives restarts (default none). |
@@ -104,6 +104,7 @@ cycle-layout:
 | `toggle-window-overflow-size` | Switch `window-overflow-size` between `reasonable` and `fixed` until Reload Config (stays `reasonable` without a configured size), and show it if `enables-window-count-hud` is on. |
 | `toggle-focus-border` | Turn `focus-border` on or off until Reload Config, and show it if `enables-layout-hud` is on. |
 | `cycle-focus-border-style` | Switch `focus-border-style` to the next style (glow, solid, gradient) until Reload Config, and show it if `enables-layout-hud` is on. |
+| `toggle-main-arrival-position` | Switch `main-arrival-position` between `first` and `last` until Reload Config, and show it if `enables-layout-hud` is on. |
 | `set-window-max-count` | Set `window-max-count` (0–99, `0` = unlimited) until Reload Config, and show it if `enables-window-count-hud` is on. Palette and URL only. |
 | `focus-ccw` | Focus the next window counter-clockwise. |
 | `focus-cw` | Focus the next window clockwise. |

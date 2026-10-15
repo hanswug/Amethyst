@@ -23,6 +23,13 @@ enum WindowOverflowSize: String {
     case fixed
 }
 
+/// Where a window arriving in the main pane goes. `first`: on top of main (a full main pushes its last window out).
+/// `last`: at the end of the list, so it joins main only while main has room.
+enum MainArrivalPosition: String {
+    case first
+    case last
+}
+
 enum DefaultFloat: Equatable {
     case floating
     case notFloating
@@ -114,7 +121,7 @@ enum ConfigurationKey: String {
     case focusBorderGradient = "focus-border-gradient"
     case focusBorderRadius = "focus-border-radius"
     case useCanaryBuild = "use-canary-build"
-    case newWindowsToMain = "new-windows-to-main"
+    case mainArrivalPosition = "main-arrival-position"
     case followSpaceThrownWindows = "follow-space-thrown-windows"
     case windowResizeStep = "window-resize-step"
     case screenPaddingLeft = "screen-padding-left"
@@ -176,6 +183,7 @@ enum CommandKey: String {
     case toggleWindowOverflowSize = "toggle-window-overflow-size"
     case toggleFocusBorder = "toggle-focus-border"
     case cycleFocusBorderStyle = "cycle-focus-border-style"
+    case toggleMainArrivalPosition = "toggle-main-arrival-position"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -1037,8 +1045,15 @@ class UserConfiguration: NSObject {
         storage.set(floatingBundles.map { $0.encoded() }, forKey: .floatingBundleIdentifiers)
     }
 
-    func sendNewWindowsToMainPane() -> Bool {
-        return storage.bool(forKey: .newWindowsToMain)
+    func mainArrivalPosition() -> MainArrivalPosition {
+        return (storage.object(forKey: .mainArrivalPosition) as? String).flatMap(MainArrivalPosition.init(rawValue:)) ?? .last
+    }
+
+    /// Switches between `first` and `last` until the configuration is loaded again, and returns the new position.
+    @discardableResult func toggleMainArrivalPosition() -> MainArrivalPosition {
+        let position: MainArrivalPosition = mainArrivalPosition() == .last ? .first : .last
+        storage.set(position.rawValue, forKey: .mainArrivalPosition)
+        return position
     }
 
     func disablePaddingOnBuiltinDisplay() -> Bool {
