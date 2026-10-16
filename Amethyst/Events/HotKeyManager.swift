@@ -186,45 +186,6 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         )
 
-        // Commands 1–4 only do something in custom layouts, so they're offered only when there are any.
-        if !LayoutType<Application.Window>.customLayoutKeys().isEmpty {
-            constructCommandWithCommandKey(CommandKey.command1.rawValue) {
-                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-                screenManager?.updateCurrentLayout { layout in
-                    if let customLayout = layout as? CustomLayout {
-                        customLayout.command1()
-                    }
-                }
-            }
-
-            constructCommandWithCommandKey(CommandKey.command2.rawValue) {
-                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-                screenManager?.updateCurrentLayout { layout in
-                    if let customLayout = layout as? CustomLayout {
-                        customLayout.command2()
-                    }
-                }
-            }
-
-            constructCommandWithCommandKey(CommandKey.command3.rawValue) {
-                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-                screenManager?.updateCurrentLayout { layout in
-                    if let customLayout = layout as? CustomLayout {
-                        customLayout.command3()
-                    }
-                }
-            }
-
-            constructCommandWithCommandKey(CommandKey.command4.rawValue) {
-                let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
-                screenManager?.updateCurrentLayout { layout in
-                    if let customLayout = layout as? CustomLayout {
-                        customLayout.command4()
-                    }
-                }
-            }
-        }
-
         constructCommandWithCommandKey(CommandKey.focusCCW.rawValue) {
             windowManager.focusTransitionCoordinator.moveFocusCounterClockwise()
         }
@@ -580,8 +541,8 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         return carbonModifiers
     }
 
-    /// Display names by command key, for every command that is set up. Commands 1–4 are listed only when there are custom layouts.
-    static func hotKeyNameToDefaultsKey(customLayoutKeys: [String] = LayoutType<Application.Window>.customLayoutKeys()) -> [[String]] {
+    /// Display names by command key, for every command that is set up.
+    static func hotKeyNameToDefaultsKey() -> [[String]] {
         var hotKeyNameToDefaultsKey: [[String]] = []
 
         hotKeyNameToDefaultsKey.append(["Cycle layout forward", CommandKey.cycleLayoutForward.rawValue])
@@ -598,12 +559,6 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Toggle focus border", CommandKey.toggleFocusBorder.rawValue])
         hotKeyNameToDefaultsKey.append(["Cycle focus border style (glow, solid, gradient)", CommandKey.cycleFocusBorderStyle.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle main arrival position (first or last)", CommandKey.toggleMainArrivalPosition.rawValue])
-        if !customLayoutKeys.isEmpty {
-            hotKeyNameToDefaultsKey.append(["Custom layout command 1", CommandKey.command1.rawValue])
-            hotKeyNameToDefaultsKey.append(["Custom layout command 2", CommandKey.command2.rawValue])
-            hotKeyNameToDefaultsKey.append(["Custom layout command 3", CommandKey.command3.rawValue])
-            hotKeyNameToDefaultsKey.append(["Custom layout command 4", CommandKey.command4.rawValue])
-        }
         hotKeyNameToDefaultsKey.append(["Move focus counter clockwise", CommandKey.focusCCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus clockwise", CommandKey.focusCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus to main window", CommandKey.focusMain.rawValue])

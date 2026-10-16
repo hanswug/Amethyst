@@ -754,6 +754,28 @@ class BinarySpacePartitioningLayoutTests: QuickSpec {
                 expect(decodedLayout).to(equal(layout))
             }
 
+            it("encodes and decodes a tree without windows") {
+                let layout = BinarySpacePartitioningLayout<TestWindow>()
+
+                let encodedLayout = try! JSONEncoder().encode(layout)
+
+                expect { try JSONDecoder().decode(BinarySpacePartitioningLayout<TestWindow>.self, from: encodedLayout) }.toNot(throwError())
+                let decodedLayout = try? JSONDecoder().decode(BinarySpacePartitioningLayout<TestWindow>.self, from: encodedLayout)
+                expect(decodedLayout).to(equal(layout))
+            }
+
+            it("still rejects an empty node inside a tree") {
+                let root = TreeNode<TestWindow>()
+                let leaf = TreeNode<TestWindow>()
+                leaf.windowID = TestWindow(element: nil)!.id()
+                root.left = TreeNode<TestWindow>()
+                root.right = leaf
+
+                let encodedTree = try! JSONEncoder().encode(root)
+
+                expect { try JSONDecoder().decode(TreeNode<TestWindow>.self, from: encodedTree) }.to(throwError())
+            }
+
             it("maintains the tree") {
                 let layout = BinarySpacePartitioningLayout<TestWindow>()
                 let windows = [TestWindow(element: nil)!, TestWindow(element: nil)!, TestWindow(element: nil)!]

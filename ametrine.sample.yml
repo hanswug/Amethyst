@@ -124,23 +124,6 @@ decrease-main:
   mod: mod2
   key: '-'
 
-# General purpose command for custom layouts. Functionality is layout-dependent.
-# command1:
-#   mod: <NONE>
-#   key: <NONE>
-# General purpose command for custom layouts. Functionality is layout-dependent.
-# command2:
-#   mod: <NONE>
-#   key: <NONE>
-# General purpose command for custom layouts. Functionality is layout-dependent.
-# command3:
-#   mod: <NONE>
-#   key: <NONE>
-# General purpose command for custom layouts. Functionality is layout-dependent.
-# command4:
-#   mod: <NONE>
-#   key: <NONE>
-
 # Previous/next retired for directional focus and swap (an Alt-Tab app covers previous/next).
 # Focus the next window in the list going counter-clockwise.
 focus-ccw:

@@ -146,10 +146,6 @@ enum CommandKey: String {
     case expandMain = "expand-main"
     case increaseMain = "increase-main"
     case decreaseMain = "decrease-main"
-    case command1 = "command1"
-    case command2 = "command2"
-    case command3 = "command3"
-    case command4 = "command4"
     case focusCCW = "focus-ccw"
     case focusCW = "focus-cw"
     case focusMain = "focus-main"
@@ -693,7 +689,7 @@ class UserConfiguration: NSObject {
             if text.isEmpty {
                 log.warning("layout-names: \(layoutKey) needs a name; showing the key")
             }
-            if case .custom = LayoutType<AXWindow>.from(key: layoutKey), !LayoutType<AXWindow>.customLayoutKeys().contains(layoutKey) {
+            if LayoutType<AXWindow>.from(key: layoutKey) == nil {
                 log.warning("layout-names: \(layoutKey) is not a layout key")
             }
             names[layoutKey] = text

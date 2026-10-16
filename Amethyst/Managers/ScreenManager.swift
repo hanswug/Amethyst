@@ -195,7 +195,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             do {
                 return try LayoutType<Window>.decoded(data: data, key: key)
             } catch {
-                log.error("Failed to to decode layout: \(key)")
+                log.error("Failed to decode layout: \(key)")
             }
 
             return nil

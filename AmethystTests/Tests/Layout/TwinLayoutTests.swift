@@ -160,6 +160,12 @@ class TwinLayoutTests: QuickSpec {
                 expect(names).to(equal(["Tall Left", "Wide Bottom", "Two Pane B", "3Column Middle", "Widescreen Tall Left", "Column Right", "Row Top"]))
             }
 
+            it("knows no layout outside the built-in ones") {
+                expect(LayoutType<TestWindow>.from(key: "my-layout")).to(beNil())
+                expect(LayoutType<TestWindow>.layoutForKey("my-layout")).to(beNil())
+                expect(LayoutType<TestWindow>.layoutNameForKey("my-layout")).to(beNil())
+            }
+
             it("no longer knows the old keys") {
                 for oldKey in ["tall", "wide", "two-pane", "two-pane-right", "middle-wide", "widescreen-tall", "column", "row"] {
                     expect(LayoutType<TestWindow>.layoutForKey(oldKey)).to(beNil())

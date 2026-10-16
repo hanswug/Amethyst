@@ -1431,7 +1431,7 @@ extension WindowManager {
 
      - Layouts with stored pane sizes (Tall, Wide, Widescreen Tall, 3Column, 4Column): `PaneCounts.warp`.
      - BSP: the window leaves its tile and splits the neighbour's.
-     - Fullscreen, Floating, custom layouts: nothing.
+     - Fullscreen, Floating: nothing.
      - Every other layout (Two Pane, Column, Row) holds one window per pane: swap.
      */
     func warp(_ window: Window, toward direction: Direction) {
@@ -1440,7 +1440,7 @@ extension WindowManager {
         }
 
         switch layout {
-        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is CustomLayout<Window>:
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>:
             return
         case let paneCountedLayout as PaneCountedLayout<Window>:
             warp(window, toward: direction, in: paneCountedLayout, on: screen)
@@ -1490,7 +1490,7 @@ extension WindowManager {
 
      - Layouts with stored pane sizes: `PaneCounts.warpIntoMain`; the last window of a side pane swaps with main's top window.
      - Two Pane, Column, Row: a swap with main's top window, like `swap-main`.
-     - Already in main, BSP (no main pane), Fullscreen, Floating, custom layouts: nothing.
+     - Already in main, BSP (no main pane), Fullscreen, Floating: nothing.
      */
     func warpToMain(_ window: Window) {
         guard let screen = window.screen(), let screenManager = screenManager(for: screen), let layout = screenManager.currentLayout else {
@@ -1503,7 +1503,7 @@ extension WindowManager {
         }
 
         switch layout {
-        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is CustomLayout<Window>, is BinarySpacePartitioningLayout<Window>:
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>, is BinarySpacePartitioningLayout<Window>:
             return
         case let paneCountedLayout as PaneCountedLayout<Window>:
             let atFront = userConfiguration.mainArrivalPosition() == .first

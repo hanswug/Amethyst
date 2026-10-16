@@ -33,13 +33,19 @@ class TreeNode<Window: WindowType>: Codable {
         self.left?.parent = self
         self.right?.parent = self
 
-        guard valid else {
+        // A tree without windows is an empty root, saved for every Space where BSP holds nothing. Only a root can be empty.
+        guard valid || isEmpty, left?.isEmpty != true, right?.isEmpty != true else {
             throw LayoutDecodingError.invalidLayout
         }
     }
 
     var valid: Bool {
         return (left != nil && right != nil && windowID == nil) || (left == nil && right == nil && windowID != nil)
+    }
+
+    /// No children and no window: the root of a tree without windows.
+    var isEmpty: Bool {
+        return left == nil && right == nil && windowID == nil
     }
 
     func findWindowID(_ windowID: WindowID) -> TreeNode? {

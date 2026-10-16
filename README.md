@@ -43,6 +43,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Renamed from hw-Amethyst to Ametrine (3.0.0), with a purple-to-gold icon
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [x] Warp (4.2.0): `warp-<direction>` and `warp-main` move a window into the neighbouring pane, or into main, in every tiled layout (swaps in Two Pane, Column and Row; splits the neighbour's tile in BSP), into an empty column too; pane sizes are remembered and the main pane count is a maximum
+- [x] Custom (JavaScript) layouts removed (6.0.0): they gave little beyond the built-in layouts, needed code, and skipped warp, remembered pane sizes and flip
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
   - [x] Step 1 (5.0.0): every layout named by where main is (`tall-left`, `wide-top`, `two-pane-a`, `3column-middle`, `column-left`, `row-top`, …), the missing twins Wide Bottom, Column Right and Row Bottom, and `layout-names` for your own names
 - [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
@@ -122,7 +123,6 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Row Top / Bottom | `row-top`, `row-bottom` | One row per window, the first on top (or at the bottom) |
 | Floating | `floating` | Nothing is tiled |
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
-| Custom | file name | JavaScript layouts in `~/Library/Application Support/Amethyst/Layouts/*.js`; see [docs/custom-layouts.md](docs/custom-layouts.md) |
 
 Each name says where main is. The pairs are twins, the same layout mirrored; the flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
 
@@ -180,6 +180,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.3.1 | Upstream leftovers removed: fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries (the app shrinks from 32 to 28 MB). No visible change |
 | 5.0.0 | Layouts named by where main is: `tall-left`, `wide-top`, `two-pane-a`/`-b`, `3column-middle`, `widescreen-tall-left`, `column-left`, `row-top` (**config edit**: rename the keys in `layouts:` and `select-<key>-layout`). New twins Wide Bottom, Column Right and Row Bottom; Two Pane B is A mirrored along the long side. `layout-names` sets the name shown for each layout (without one, its key). In Two Pane, focus north/south browses the windows behind the secondary pane |
 | 5.1.0 | `toggle-fullscreen`: a Space's layout ↔ Fullscreen in place, the focused window in front without becoming main, and back with every window in its tile (works without `fullscreen` in `layouts`). Selecting the current layout again goes back to the previous one per Space |
+| 6.0.0 | Custom (JavaScript) layouts removed, with `command1`–`command4` (**config**: drop them and any custom layout key from `layouts`). BSP no longer logs a decode error on launch for a Space without windows |
 
 ## Credits and licence
 
