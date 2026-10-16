@@ -45,6 +45,8 @@ The first file that exists is used:
 | `focus-follows-mouse` | `true` to focus the window under the mouse as it moves (default `false`). Largely incompatible with `mouse-follows-focus`. |
 | `mouse-swaps-windows` | `true` to swap windows by dragging one onto another (default `false`). |
 | `mouse-resizes-windows` | `true` to update the layout when a window is resized with the mouse (default `false`). Not every layout can follow. |
+| `mouse-warps-windows` | `true` to warp a dragged tiled window instead of swapping it when Shift (alone) is held as you drop it (default `false`). It lands by the rules of `warp-<direction>`: dropped on a window in another pane, it joins that pane right after it (into main, at `main-arrival-position`); on a window in its own pane, or when it's the last window of its pane, it swaps; dropped on an empty column, it becomes that column's window. In BSP it splits the tile it's dropped on and takes the half under the cursor. Two Pane, Column and Row swap; Fullscreen and Floating do nothing. The cursor stays where you dropped. Works without `mouse-swaps-windows`. |
+| `snap-back-windows` | `true` to put a tiled window back on its tile when you drag or resize it with the mouse and the layout doesn't take the change: dropped on its own tile, a gap, the padding or anywhere without a tile, a Shift-drop that can't warp, or a resize the layout can't follow (`mouse-resizes-windows` off, or a layout without a main pane ratio such as BSP or Fullscreen) (default `true`). With `false`, the window stays where you left it until the next layout pass. Floating windows are never moved. |
 | `enables-layout-hud` | `true` to show a short on-screen message when the layout, padding mode or main pane count changes (default `true`). |
 | `enables-layout-hud-on-space-change` | `true` to show the layout name when moving to another Space (default `true`). |
 | `enables-window-count-hud` | `true` to show the new window max count on screen after increasing or decreasing it (default `false`). |
@@ -107,6 +109,7 @@ cycle-layout:
 | `toggle-focus-border` | Turn `focus-border` on or off until Reload Config, and show it if `enables-layout-hud` is on. |
 | `cycle-focus-border-style` | Switch `focus-border-style` to the next style (glow, solid, gradient) until Reload Config, and show it if `enables-layout-hud` is on. |
 | `toggle-main-arrival-position` | Switch `main-arrival-position` between `first` and `last` until Reload Config, and show it if `enables-layout-hud` is on. |
+| `toggle-snap-back-windows` | Turn `snap-back-windows` on or off until Reload Config, and show it if `enables-layout-hud` is on. |
 | `set-window-max-count` | Set `window-max-count` (0–99, `0` = unlimited) until Reload Config, and show it if `enables-window-count-hud` is on. Palette and URL only. |
 | `focus-ccw` | Focus the next window counter-clockwise. |
 | `focus-cw` | Focus the next window clockwise. |

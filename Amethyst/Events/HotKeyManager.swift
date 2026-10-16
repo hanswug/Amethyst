@@ -313,6 +313,13 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             }
         }
 
+        constructCommandWithCommandKey(CommandKey.toggleSnapBackWindows.rawValue) {
+            let enabled = self.userConfiguration.toggleSnapBackWindows()
+            DispatchQueue.main.async {
+                windowManager.displaySettingHUD(title: "Snap back · \(enabled ? "on" : "off")")
+            }
+        }
+
         constructCommandWithCommandKey(CommandKey.cycleFocusBorderStyle.rawValue) {
             let style = self.userConfiguration.cycleFocusBorderStyle()
             DispatchQueue.main.async {
@@ -559,6 +566,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
         hotKeyNameToDefaultsKey.append(["Toggle focus border", CommandKey.toggleFocusBorder.rawValue])
         hotKeyNameToDefaultsKey.append(["Cycle focus border style (glow, solid, gradient)", CommandKey.cycleFocusBorderStyle.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle main arrival position (first or last)", CommandKey.toggleMainArrivalPosition.rawValue])
+        hotKeyNameToDefaultsKey.append(["Toggle snap back of dragged and resized windows", CommandKey.toggleSnapBackWindows.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus counter clockwise", CommandKey.focusCCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus clockwise", CommandKey.focusCW.rawValue])
         hotKeyNameToDefaultsKey.append(["Move focus to main window", CommandKey.focusMain.rawValue])

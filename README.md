@@ -51,7 +51,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide Top/Bottom, Widescreen Tall's main)
-  - [ ] Warp with the mouse: drop zones while dragging a window, to warp it into a pane instead of swapping
+  - [ ] Warp with the mouse: hold Shift as you drop a dragged window to warp it instead of swapping (`mouse-warps-windows`); a drop or resize the layout doesn't take snaps the window back to its tile (`snap-back-windows`, `toggle-snap-back-windows`)
   - [x] Upstream leftovers removed (4.3.1): fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries
   - [ ] Clean config file: reads like a complete settings file in logical sections, every setting and command listed, so binding something needs no trip to the docs
   - [x] `toggle-fullscreen` (5.1.0): a Space's layout ↔ Fullscreen, the focused window in front without becoming main, and back with every window in its tile

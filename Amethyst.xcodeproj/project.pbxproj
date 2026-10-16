@@ -45,6 +45,7 @@
 		401C35B522482EAF0019ED07 /* WindowTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B422482EAF0019ED07 /* WindowTransitionCoordinator.swift */; };
 		401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */; };
 		A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */; };
+		A3E1C0DE5EC000000000005A /* MouseDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000059 /* MouseDrop.swift */; };
 		A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000049 /* FocusBorder.swift */; };
 		A3E1C0DE5EC0000000000052 /* WindowServerBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000051 /* WindowServerBorder.swift */; };
 		4029C4F11C112478001E4788 /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4029C4F01C112478001E4788 /* Layout.swift */; };
@@ -110,6 +111,7 @@
 		40EC47F423F3A30100048B4F /* ScreenManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */; };
 		A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */; };
 		A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */; };
+		A3E1C0DE5EC000000000005C /* MouseDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000005B /* MouseDropTests.swift */; };
 		A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */; };
 		A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */; };
 		A3E1C0DE5EC0000000000050 /* ReflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E1C0DE5EC000000000004F /* ReflowTests.swift */; };
@@ -170,6 +172,7 @@
 		401C35B422482EAF0019ED07 /* WindowTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTransitionCoordinator.swift; sourceTree = "<group>"; };
 		401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigation.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC0000000000059 /* MouseDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDrop.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000049 /* FocusBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorder.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000051 /* WindowServerBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowServerBorder.swift; sourceTree = "<group>"; };
 		4029C4F01C112478001E4788 /* Layout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
@@ -233,6 +236,7 @@
 		40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenManagerTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondaryWindowAnchorsTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalNavigationTests.swift; sourceTree = "<group>"; };
+		A3E1C0DE5EC000000000005B /* MouseDropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseDropTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusBorderTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoredWindowOrderTests.swift; sourceTree = "<group>"; };
 		A3E1C0DE5EC000000000004F /* ReflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflowTests.swift; sourceTree = "<group>"; };
@@ -307,6 +311,7 @@
 				401BC8B91CE9319500F89B3F /* FocusFollowsMouseManager.swift */,
 				401C35B6224831470019ED07 /* FocusTransitionCoordinator.swift */,
 				A3E1C0DE5EC0000000000045 /* DirectionalNavigation.swift */,
+				A3E1C0DE5EC0000000000059 /* MouseDrop.swift */,
 				401BC8991CE8C6AE00F89B3F /* HotKeyManager.swift */,
 				401BC8B31CE9250800F89B3F /* HotKeyRegistrar.swift */,
 				401BC8B51CE9259000F89B3F /* LayoutType.swift */,
@@ -474,6 +479,7 @@
 				40EC47F323F3A30100048B4F /* ScreenManagerTests.swift */,
 				A3E1C0DE5EC0000000000001 /* SecondaryWindowAnchorsTests.swift */,
 				A3E1C0DE5EC0000000000047 /* DirectionalNavigationTests.swift */,
+				A3E1C0DE5EC000000000005B /* MouseDropTests.swift */,
 				A3E1C0DE5EC000000000004B /* FocusBorderTests.swift */,
 				A3E1C0DE5EC000000000004D /* RestoredWindowOrderTests.swift */,
 				A3E1C0DE5EC0000000000013 /* CommandPaletteTests.swift */,
@@ -766,6 +772,7 @@
 				401C35B12244626E0019ED07 /* ApplicationObservation.swift in Sources */,
 				401C35B7224831470019ED07 /* FocusTransitionCoordinator.swift in Sources */,
 				A3E1C0DE5EC0000000000046 /* DirectionalNavigation.swift in Sources */,
+				A3E1C0DE5EC000000000005A /* MouseDrop.swift in Sources */,
 				A3E1C0DE5EC000000000004A /* FocusBorder.swift in Sources */,
 				A3E1C0DE5EC0000000000052 /* WindowServerBorder.swift in Sources */,
 				40CF37C429BAC18300CDB07A /* ScreensInfo.swift in Sources */,
@@ -808,6 +815,7 @@
 				40EC47F423F3A30100048B4F /* ScreenManagerTests.swift in Sources */,
 				A3E1C0DE5EC0000000000002 /* SecondaryWindowAnchorsTests.swift in Sources */,
 				A3E1C0DE5EC0000000000048 /* DirectionalNavigationTests.swift in Sources */,
+				A3E1C0DE5EC000000000005C /* MouseDropTests.swift in Sources */,
 				A3E1C0DE5EC000000000004C /* FocusBorderTests.swift in Sources */,
 				A3E1C0DE5EC000000000004E /* RestoredWindowOrderTests.swift in Sources */,
 				A3E1C0DE5EC0000000000050 /* ReflowTests.swift in Sources */,

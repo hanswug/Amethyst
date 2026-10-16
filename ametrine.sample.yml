@@ -1,4 +1,3 @@
-# Hans's Ametrine config, snapshot of 2026-10-15. Copy to ~/.config/ametrine/ametrine.yml.
 # Ametrine configuration: the only source of settings and key bindings.
 # Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml).
 # Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
@@ -285,6 +284,11 @@ toggle-main-arrival-position:
   mod: <NONE>
   key: <NONE>
 
+# Turn snap-back-windows on or off until Reload Config.
+toggle-snap-back-windows:
+  mod: <NONE>
+  key: <NONE>
+
 # Display the layout HUD with the current layout on each screen.
 display-current-layout:
   mod: <NONE>
@@ -417,6 +421,7 @@ floating-is-blacklist: true
 # their other windows (Settings, plugin browsers, Open dialogs…) float.
 floating-secondary-windows:
   - md.obsidian
+  - dev.zed.Zed
 
 # true to lay windows out over the whole screen, menu bar and Dock area included (default false).
 ignore-menu-bar: false
@@ -443,6 +448,12 @@ mouse-swaps-windows: true
 
 # true if changing the frame of a window with the mouse should update the layout to accommodate the change (default false). Note that not all layouts will be able to respond to the change.
 mouse-resizes-windows: true
+
+# true if holding Shift (alone) while dropping a dragged window warps it into the pane under the cursor instead of swapping (default false).
+mouse-warps-windows: true
+
+# true if a tiled window dragged or resized with the mouse goes back to its tile when the drop or resize changes nothing in the layout (default true).
+snap-back-windows: true
 
 # true to display the name of the layout when a new layout is selected (default true).
 enables-layout-hud: true
