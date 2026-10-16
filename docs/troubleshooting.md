@@ -35,6 +35,12 @@ macOS reopens a window at the size it had when the app quit. With `float-small-w
 
 Fixes: set `float-small-windows: false` (Ametrine's sample config does), change `small-window-size`, or toggle float on that window.
 
+### Windows from another Space show up after App Exposé
+
+This is a macOS bug, and it happens with Ametrine quit too. Steps: click the wallpaper to show the desktop, click it again to bring the windows back, then open App Exposé (Application Windows, for example from a hot corner) and leave it. Windows from other Spaces are then drawn on the current Space, at the frames they have on their own Space, until you click any window.
+
+The window server lists them as on screen while they still belong to their own Spaces, and the current Space doesn't change. Ametrine gets no event for this and moves none of those windows (checked with `--log`, 2026-10-16). Clicking a window clears it.
+
 ## One application isn't working!
 
 ### "Assign To All Desktops"
