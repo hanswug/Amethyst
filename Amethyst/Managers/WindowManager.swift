@@ -71,6 +71,10 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     private let windows = Windows()
     private let focusBorder = FocusBorder()
     private var lastReflowTime = Date()
+    /// Windows another app moved or resized, waiting for `ExternalSnapBack.delaySeconds`; see `considerExternalSnapBack`.
+    private var externalSnapBackCandidates: [(window: Window, screen: Screen)] = []
+    private var pendingExternalSnapBack: DispatchWorkItem?
+    private var lastExternalSnapBack: [Window.WindowID: Date] = [:]
     private var lastFocusDate: Date?
     /// Windows claimed as secondary-window anchors before being tracked, with when; see `claimSecondaryWindowAnchors(among:)`.
     private var untrackedSecondaryWindowAnchors: [Window.WindowID: (window: Window, claimed: Date)] = [:]
@@ -1064,6 +1068,59 @@ extension WindowManager: MouseStateKeeperDelegate {
         markScreenForReflow(screen)
     }
 
+    /**
+     Another app (Raycast, a script) moved or resized a tiled window: with `snap-back-windows` it goes back to its tile
+     once the app is done (`ExternalSnapBack`). Mouse drags don't come here; they snap back on release.
+     */
+    func considerExternalSnapBack(_ window: Window, on screen: Screen) {
+        guard externalSnapBackApplies(to: window, on: screen) else {
+            return
+        }
+
+        externalSnapBackCandidates.removeAll { $0.window == window }
+        externalSnapBackCandidates.append((window: window, screen: screen))
+        pendingExternalSnapBack?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            let candidates = self.externalSnapBackCandidates.filter { self.externalSnapBackApplies(to: $0.window, on: $0.screen) }
+            self.externalSnapBackCandidates.removeAll()
+            for candidate in candidates {
+                self.lastExternalSnapBack[candidate.window.id()] = Date()
+                let applicationName = NSRunningApplication(processIdentifier: candidate.window.pid())?.localizedName ?? "pid \(candidate.window.pid())"
+                log.debug("Snap back: \(applicationName) \"\(candidate.window.title() ?? "")\" moved or resized by another app")
+            }
+            var screens: [Screen] = []
+            for candidate in candidates where !screens.contains(candidate.screen) {
+                screens.append(candidate.screen)
+                self.markScreenForReflow(candidate.screen)
+            }
+        }
+        pendingExternalSnapBack = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + ExternalSnapBack.delaySeconds, execute: workItem)
+    }
+
+    private func externalSnapBackApplies(to window: Window, on screen: Screen) -> Bool {
+        guard userConfiguration.snapBackWindows(), NSEvent.pressedMouseButtons == 0 else {
+            return false
+        }
+        guard case .pointing = mouseStateKeeper.state else {
+            return false
+        }
+        guard let layout = screenManager(for: screen)?.currentLayout,
+              activeWindows(on: screen).contains(window),
+              let tile = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen)?.finalFrame else {
+            return false
+        }
+
+        return ExternalSnapBack.shouldSnapBack(
+            frame: window.frame(),
+            tile: tile,
+            screen: screen.frameIncludingDockAndMenu(),
+            sinceReflow: Date().timeIntervalSince(lastReflowTime),
+            sinceLastSnapBack: lastExternalSnapBack[window.id()].map { Date().timeIntervalSince($0) }
+        )
+    }
+
     /// The cursor, in the coordinates layouts use.
     private func dropPoint(on screen: Screen) -> CGPoint {
         // need to flip mouse coordinate system to fit Amethyst https://stackoverflow.com/a/45289010/2063546
@@ -1072,13 +1129,21 @@ extension WindowManager: MouseStateKeeperDelegate {
         return NSPointToCGPoint(NSPoint(x: flippedPointerLocation.x, y: unflippedY))
     }
 
-    /// Swaps the dragged window with the window whose tile is under the point, else with the window under it.
+    /// Swaps the dragged window with the window whose tile is under the point, else with the window under it. A drop on
+    /// its own tile swaps nothing, also where windows share a tile (Fullscreen, a stacked pane).
     private func swap(_ draggedWindow: Window, withWindowAt pointerLocation: CGPoint, on screen: Screen) -> Bool {
         let windows: [Window] = self.windows.windows(onScreen: screen)
 
         if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(), let layout = screenManager.currentLayout {
             let windowSet = self.windows.windowSet(forWindowsOnScreen: screen)
+            if let ownTile = layout.assignedFrame(draggedWindow, of: windowSet, on: screen)?.frame,
+               MouseDrop.dropsOnOwnTile(at: pointerLocation, ownTile: ownTile) {
+                return false
+            }
             if let layoutWindow = layout.windowAtPoint(pointerLocation, of: windowSet, on: screen), let framedWindow = self.windows.window(withID: layoutWindow.id) {
+                guard framedWindow != draggedWindow else {
+                    return false
+                }
                 executeTransition(.switchWindows(draggedWindow, framedWindow))
                 return true
             }
@@ -1221,6 +1286,8 @@ extension WindowManager: ApplicationObservationDelegate {
             guard dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds else { break }
 
             mouseStateKeeper.dropDraggedWindow(window, modifiers: modifiers)
+        case .pointing:
+            considerExternalSnapBack(window, on: screen)
         default:
             break
         }
@@ -1260,6 +1327,8 @@ extension WindowManager: ApplicationObservationDelegate {
                     snapBack(on: screen)
                 }
             }
+        case .pointing:
+            considerExternalSnapBack(window, on: screen)
         default:
             break
         }
