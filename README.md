@@ -180,6 +180,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 4.3.1 | Upstream leftovers removed: fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries (the app shrinks from 32 to 28 MB). No visible change |
 | 5.0.0 | Layouts named by where main is: `tall-left`, `wide-top`, `two-pane-a`/`-b`, `3column-middle`, `widescreen-tall-left`, `column-left`, `row-top` (**config edit**: rename the keys in `layouts:` and `select-<key>-layout`). New twins Wide Bottom, Column Right and Row Bottom; Two Pane B is A mirrored along the long side. `layout-names` sets the name shown for each layout (without one, its key). In Two Pane, focus north/south browses the windows behind the secondary pane |
 | 5.1.0 | `toggle-fullscreen`: a Space's layout ↔ Fullscreen in place, the focused window in front without becoming main, and back with every window in its tile (works without `fullscreen` in `layouts`). Selecting the current layout again goes back to the previous one per Space |
+| 6.0.0 | Custom (JavaScript) layouts removed, with `command1`–`command4` (**config**: drop them and any custom layout key from `layouts`). BSP no longer logs a decode error on launch for a Space without windows |
 
 ## Credits and licence
 
