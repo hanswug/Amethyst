@@ -81,7 +81,7 @@ The rules, the same in every layout:
 * **An empty side column** (3Column, 4Column) can be warped into; the window becomes its only window. Focus and swap skip it.
 * **Two Pane A/B, Column Left/Right, Row Top/Bottom:** each pane holds one window, so warp swaps.
 * **BSP:** the window leaves its tile and splits the neighbour's, on the side it came from.
-* **Fullscreen, Floating, custom layouts, a floating window:** nothing happens.
+* **Fullscreen, Floating, a floating window:** nothing happens.
 
 **`warp-main`** moves the focused window into main from wherever it is, without having to be next to main: on top of main or at the bottom by `main-arrival-position`, and its own pane shrinks. The last window of a pane swaps with main's top window instead; Two Pane, Column and Row (both twins of each) swap with main, like `swap-main`. From main, and in BSP (no main pane), nothing happens.
 

@@ -8,35 +8,6 @@
 
 import Foundation
 
-extension FileManager {
-    func layoutsDirectory() throws -> URL {
-        let applicationSupportDirectory = try FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let layoutsDirectory = applicationSupportDirectory
-            .appendingPathComponent("Ametrine", isDirectory: true)
-            .appendingPathComponent("Layouts", isDirectory: true)
-
-        if !FileManager.default.fileExists(atPath: layoutsDirectory.path, isDirectory: nil) {
-            try FileManager.default.createDirectory(
-                at: layoutsDirectory,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        }
-
-        return layoutsDirectory
-    }
-
-    func layoutFile(key: String) throws -> URL {
-        let layoutsDirectory = try self.layoutsDirectory()
-        return layoutsDirectory.appendingPathComponent("\(key).js")
-    }
-}
-
 enum LayoutType<Window: WindowType> {
     enum Error: Swift.Error {
         case unknownLayout
@@ -62,8 +33,6 @@ enum LayoutType<Window: WindowType> {
     case widescreenTallLeft
     case widescreenTallRight
     case binarySpacePartitioning
-
-    case custom(key: String)
 
     static var standardLayouts: [LayoutType<Window>] {
         return [
@@ -132,8 +101,6 @@ enum LayoutType<Window: WindowType> {
             return "widescreen-tall-right"
         case .binarySpacePartitioning:
             return "bsp"
-        case .custom(let key):
-            return key
         }
     }
 
@@ -179,43 +146,20 @@ enum LayoutType<Window: WindowType> {
             return WidescreenTallLayoutRight<Window>.self
         case .binarySpacePartitioning:
             return BinarySpacePartitioningLayout<Window>.self
-        case .custom:
-            return CustomLayout<Window>.self
         }
     }
 
-    static func from(key: String) -> LayoutType<Window> {
-        return standardLayouts.first { $0.key == key } ?? .custom(key: key)
+    /// The layout type with that key, or `nil` for an unknown key.
+    static func from(key: String) -> LayoutType<Window>? {
+        return standardLayouts.first { $0.key == key }
     }
 
     static func layoutForKey(_ layoutKey: String) -> Layout<Window>? {
-        let type = LayoutType<Window>.from(key: layoutKey)
-
-        guard case .custom = type else {
-            return type.layoutClass.init()
-        }
-
-        do {
-            let layoutFile = try FileManager.default.layoutFile(key: layoutKey)
-
-            guard FileManager.default.fileExists(atPath: layoutFile.path) else {
-                return nil
-            }
-
-            return CustomLayout<Window>(key: layoutKey, fileURL: layoutFile)
-        } catch {
-            return nil
-        }
+        return from(key: layoutKey)?.layoutClass.init()
     }
 
     static func layoutNameForKey(_ layoutKey: String) -> String? {
-        let type = LayoutType<Window>.from(key: layoutKey)
-
-        guard case .custom = type else {
-            return type.layoutClass.layoutName
-        }
-
-        return layoutForKey(layoutKey)?.layoutName
+        return from(key: layoutKey)?.layoutClass.layoutName
     }
 
     static func standardLayoutClasses() -> [Layout<Window>.Type] {
@@ -224,33 +168,7 @@ enum LayoutType<Window: WindowType> {
 
     // Returns a list of (key, name) pairs, with the names shown to the user (`layout-names`)
     static func availableLayoutStrings() -> [(key: String, name: String)] {
-        var layoutTypes = standardLayouts
-            .compactMap { $0.layoutClass }
-            .map { ($0.layoutKey, $0.layoutName) }
-
-        let customLayouts = customLayoutKeys().map { ($0, layoutNameForKey($0)!) }
-        layoutTypes.append(contentsOf: customLayouts)
-
-        return layoutTypes.map { key, _ in
-            (key, UserConfiguration.shared.layoutDisplayName(forKey: key))
-        }
-    }
-
-    /// The keys of the custom layouts: the names of the `.js` files in the layouts directory.
-    static func customLayoutKeys() -> [String] {
-        do {
-            let layoutsDirectory = try FileManager.default.layoutsDirectory()
-            return try FileManager.default.contentsOfDirectory(
-                at: layoutsDirectory,
-                includingPropertiesForKeys: nil,
-                options: []
-            )
-            .filter { $0.pathExtension == "js" }
-            .map { $0.deletingPathExtension().lastPathComponent }
-        } catch {
-            log.error("failed to parse custom layouts")
-            return []
-        }
+        return standardLayouts.map { ($0.key, UserConfiguration.shared.layoutDisplayName(forKey: $0.key)) }
     }
 
     static func layoutsWithConfiguration(_ userConfiguration: UserConfiguration) -> [Layout<Window>] {
@@ -272,8 +190,9 @@ enum LayoutType<Window: WindowType> {
     }
 
     static func decoded(data: Data, key: String) throws -> Layout<Window> {
-        let layoutType = LayoutType<Window>.from(key: key)
-        let decoder = JSONDecoder()
-        return try decoder.decode(layoutType.layoutClass, from: data)
+        guard let layoutType = LayoutType<Window>.from(key: key) else {
+            throw Error.unknownLayout
+        }
+        return try JSONDecoder().decode(layoutType.layoutClass, from: data)
     }
 }
