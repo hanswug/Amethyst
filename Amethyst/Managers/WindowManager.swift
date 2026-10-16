@@ -1038,29 +1038,114 @@ extension WindowManager: MouseStateKeeperDelegate {
         }
     }
 
-    func swapDraggedWindowWithDropzone(_ draggedWindow: Window) {
+    /// A dragged tiled window was dropped: Shift alone warps it (`mouse-warps-windows`), otherwise it swaps
+    /// (`mouse-swaps-windows`). A drop that changes nothing snaps it back to its tile (`snap-back-windows`).
+    func dropDraggedWindow(_ draggedWindow: Window, modifiers: NSEvent.ModifierFlags) {
         guard let screen = draggedWindow.screen() else { return }
 
-        let windows: [Window] = self.windows.windows(onScreen: screen)
+        let pointerLocation = dropPoint(on: screen)
+        if MouseDrop.isWarp(modifiers) && userConfiguration.mouseWarpsWindows() {
+            if warp(draggedWindow, toDropAt: pointerLocation, on: screen) {
+                return
+            }
+        } else if userConfiguration.mouseSwapsWindows() {
+            if swap(draggedWindow, withWindowAt: pointerLocation, on: screen) {
+                return
+            }
+        }
 
+        snapBack(on: screen)
+    }
+
+    /// Puts the screen's tiled windows back on their tiles, unless `snap-back-windows` is off.
+    func snapBack(on screen: Screen) {
+        guard userConfiguration.snapBackWindows() else { return }
+        log.debug("Snap back: a mouse drag or resize changed no tile")
+        markScreenForReflow(screen)
+    }
+
+    /// The cursor, in the coordinates layouts use.
+    private func dropPoint(on screen: Screen) -> CGPoint {
         // need to flip mouse coordinate system to fit Amethyst https://stackoverflow.com/a/45289010/2063546
         let flippedPointerLocation = NSPointToCGPoint(NSEvent.mouseLocation)
         let unflippedY = Screen.globalHeight() - flippedPointerLocation.y + screen.frameIncludingDockAndMenu().origin.y
-        let pointerLocation = NSPointToCGPoint(NSPoint(x: flippedPointerLocation.x, y: unflippedY))
+        return NSPointToCGPoint(NSPoint(x: flippedPointerLocation.x, y: unflippedY))
+    }
+
+    /// Swaps the dragged window with the window whose tile is under the point, else with the window under it.
+    private func swap(_ draggedWindow: Window, withWindowAt pointerLocation: CGPoint, on screen: Screen) -> Bool {
+        let windows: [Window] = self.windows.windows(onScreen: screen)
 
         if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(), let layout = screenManager.currentLayout {
             let windowSet = self.windows.windowSet(forWindowsOnScreen: screen)
             if let layoutWindow = layout.windowAtPoint(pointerLocation, of: windowSet, on: screen), let framedWindow = self.windows.window(withID: layoutWindow.id) {
                 executeTransition(.switchWindows(draggedWindow, framedWindow))
-                return
+                return true
             }
         }
 
         // Ignore if there is no window at that point
         guard let secondWindow = WindowsInformation.alternateWindowForScreenAtPoint(pointerLocation, withWindows: windows, butNot: draggedWindow) else {
-            return
+            return false
         }
         executeTransition(.switchWindows(draggedWindow, secondWindow))
+        return true
+    }
+
+    /**
+     Shift-drop: the window warps into the pane under the point, by the rules of the warp keys (`PaneCounts.warp`); an
+     empty side pane under the point takes it too. BSP splits the tile under the point and the window takes the half it
+     was dropped on. Two Pane, Column and Row swap, as their warp does; Fullscreen and Floating do nothing. The cursor
+     stays where the window was dropped.
+
+     - Returns: Whether anything changed.
+     */
+    private func warp(_ window: Window, toDropAt point: CGPoint, on screen: Screen) -> Bool {
+        guard let screenManager = screenManager(for: screen), let layout = screenManager.currentLayout else {
+            return false
+        }
+
+        let windowSet = windows.windowSet(forActiveWindowsOnScreen: screen)
+        let windowIDs = windowSet.windows.map(\.id)
+        guard let index = windowIDs.firstIndex(of: window.id()) else {
+            return false
+        }
+
+        let tiles: [(index: Int, frame: CGRect)] = (layout.frameAssignments(windowSet, on: screen) ?? []).compactMap { operation in
+            let assignment = operation.frameAssignment
+            return windowIDs.firstIndex(of: assignment.window.id).map { (index: $0, frame: assignment.frame) }
+        }
+        let tileTarget = tiles.first { $0.frame.contains(point) }
+
+        switch layout {
+        case is FullscreenLayout<Window>, is FloatingLayout<Window>:
+            return false
+        case let paneCountedLayout as PaneCountedLayout<Window>:
+            let emptyPaneFrames = paneCountedLayout.emptyPaneFrames(windowCount: windowIDs.count, on: screen)
+            guard let target = MouseDrop.warpTarget(at: point, tiles: tiles, emptyPaneFrames: emptyPaneFrames) else {
+                return false
+            }
+            let atFront = userConfiguration.mainArrivalPosition() == .first
+            let plan = paneCountedLayout.warpPlan(from: index, to: target, windowCount: windowIDs.count, intoMainAtFront: atFront)
+            return apply(plan, to: window, among: windowIDs, in: paneCountedLayout, on: screen, movesCursor: false)
+        case let bspLayout as BinarySpacePartitioningLayout<Window>:
+            guard let tile = tileTarget, tile.index != index else {
+                return false
+            }
+            let first = MouseDrop.takesFirstHalf(at: point, of: tile.frame)
+            guard bspLayout.warp(window.id(), onto: windowIDs[tile.index], first: first) else {
+                return false
+            }
+            log.debug("Warp by mouse: \(window.title() ?? "") #\(window.cgID()) splits a tile, \(first ? "first" : "second") half")
+            markScreenForReflow(screen)
+            return true
+        default:
+            guard let tile = tileTarget, tile.index != index, let otherWindow = windows.window(withID: windowIDs[tile.index]) else {
+                return false
+            }
+            executeTransition(.switchWindows(window, otherWindow))
+            return true
+        }
     }
 }
 
@@ -1112,7 +1197,7 @@ extension WindowManager: ApplicationObservationDelegate {
     func application(_ application: AnyApplication<Application>, didMoveWindow window: Window) {
         moveFocusBorder(with: window)
 
-        guard userConfiguration.mouseSwapsWindows() else {
+        guard userConfiguration.mouseSwapsWindows() || userConfiguration.mouseWarpsWindows() || userConfiguration.snapBackWindows() else {
             return
         }
 
@@ -1128,14 +1213,14 @@ extension WindowManager: ApplicationObservationDelegate {
 
             // record window and wait for mouse up
             mouseStateKeeper.state = .moving(window: window)
-        case let .doneDragging(lmbUpMoment):
+        case let .doneDragging(lmbUpMoment, modifiers):
             mouseStateKeeper.state = .pointing // flip state first to prevent race condition
 
             // if mouse button recently came up, assume window move is related
             let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
             guard dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds else { break }
 
-            mouseStateKeeper.swapDraggedWindowWithDropzone(window)
+            mouseStateKeeper.dropDraggedWindow(window, modifiers: modifiers)
         default:
             break
         }
@@ -1144,7 +1229,8 @@ extension WindowManager: ApplicationObservationDelegate {
     func application(_ application: AnyApplication<Application>, didResizeWindow window: Window) {
         moveFocusBorder(with: window)
 
-        guard userConfiguration.mouseResizesWindows() else {
+        let followsResize = userConfiguration.mouseResizesWindows()
+        guard followsResize || userConfiguration.snapBackWindows() else {
             return
         }
 
@@ -1152,41 +1238,45 @@ extension WindowManager: ApplicationObservationDelegate {
             return
         }
 
-        guard
-            let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(),
-            let layout = screenManager.currentLayout,
-            layout is PanedLayout
-        else {
-            return
-        }
-
-        guard let oldFrame = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen) else {
-            return
-        }
-
-        let ratio = oldFrame.impliedMainPaneRatio(windowFrame: window.frame())
+        // nil: the layout can't follow this resize, so the window snaps back on mouse up.
+        let ratio = followsResize ? impliedMainPaneRatio(of: window, on: screen) : nil
 
         switch mouseStateKeeper.state {
         case .dragging, .resizing:
+            // A layout pass just resized it, not the mouse (as for moves).
+            guard Date().timeIntervalSince(lastReflowTime) > mouseStateKeeper.dragRaceThresholdSeconds else { break }
+
             // record window and wait for mouse up
             mouseStateKeeper.state = .resizing(screen: screen, ratio: ratio)
-        case let .doneDragging(lmbUpMoment):
+        case let .doneDragging(lmbUpMoment, _):
             // if mouse button recently came up, assume window resize is related
             let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
             if dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds {
                 mouseStateKeeper.state = .pointing // flip state first to prevent race condition
 
-                if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager() {
-                    screenManager.updateCurrentLayout { layout in
-                        if let panedLayout = layout as? PanedLayout {
-                            panedLayout.recommendMainPaneRatio(ratio)
-                        }
-                    }
+                if let ratio {
+                    recommendMainPaneRatio(ratio)
+                } else {
+                    snapBack(on: screen)
                 }
             }
         default:
             break
         }
+    }
+
+    /// The main pane ratio a resized tiled window implies, or nil when the layout has no main pane ratio to change.
+    private func impliedMainPaneRatio(of window: Window, on screen: Screen) -> CGFloat? {
+        guard
+            let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(),
+            let layout = screenManager.currentLayout,
+            layout is PanedLayout,
+            let oldFrame = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen)
+        else {
+            return nil
+        }
+
+        return oldFrame.impliedMainPaneRatio(windowFrame: window.frame())
     }
 
     func applicationDidActivate(_ application: AnyApplication<Application>) {
@@ -1518,18 +1608,25 @@ extension WindowManager {
         }
     }
 
-    /// Carries out a warp plan for the window among this screen's `windowIDs`.
-    private func apply(_ plan: PaneCounts.WarpPlan?, to window: Window, among windowIDs: [Window.WindowID], in layout: PaneCountedLayout<Window>, on screen: Screen) {
+    /// Carries out a warp plan for the window among this screen's `windowIDs`; the cursor follows the window when
+    /// `movesCursor` (the keys) and `mouse-follows-focus` say so. Returns whether anything changed.
+    @discardableResult
+    private func apply(_ plan: PaneCounts.WarpPlan?, to window: Window, among windowIDs: [Window.WindowID], in layout: PaneCountedLayout<Window>, on screen: Screen, movesCursor: Bool = true) -> Bool {
         guard let index = windowIDs.firstIndex(of: window.id()) else {
-            return
+            return false
         }
 
         switch plan {
         case let .swap(otherIndex):
             guard let otherWindow = windows.window(withID: windowIDs[otherIndex]) else {
-                return
+                return false
             }
-            swapForWarp(window, with: otherWindow)
+            if movesCursor {
+                swapForWarp(window, with: otherWindow)
+            } else {
+                executeTransition(.switchWindows(window, otherWindow))
+            }
+            return true
         case let .move(destination, counts):
             var order = windowIDs
             order.remove(at: index)
@@ -1538,10 +1635,13 @@ extension WindowManager {
             windows.reorder(order)
             layout.applyWarp(counts)
             log.debug("Warp: \(window.title() ?? "") #\(window.cgID()) panes \(before) → \(counts)")
-            followWithCursor(window, in: layout, on: screen)
+            if movesCursor {
+                followWithCursor(window, in: layout, on: screen)
+            }
             markScreenForReflow(screen)
+            return true
         case nil:
-            return
+            return false
         }
     }
 

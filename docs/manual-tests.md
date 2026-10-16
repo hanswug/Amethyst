@@ -28,6 +28,24 @@ Use three or four everyday apps from different vendors (a terminal, a browser, a
 | Swap east from main | Main and its neighbour trade places; focus and the cursor stay on the moved window. |
 | With `focus-border: true`, move focus by key, then by clicking | The border follows; Ametrine never takes focus. |
 | Drag and resize the focused window | The border follows it. |
+
+## Mouse
+
+With `mouse-swaps-windows`, `mouse-warps-windows`, `mouse-resizes-windows` and `snap-back-windows` all `true`.
+
+| Do | Expect |
+|---|---|
+| Drag a tiled window onto another and drop | They swap. |
+| Same, holding Shift as you drop, onto a window in another pane (3Column 1/2/2) | It joins that pane right after the window it was dropped on; its old pane shrinks by one (1/1/3). |
+| Shift-drop onto main | It joins main at `main-arrival-position`; main grows by one. |
+| Shift-drop onto an empty column (3Column after main took the column's only window) | It becomes that column's window. |
+| Shift-drop the only window of a pane onto another pane | They swap; no pane is emptied. |
+| BSP: Shift-drop onto the left, then the right half of a wide tile | It splits that tile and takes the half it was dropped on. |
+| Shift+⌘ while dropping | A plain swap. |
+| Drop a window on its own tile, on the padding, or in a gap | It goes back to its tile. |
+| Resize a window in BSP or Fullscreen with the mouse | It goes back to its tile on release. |
+| Run `toggle-snap-back-windows`, then drop a window on the padding | HUD "Snap back · off"; the window stays where it was dropped until the next layout pass. |
+| Drag a floating window around | It stays where you put it; nothing swaps. |
 | Click inside the focused window (Safari: the address bar, then the page) | The border stays on top, with no window shadow over it. |
 | In CotEditor, select text with the mouse and with Shift+arrows; focus another app and move back (`focus-<direction>`, Alt-Tab) | The border stays on top of CotEditor throughout. |
 | Drag a floating window (System Settings) around quickly, then resize it by an edge | The border stays visible and moves with the window, without trailing or flicker. |

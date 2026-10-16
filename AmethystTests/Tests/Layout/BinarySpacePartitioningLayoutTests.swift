@@ -733,6 +733,30 @@ class BinarySpacePartitioningLayoutTests: QuickSpec {
                 expect(frames[windows[2].id()]).to(equal(CGRect(x: 1000, y: 0, width: 1000, height: 1000)))
             }
 
+            it("takes the half it was dropped on, by mouse") {
+                let screen = TestScreen(frame: CGRect(origin: .zero, size: CGSize(width: 2000, height: 1000)))
+                TestScreen.availableScreens = [screen]
+                let windows = [TestWindow(element: nil)!, TestWindow(element: nil)!, TestWindow(element: nil)!]
+                let layout = BinarySpacePartitioningLayout<TestWindow>()
+                windows.forEach { layout.updateWithChange(.add(window: $0)) }
+
+                // As above, but a is dropped on the second half of b's tile: a below b.
+                expect(layout.warp(windows[0].id(), onto: windows[1].id(), first: false)).to(beTrue())
+
+                let windowSet = WindowSet<TestWindow>(
+                    windows: windows.map { LayoutWindow<TestWindow>(id: $0.id(), frame: $0.frame(), isFocused: false) },
+                    isWindowWithIDActive: { _ in return true },
+                    isWindowWithIDFloating: { _ in return false },
+                    windowForID: { id in return windows.first { $0.id() == id } }
+                )
+                let frames = Dictionary(uniqueKeysWithValues: layout.frameAssignments(windowSet, on: screen)!.map {
+                    ($0.frameAssignment.window.id, $0.frameAssignment.frame)
+                })
+                expect(frames[windows[0].id()]).to(equal(CGRect(x: 0, y: 500, width: 1000, height: 500)))
+                expect(frames[windows[1].id()]).to(equal(CGRect(x: 0, y: 0, width: 1000, height: 500)))
+                expect(frames[windows[2].id()]).to(equal(CGRect(x: 1000, y: 0, width: 1000, height: 1000)))
+            }
+
             it("does nothing for a window that isn't in the tree") {
                 let layout = BinarySpacePartitioningLayout<TestWindow>()
                 let windows = [TestWindow(element: nil)!, TestWindow(element: nil)!]

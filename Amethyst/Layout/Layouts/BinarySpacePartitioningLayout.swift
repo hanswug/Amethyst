@@ -317,6 +317,16 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
      - Returns: Whether the tree changed.
      */
     func warp(_ windowID: WindowID, onto neighborID: WindowID, toward direction: Direction) -> Bool {
+        return warp(windowID, onto: neighborID, first: direction == .east || direction == .south)
+    }
+
+    /**
+     Warp by mouse: the window leaves its tile and splits the neighbour's, taking the first half (left or top) when
+     `first`, the second otherwise. Which way the tile splits still follows the tile's shape.
+
+     - Returns: Whether the tree changed.
+     */
+    func warp(_ windowID: WindowID, onto neighborID: WindowID, first: Bool) -> Bool {
         guard windowID != neighborID, rootNode.findWindowID(windowID) != nil, rootNode.findWindowID(neighborID) != nil else {
             return false
         }
@@ -328,7 +338,7 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
             return true
         }
 
-        neighborNode.insertWindowID(windowID, first: direction == .east || direction == .south)
+        neighborNode.insertWindowID(windowID, first: first)
         lastKnownFocusedWindowID = windowID
         return true
     }

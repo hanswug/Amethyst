@@ -141,6 +141,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             CommandKey.toggleFocusBorder.rawValue: UserConfiguration.shared.focusBorder() ? "now on" : "now off",
             CommandKey.cycleFocusBorderStyle.rawValue: "now \(UserConfiguration.shared.focusBorderStyle().rawValue)",
             CommandKey.toggleMainArrivalPosition.rawValue: "now \(UserConfiguration.shared.mainArrivalPosition().rawValue)",
+            CommandKey.toggleSnapBackWindows.rawValue: UserConfiguration.shared.snapBackWindows() ? "now on" : "now off",
             CommandKey.toggleWindowOverflowSize.rawValue: "now " + OverflowWindows.sizeDescription(
                 mode: UserConfiguration.shared.windowOverflowSize(),
                 fixedSize: UserConfiguration.shared.windowOverflowFixedSize(),

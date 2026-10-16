@@ -111,6 +111,8 @@ enum ConfigurationKey: String {
     case focusFollowsMouse = "focus-follows-mouse"
     case mouseSwapsWindows = "mouse-swaps-windows"
     case mouseResizesWindows = "mouse-resizes-windows"
+    case mouseWarpsWindows = "mouse-warps-windows"
+    case snapBackWindows = "snap-back-windows"
     case layoutHUD = "enables-layout-hud"
     case layoutHUDOnSpaceChange = "enables-layout-hud-on-space-change"
     case windowCountHUD = "enables-window-count-hud"
@@ -187,6 +189,7 @@ enum CommandKey: String {
     case toggleFocusBorder = "toggle-focus-border"
     case cycleFocusBorderStyle = "cycle-focus-border-style"
     case toggleMainArrivalPosition = "toggle-main-arrival-position"
+    case toggleSnapBackWindows = "toggle-snap-back-windows"
 }
 
 protocol UserConfigurationDelegate: AnyObject {
@@ -816,6 +819,23 @@ class UserConfiguration: NSObject {
 
     func mouseResizesWindows() -> Bool {
         return storage.bool(forKey: .mouseResizesWindows)
+    }
+
+    /// Shift held when a dragged tiled window is dropped warps it into the pane under the cursor instead of swapping.
+    func mouseWarpsWindows() -> Bool {
+        return storage.bool(forKey: .mouseWarpsWindows)
+    }
+
+    /// A tiled window dragged or resized with the mouse goes back to its tile when the layout doesn't take the change.
+    func snapBackWindows() -> Bool {
+        return storage.bool(forKey: .snapBackWindows)
+    }
+
+    /// Turns snap-back on or off until the configuration is loaded again, and returns the new state.
+    @discardableResult func toggleSnapBackWindows() -> Bool {
+        let enabled = !snapBackWindows()
+        storage.set(enabled, forKey: .snapBackWindows)
+        return enabled
     }
 
     func enablesLayoutHUD() -> Bool {

@@ -214,6 +214,8 @@
     "small-window-size": 500,
     "mouse-follows-focus": false,
     "focus-follows-mouse": false,
+    "mouse-warps-windows": false,
+    "snap-back-windows": true,
     "enables-layout-hud": true,
     "enables-layout-hud-on-space-change": true,
     "enables-window-count-hud": false,

@@ -6,7 +6,7 @@
 //  Copyright © 2019 Ian Ynda-Hummel. All rights reserved.
 //
 
-import Foundation
+import Cocoa
 import Silica
 
 /**
@@ -20,15 +20,18 @@ enum MouseState<Window: WindowType> {
     case clicking
     case dragging
     case moving(window: Window)
-    case resizing(screen: Screen, ratio: CGFloat)
-    case doneDragging(atTime: Date)
+    /// `ratio` is the main pane ratio the resize implies, or nil when the layout can't follow it.
+    case resizing(screen: Screen, ratio: CGFloat?)
+    /// The button came up before the window's move or resize arrived; `modifiers` are the ones held as it came up.
+    case doneDragging(atTime: Date, modifiers: NSEvent.ModifierFlags)
 }
 
 /// MouseStateKeeper will need a few things to do its job effectively
 protocol MouseStateKeeperDelegate: AnyObject {
     associatedtype Window: WindowType
     func recommendMainPaneRatio(_ ratio: CGFloat)
-    func swapDraggedWindowWithDropzone(_ draggedWindow: Window)
+    func dropDraggedWindow(_ draggedWindow: Window, modifiers: NSEvent.ModifierFlags)
+    func snapBack(on screen: Window.Screen)
 }
 
 /**
@@ -81,15 +84,19 @@ class MouseStateKeeper<Delegate: MouseStateKeeperDelegate> {
             switch self.state {
             case .dragging:
                 // assume window move event will come shortly after
-                self.state = .doneDragging(atTime: Date())
+                self.state = .doneDragging(atTime: Date(), modifiers: anEvent.modifierFlags)
             case let .moving(draggedWindow):
                 self.state = .pointing // flip state first to prevent race condition
-                self.swapDraggedWindowWithDropzone(draggedWindow)
-            case let .resizing(_, ratio):
+                self.dropDraggedWindow(draggedWindow, modifiers: anEvent.modifierFlags)
+            case let .resizing(screen, ratio):
                 self.state = .pointing
-                self.resizeFrameToDraggedWindowBorder(ratio)
+                if let ratio {
+                    self.resizeFrameToDraggedWindowBorder(ratio)
+                } else {
+                    delegate?.snapBack(on: screen)
+                }
             case .doneDragging:
-                self.state = .doneDragging(atTime: Date()) // reset the clock I guess
+                self.state = .doneDragging(atTime: Date(), modifiers: anEvent.modifierFlags) // reset the clock I guess
             case .clicking:
                 lastClick = Date()
                 self.state = .pointing
@@ -119,7 +126,7 @@ class MouseStateKeeper<Delegate: MouseStateKeeperDelegate> {
     }
 
     // Execute an action that was initiated by the observer and completed by the state keeper
-    func swapDraggedWindowWithDropzone(_ draggedWindow: Delegate.Window) {
-        delegate?.swapDraggedWindowWithDropzone(draggedWindow)
+    func dropDraggedWindow(_ draggedWindow: Delegate.Window, modifiers: NSEvent.ModifierFlags) {
+        delegate?.dropDraggedWindow(draggedWindow, modifiers: modifiers)
     }
 }
