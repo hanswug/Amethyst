@@ -34,7 +34,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 ## Status
 
 - [x] Fork setup: own name and bundle ID (`com.ark.Ametrine`), own config file, no auto-updates, local signing
-- [x] Padding modes
+- [x] Padding modes, per Space since 4.3.0
 - [x] Floating secondary windows
 - [x] Command URL
 - [x] Config file only: no preferences window, no built-in keys, layout name in the menu bar
@@ -52,8 +52,11 @@ It was born out of the need to handle many windows on large displays, such as a 
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide Top/Bottom, Widescreen Tall's main)
   - [ ] Warp with the mouse: drop zones while dragging a window, to warp it into a pane instead of swapping
-  - [ ] Remove the files left over from upstream that Ametrine doesn't use or need
+  - [x] Upstream leftovers removed (4.3.1): fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries
   - [ ] Clean config file: reads like a complete settings file in logical sections, every setting and command listed, so binding something needs no trip to the docs
+  - [x] `toggle-fullscreen` (5.1.0): a Space's layout ↔ Fullscreen, the focused window in front without becoming main, and back with every window in its tile
+  - [x] Two Pane: focus north/south browses the windows waiting behind the secondary pane (5.0.0)
+  - [x] `layout-names` (5.0.0): the name shown for each layout
   - [x] `main-arrival-position: first | last` (was `new-windows-to-main: true | false`): whether a new window goes on top of main or at the end; `toggle-main-arrival-position` switches it from the palette
   - [x] Fix the `debug windows` crash (Finder lists the desktop as a window)
   - [x] Explain this window (`explain-window`): a HUD that says whether the focused window is tiled, floating or not managed, and why. `--log` writes to `~/Library/Logs/Ametrine/Ametrine.log`
