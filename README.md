@@ -2,7 +2,7 @@
 
 A personal tiling window manager for macOS, built on [Amethyst](https://github.com/ianyh/Amethyst) by Ian Ynda-Hummel.
 
-It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide.
+It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide, and to stay simple on the go: on a laptop's built-in display, a full-screen stack or two panes side by side is all it takes.
 
 - **Move by direction.** ⌃⌥ + h/j/k/l focuses the window to the west, south, north or east; add ⌘ and the window swaps there. No clockwise order to remember, no Alt-Tab to reach the window next to you. Warp moves a window into the pane next to it, by key or by Shift-drag.
 - **Keyboard first.** Every command can have a key, and the command palette lists them all with their shortcuts while you build the muscle memory.
