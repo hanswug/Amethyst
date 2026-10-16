@@ -452,7 +452,7 @@ mouse-resizes-windows: true
 # true if holding Shift (alone) while dropping a dragged window warps it into the pane under the cursor instead of swapping (default false).
 mouse-warps-windows: true
 
-# true if a tiled window dragged or resized with the mouse goes back to its tile when the drop or resize changes nothing in the layout (default true).
+# true to keep tiled windows on their tiles (default true): a mouse drag or resize the layout doesn't take goes back on release, and a move or resize by another app (Raycast, a script) goes back right after.
 snap-back-windows: true
 
 # true to display the name of the layout when a new layout is selected (default true).

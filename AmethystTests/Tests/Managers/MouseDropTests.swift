@@ -90,6 +90,55 @@ class MouseDropTests: QuickSpec {
             }
         }
 
+        describe("a plain drop on its own tile") {
+            it("changes nothing, also where the tile is the whole screen") {
+                let fullscreenTile = CGRect(x: 0, y: 0, width: 3840, height: 2160)
+                expect(MouseDrop.dropsOnOwnTile(at: CGPoint(x: 3000, y: 100), ownTile: fullscreenTile)).to(beTrue())
+                expect(MouseDrop.dropsOnOwnTile(at: CGPoint(x: 1500, y: 500), ownTile: CGRect(x: 0, y: 0, width: 1000, height: 1000))).to(beFalse())
+            }
+        }
+
+        describe("snap back after another app") {
+            let screen = CGRect(x: 0, y: 0, width: 3840, height: 2160)
+            let tile = CGRect(x: 8, y: 578, width: 3824, height: 1574)
+
+            func snapsBack(_ frame: CGRect, sinceReflow: TimeInterval = 5, sinceLastSnapBack: TimeInterval? = nil) -> Bool {
+                return ExternalSnapBack.shouldSnapBack(frame: frame, tile: tile, screen: screen, sinceReflow: sinceReflow, sinceLastSnapBack: sinceLastSnapBack)
+            }
+
+            it("snaps back a Raycast reasonable size in Fullscreen") {
+                expect(snapsBack(CGRect(x: 960, y: 700, width: 1920, height: 1300))).to(beTrue())
+            }
+
+            it("snaps back a left half, which keeps the corner but shrinks clearly") {
+                expect(snapsBack(CGRect(x: 8, y: 578, width: 1912, height: 1574))).to(beTrue())
+            }
+
+            it("leaves a window on its tile alone") {
+                expect(snapsBack(CGRect(x: 10, y: 580, width: 3822, height: 1572))).to(beFalse())
+            }
+
+            it("leaves an app's own small adjustment or a refused tile alone") {
+                expect(snapsBack(CGRect(x: 8, y: 578, width: 3810, height: 1560))).to(beFalse())
+                expect(snapsBack(CGRect(x: 8, y: 578, width: 3824, height: 1700))).to(beFalse())
+            }
+
+            it("ignores Ametrine's own layout pass") {
+                expect(snapsBack(CGRect(x: 960, y: 700, width: 1920, height: 1300), sinceReflow: 0.05)).to(beFalse())
+            }
+
+            it("leaves windows pushed aside by show desktop alone") {
+                expect(snapsBack(CGRect(x: -1896, y: 1057, width: 1908, height: 1516))).to(beFalse())
+                expect(snapsBack(CGRect(x: 3828, y: 1057, width: 1908, height: 1516))).to(beFalse())
+            }
+
+            it("snaps the same window back at most once a second") {
+                let frame = CGRect(x: 960, y: 700, width: 1920, height: 1300)
+                expect(snapsBack(frame, sinceLastSnapBack: 0.5)).to(beFalse())
+                expect(snapsBack(frame, sinceLastSnapBack: 1.5)).to(beTrue())
+            }
+        }
+
         describe("which half of a BSP tile") {
             it("is left or right on a wide tile") {
                 let tile = CGRect(x: 0, y: 0, width: 2000, height: 1000)
