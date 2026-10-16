@@ -51,7 +51,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [ ] Backlog:
   - [x] `window-overflow: minimize | float`: what happens to a window over `window-max-count`. `float` floats the newest window, centred at 60% × 70% of the screen (or `window-overflow-width/height`), and leaves the tiles alone; both toggle from the palette
   - [ ] `max-column-rows: 3` for side columns, and its twin `max-row-columns` for panes split into columns (Wide Top/Bottom, Widescreen Tall's main)
-  - [x] Warp with the mouse: hold Shift as you drop a dragged window to warp it instead of swapping (`mouse-warps-windows`); a drop or resize the layout doesn't take snaps the window back to its tile (`snap-back-windows`, `toggle-snap-back-windows`)
+  - [x] Warp with the mouse: hold Shift as you drop a dragged window to warp it instead of swapping (6.1.0, `mouse-warps-windows`); a drop or resize the layout doesn't take snaps the window back to its tile (`snap-back-windows`, `toggle-snap-back-windows`)
   - [x] Upstream leftovers removed (4.3.1): fastlane, CI and community files, unused images, and the unused Sparkle, Cartography and MASShortcut libraries
   - [ ] Clean config file: reads like a complete settings file in logical sections, every setting and command listed, so binding something needs no trip to the docs
   - [x] `toggle-fullscreen` (5.1.0): a Space's layout ↔ Fullscreen, the focused window in front without becoming main, and back with every window in its tile
@@ -184,6 +184,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 5.0.0 | Layouts named by where main is: `tall-left`, `wide-top`, `two-pane-a`/`-b`, `3column-middle`, `widescreen-tall-left`, `column-left`, `row-top` (**config edit**: rename the keys in `layouts:` and `select-<key>-layout`). New twins Wide Bottom, Column Right and Row Bottom; Two Pane B is A mirrored along the long side. `layout-names` sets the name shown for each layout (without one, its key). In Two Pane, focus north/south browses the windows behind the secondary pane |
 | 5.1.0 | `toggle-fullscreen`: a Space's layout ↔ Fullscreen in place, the focused window in front without becoming main, and back with every window in its tile (works without `fullscreen` in `layouts`). Selecting the current layout again goes back to the previous one per Space |
 | 6.0.0 | Custom (JavaScript) layouts removed, with `command1`–`command4` (**config**: drop them and any custom layout key from `layouts`). BSP no longer logs a decode error on launch for a Space without windows |
+| 6.1.0 | Warp with the mouse: hold Shift as you drop a dragged window to warp it into the pane under the cursor (`mouse-warps-windows`; BSP takes the half dropped on). `snap-back-windows` (default on) puts a window back on its tile after a drag or resize the layout doesn't take; `toggle-snap-back-windows`. Resizes from a layout pass during a drag no longer count as yours |
 
 ## Credits and licence
 
