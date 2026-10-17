@@ -24,7 +24,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - **By direction, not by order.** You reach the window next to you, not the next one in a list. No clockwise order to remember, no Alt-Tab.
 - **Keyboard first.** Every command can have a key, and the palette shows them all while you build the muscle memory.
 - **No hidden state.** A window is either visible or deliberately gone; nothing is parked where you have to remember it.
-- **One display and one Space at a time.** Each is tiled on its own. There are no commands to move windows between them: dedicated apps do that well, and macOS has no public API for moving a window to another Space.
+- **Not an all-in-one.** Ametrine tiles, and leaves the rest to apps that do it well. Each display and each Space is tiled on its own, with no commands to move windows between them (macOS has no public API for moving a window to another Space), and free-floating windows are placed by a window mover such as Raycast.
 
 ## Getting started
 
