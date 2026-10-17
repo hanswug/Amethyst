@@ -46,6 +46,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Custom (JavaScript) layouts removed (6.0.0): they gave little beyond the built-in layouts, needed code, and skipped warp, remembered pane sizes and flip
 - [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
   - [x] Step 1 (5.0.0): every layout named by where main is (`tall-left`, `wide-top`, `two-pane-a`, `3column-middle`, `column-left`, `row-top`, …), the missing twins Wide Bottom, Column Right and Row Bottom, and `layout-names` for your own names
+  - [x] Twins (6.2.0): every twin is its layout's exact mirror image (Tall Right, 3Column Right and Widescreen Tall Right fixed), and a layout and its twin share main count, ratio and pane sizes
 - [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
 - [ ] A Raycast extension built on the command URL
 - [ ] Backlog:
@@ -127,7 +128,7 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Floating | `floating` | Nothing is tiled |
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
 
-Each name says where main is. The pairs are twins, the same layout mirrored; the flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
+Each name says where main is. The pairs are twins: the same layout mirrored, every window on its mirror spot, sharing main count, ratio and pane sizes, so switching to the twin by select or cycle shows the same arrangement on the other side. The flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
 
 **A word of advice:** I strongly suggest not using all the available layouts. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun!
 
@@ -185,6 +186,7 @@ Numbering started at 2.4.0 and was counted back to the fork's first build:
 | 5.1.0 | `toggle-fullscreen`: a Space's layout ↔ Fullscreen in place, the focused window in front without becoming main, and back with every window in its tile (works without `fullscreen` in `layouts`). Selecting the current layout again goes back to the previous one per Space |
 | 6.0.0 | Custom (JavaScript) layouts removed, with `command1`–`command4` (**config**: drop them and any custom layout key from `layouts`). BSP no longer logs a decode error on launch for a Space without windows |
 | 6.1.0 | Warp with the mouse: hold Shift as you drop a dragged window to warp it into the pane under the cursor (`mouse-warps-windows`; BSP takes the half dropped on). `snap-back-windows` (default on) puts a window back on its tile after a drag or resize the layout doesn't take; `toggle-snap-back-windows`. Resizes from a layout pass during a drag no longer count as yours |
+| 6.2.0 | Twins are exact mirrors: Tall Right's stack now fills from the top, 3Column Right's first side column is next to main, and Widescreen Tall Right's first main window is at the right edge. A layout and its twin share main count, ratio and pane sizes, so switching between them mirrors the arrangement. 3Column and 4Column columns fill the screen exactly (they could run 1–2 px past the edge) |
 | 6.1.1 | `snap-back-windows` also puts back windows moved or resized by other apps (Raycast, scripts), leaving show desktop, native full screen and apps adjusting their own size alone. Fix: a window dropped on its own tile (in Fullscreen, anywhere) now snaps back instead of staying put or swapping with a hidden window |
 
 ## Credits and licence
