@@ -228,7 +228,7 @@ if __name__ == "__main__":
         # docs/my-setup.md: Hans's padding modes on his 55" 4K (3840 x 2160 points).
         "my-laptop": side_by_side(("Fullscreen", fullscreen(4), {}), ("Two Pane A", two_pane(4), {})),
         "my-padding": side_by_side(
-            ("full: the whole space", padded([(F(0), F(0), F(1), F(1), "video, game")]), P),
+            ("full: the whole space", padded([(F(0), F(0), F(1), F(1), "entertainment")]), P),
             ("wide: many windows", padded(three_column(4, where="middle", counts=[2, 1, 1]), top=540), P),
             ("27 screen: browsing", padded([(F(0), F(0), F(1), F(1), "browser")], left=640, right=640, top=720), P)),
         "my-tall": side_by_side(
