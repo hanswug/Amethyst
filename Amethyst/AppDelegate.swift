@@ -28,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var layoutsMenuItem: NSMenuItem?
     private var paddingMenuItem: NSMenuItem?
 
+    private lazy var shortcutSheet = ShortcutSheetController()
     private lazy var commandPalette = CommandPaletteController { [weak self] commandKey, value in
         self?.hotKeyManager?.runCommand(commandKey, value: value)
     }
@@ -130,6 +131,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         commandPalette.show(entries: hotKeyManager?.commandPaletteEntries(notes: commandPaletteNotes()) ?? [])
     }
 
+    /// Shows your own keys at a glance, or closes the sheet if it's open.
+    @MainActor func toggleShortcutSheet() {
+        guard !shortcutSheet.isVisible else {
+            shortcutSheet.close()
+            return
+        }
+
+        guard let hotKeyManager else {
+            return
+        }
+        shortcutSheet.show(hotKeyManager.shortcutSheet())
+    }
+
+    @MainActor @objc func showShortcutSheet(_ sender: Any?) {
+        toggleShortcutSheet()
+    }
+
     /// Current values shown next to the commands that change them.
     private func commandPaletteNotes() -> [String: String] {
         let windowMaxCount = UserConfiguration.shared.windowMaxCount().map { "now \($0)" } ?? "now unlimited"
@@ -203,6 +221,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             paddingMenuItem.submenu = NSMenu(title: "Padding")
             statusItemMenu.insertItem(paddingMenuItem, at: statusItemMenu.index(of: layoutsMenuItem) + 1)
             self.paddingMenuItem = paddingMenuItem
+
+            let shortcutsMenuItem = NSMenuItem(title: "Shortcuts…", action: #selector(showShortcutSheet(_:)), keyEquivalent: "")
+            shortcutsMenuItem.target = self
+            statusItemMenu.insertItem(shortcutsMenuItem, at: statusItemMenu.index(of: paddingMenuItem) + 1)
         }
     }
 

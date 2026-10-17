@@ -184,6 +184,7 @@ enum CommandKey: String {
     case cyclePaddingModeForward = "cycle-padding-mode"
     case cyclePaddingModeBackward = "cycle-padding-mode-backward"
     case showCommandPalette = "show-command-palette"
+    case showShortcuts = "show-shortcuts"
     case explainWindow = "explain-window"
     case setWindowMaxCount = "set-window-max-count"
     case setMainPaneCount = "set-main-pane-count"

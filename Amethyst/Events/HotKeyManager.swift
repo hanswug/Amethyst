@@ -404,6 +404,12 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
                 appDelegate?.toggleCommandPalette()
             }
         }
+
+        constructCommandWithCommandKey(CommandKey.showShortcuts.rawValue) { [weak appDelegate] in
+            DispatchQueue.main.async {
+                appDelegate?.toggleShortcutSheet()
+            }
+        }
     }
 
     private func constructKeyCodeMap() -> [String: [AMKeyCode]] {
@@ -508,6 +514,27 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
 
         handler()
         return true
+    }
+
+    /// What the shortcut sheet shows: the palette's commands plus the palette itself, with short labels for the select
+    /// commands (a layout's shown name, a padding mode's name).
+    @MainActor func shortcutSheet() -> ShortcutSheet.Sheet {
+        let paletteKey = CommandKey.showCommandPalette.rawValue
+        let palette = CommandPaletteEntry(
+            name: "Show command palette",
+            commandKey: paletteKey,
+            shortcut: KeyboardShortcuts.getShortcut(for: KeyboardShortcuts.Name(paletteKey))?.description
+        )
+
+        var labels: [String: String] = [:]
+        for (layoutKey, layoutName) in LayoutType<Application.Window>.availableLayoutStrings() {
+            labels[UserConfiguration.constructLayoutKeyString(layoutKey)] = layoutName
+        }
+        for paddingMode in userConfiguration.paddingModes() {
+            labels[UserConfiguration.constructPaddingModeKeyString(paddingMode.name)] = "Padding \(paddingMode.name)"
+        }
+
+        return ShortcutSheet.sheet(entries: commandPaletteEntries() + [palette], labels: labels)
     }
 
     /// What the command palette lists: every named command that is set up, except the palette itself and layouts the configuration doesn't use,
@@ -628,6 +655,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
 
         hotKeyNameToDefaultsKey.append(["Relaunch Ametrine", CommandKey.relaunchAmetrine.rawValue])
         hotKeyNameToDefaultsKey.append(["Show command palette", CommandKey.showCommandPalette.rawValue])
+        hotKeyNameToDefaultsKey.append(["Show shortcuts", CommandKey.showShortcuts.rawValue])
 
         return hotKeyNameToDefaultsKey
     }
