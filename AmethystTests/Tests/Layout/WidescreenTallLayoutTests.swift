@@ -309,10 +309,11 @@ class WidescreenTallLayoutTests: QuickSpec {
                 mainAssignments = frameAssignments.forWindows(windows[..<2])
                 secondaryAssignments = frameAssignments.forWindows(windows[2...])
 
+                // Mirrored: the first main window at the right edge.
                 mainAssignments.verify(frames: [
-                    CGRect(x: 1000, y: 0, width: 500, height: 1000),
-                    CGRect(x: 1500, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 1500, y: 0, width: 500, height: 1000),
+                    CGRect(x: 1000, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
 
                 secondaryAssignments.verify(frames: [
                     CGRect(x: 0, y: 0, width: 1000, height: 500),
@@ -327,10 +328,10 @@ class WidescreenTallLayoutTests: QuickSpec {
                 secondaryAssignments = frameAssignments.forWindows(windows[3...])
 
                 mainAssignments.verify(frames: [
-                    CGRect(x: 1000, y: 0, width: 333, height: 1000),
-                    CGRect(x: 1333, y: 0, width: 333, height: 1000),
-                    CGRect(x: 1666, y: 0, width: 333, height: 1000)
-                ])
+                    CGRect(x: 1667, y: 0, width: 333, height: 1000),
+                    CGRect(x: 1334, y: 0, width: 333, height: 1000),
+                    CGRect(x: 1001, y: 0, width: 333, height: 1000)
+                ], inOrder: true)
 
                 secondaryAssignments.verify(frames: [
                     CGRect(x: 0, y: 0, width: 1000, height: 1000)

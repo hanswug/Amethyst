@@ -330,6 +330,68 @@ class ScreenManagerRestoreTests: XCTestCase {
     }
 }
 
+/// A layout and its twin share one state: leaving one hands main count, ratio and pane sizes to the other.
+class ScreenManagerTwinStateTests: XCTestCase {
+    private struct SavedState: Encodable {
+        let layoutsBySpaceUUID: [String: [[String: Data]]]
+    }
+
+    private let spaceA = Space(id: 1, type: CGSSpaceTypeUser, uuid: "SPACE-A")
+    private let spaceB = Space(id: 2, type: CGSSpaceTypeUser, uuid: "SPACE-B")
+    private var previousLayoutKeys: [String] = []
+
+    override func setUp() {
+        previousLayoutKeys = UserConfiguration.shared.layoutKeys()
+    }
+
+    override func tearDown() {
+        UserConfiguration.shared.setLayoutKeys(previousLayoutKeys)
+    }
+
+    @MainActor private func screenManager(_ keys: [String]) throws -> ScreenManager<TestDelegate> {
+        UserConfiguration.shared.setLayoutKeys(keys)
+        let saved = try JSONEncoder().encode(SavedState(layoutsBySpaceUUID: [:]))
+        let screenManager = try JSONDecoder().decode(ScreenManager<TestDelegate>.self, from: saved)
+        screenManager.updateSpace(to: spaceA)
+        return screenManager
+    }
+
+    @MainActor func testTheTwinShowsTheSameStateHoweverItIsReached() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top", "tall-right"])
+        let left = try XCTUnwrap(screenManager.currentLayout as? TallLayout<TestWindow>)
+        left.increaseMainPaneCount()
+        left.recommendMainPaneRawRatio(rawRatio: 0.6)
+
+        // Through another layout: Tall Left was left first, so Tall Right has its state.
+        screenManager.cycleLayoutForward()
+        screenManager.cycleLayoutForward()
+        let right = try XCTUnwrap(screenManager.currentLayout as? TallRightLayout<TestWindow>)
+        XCTAssertEqual(right.mainPaneCount, 2)
+        XCTAssertEqual(right.mainPaneRatio, 0.6)
+
+        // And back, directly.
+        right.decreaseMainPaneCount()
+        screenManager.selectLayout("tall-left")
+        XCTAssertTrue(screenManager.currentLayout === left)
+        XCTAssertEqual(left.mainPaneCount, 1)
+    }
+
+    @MainActor func testLeavesOtherLayoutsAndOtherSpacesAlone() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top", "tall-right"])
+        let left = try XCTUnwrap(screenManager.currentLayout as? TallLayout<TestWindow>)
+        left.increaseMainPaneCount()
+
+        screenManager.selectLayout("wide-top")
+        let wide = try XCTUnwrap(screenManager.currentLayout as? WideLayout<TestWindow>)
+        XCTAssertEqual(wide.mainPaneCount, 1)
+
+        screenManager.updateSpace(to: spaceB)
+        screenManager.selectLayout("tall-right")
+        let otherSpaceRight = try XCTUnwrap(screenManager.currentLayout as? TallRightLayout<TestWindow>)
+        XCTAssertEqual(otherSpaceRight.mainPaneCount, 1)
+    }
+}
+
 /// `toggle-fullscreen` and going back by selecting the current layout again, per Space.
 class ScreenManagerFullscreenToggleTests: XCTestCase {
     private struct SavedState: Encodable {

@@ -72,7 +72,7 @@ struct TriplePaneArrangement {
             switch mainPane {
             case .left:   return [.main: .left, .secondary: .middle, .tertiary: .right]
             case .middle: return [.main: .middle, .secondary: .left, .tertiary: .right]
-            case .right:  return [.main: .right, .secondary: .left, .tertiary: .middle]
+            case .right:  return [.main: .right, .secondary: .middle, .tertiary: .left]
             }
         }()
         // swap keys and values for reverse lookup
@@ -94,11 +94,12 @@ struct TriplePaneArrangement {
         // calculate widths
         let screenWidth = screenSize.width
         let mainWindowWidth = secondaryPaneCount == 0 ? screenWidth : round(screenWidth * mainPaneRatio)
-        let nonMainWindowWidth = round((screenWidth - mainWindowWidth) / 2)
+        // The last side column takes the rounding remainder, so the columns fill the screen exactly and twins mirror to the pixel.
+        let secondaryWindowWidth = round((screenWidth - mainWindowWidth) / 2)
         self.paneWindowWidth = [
             .main: mainWindowWidth,
-            .secondary: nonMainWindowWidth,
-            .tertiary: nonMainWindowWidth
+            .secondary: secondaryWindowWidth,
+            .tertiary: screenWidth - mainWindowWidth - secondaryWindowWidth
         ]
    }
 
