@@ -418,7 +418,10 @@ class ScreenManagerTwinStateTests: XCTestCase {
         let right = try XCTUnwrap(screenManager.currentLayout as? TallRightLayout<TestWindow>)
         XCTAssertEqual(right.mainPaneCount, 2)
         XCTAssertEqual(right.mainPaneRatio, 0.6)
-        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-right", "wide-top"])
+        // The Layouts menu lists the config as written, with the flipped entry checked.
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-left", "wide-top"])
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.name }, ["tall-left", "wide-top"].map { UserConfiguration.shared.layoutDisplayName(forKey: $0) })
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.isSelected }, [true, false])
 
         right.decreaseMainPaneCount()
         screenManager.flipToTwin()
@@ -449,7 +452,7 @@ class ScreenManagerTwinStateTests: XCTestCase {
 
         XCTAssertEqual(restored.currentLayout?.layoutKey, "tall-right")
         XCTAssertEqual((restored.currentLayout as? TallRightLayout<TestWindow>)?.mainPaneCount, 2)
-        XCTAssertEqual(restored.layoutsInfo.map { $0.key }, ["tall-right", "wide-top"])
+        XCTAssertEqual(restored.layoutsInfo.map { $0.key }, ["tall-left", "wide-top"])
     }
 
     @MainActor func testFlipDoesNothingWithoutATwin() throws {
@@ -468,7 +471,7 @@ class ScreenManagerTwinStateTests: XCTestCase {
         screenManager.flipToTwin()
 
         XCTAssertEqual(screenManager.currentLayout?.layoutKey, "wide-bottom")
-        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["wide-bottom", "tall-left"])
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["wide-top", "tall-left"])
     }
 }
 

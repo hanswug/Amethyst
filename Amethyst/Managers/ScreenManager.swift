@@ -131,12 +131,18 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         return layouts[currentLayoutIndex]
     }
 
-    /// Returns layout info for all layouts in this screen manager, including selection state
+    /// The Layouts menu lists `layouts:` as configured (Hans, 2026-10-17): an entry flipped to its twin in place still shows
+    /// its own layout, checked; the menu bar title says what's live.
     var layoutsInfo: [LayoutMenuItemInfo] {
+        let configuredKeys = Set(userConfiguration.layoutKeys())
         return layouts.enumerated().map { index, layout in
-            LayoutMenuItemInfo(
-                key: layout.layoutKey,
-                name: layout.displayName,
+            var key = layout.layoutKey
+            if !configuredKeys.contains(key), let twinKey = LayoutType<Window>.from(key: key)?.twin?.key, configuredKeys.contains(twinKey) {
+                key = twinKey
+            }
+            return LayoutMenuItemInfo(
+                key: key,
+                name: userConfiguration.layoutDisplayName(forKey: key),
                 isSelected: index == currentLayoutIndex
             )
         }
