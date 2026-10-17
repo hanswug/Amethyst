@@ -104,6 +104,30 @@ enum LayoutType<Window: WindowType> {
         }
     }
 
+    /// The layout's twin: the same layout mirrored, main on the other side, window order and panes unchanged.
+    /// `nil` where the mirror image is no layout of its own (3Column Middle) or the same one (Fullscreen, Floating, BSP).
+    var twin: LayoutType<Window>? {
+        switch self {
+        case .tall: return .tallRight
+        case .tallRight: return .tall
+        case .wide: return .wideBottom
+        case .wideBottom: return .wide
+        case .twoPane: return .twoPaneRight
+        case .twoPaneRight: return .twoPane
+        case .threeColumnLeft: return .threeColumnRight
+        case .threeColumnRight: return .threeColumnLeft
+        case .fourColumnLeft: return .fourColumnRight
+        case .fourColumnRight: return .fourColumnLeft
+        case .column: return .columnRight
+        case .columnRight: return .column
+        case .row: return .rowBottom
+        case .rowBottom: return .row
+        case .widescreenTallLeft: return .widescreenTallRight
+        case .widescreenTallRight: return .widescreenTallLeft
+        case .threeColumnMiddle, .fullscreen, .floating, .binarySpacePartitioning: return nil
+        }
+    }
+
     var layoutClass: Layout<Window>.Type {
         switch self {
         case .tall:

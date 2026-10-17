@@ -37,6 +37,15 @@ class RowLayout<Window: WindowType>: Layout<Window>, PanedLayout {
         try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
     }
 
+    override func adoptState(from twin: Layout<Window>) {
+        guard let twin = twin as? RowLayout<Window> else {
+            return
+        }
+
+        mainPaneCount = twin.mainPaneCount
+        mainPaneRatio = twin.mainPaneRatio
+    }
+
     func recommendMainPaneRawRatio(rawRatio: CGFloat) {
         mainPaneRatio = rawRatio
     }

@@ -599,6 +599,19 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         }
     }
 
+    /// A layout and its twin share one state (Hans, 2026-10-17): leaving a layout hands its main count, ratio and pane sizes to
+    /// its twin in this Space's layouts, so the twin shows the same arrangement mirrored however it's reached (select, cycle).
+    private func shareStateWithTwin(of layout: Layout<Window>) {
+        guard let twinKey = LayoutType<Window>.from(key: layout.layoutKey)?.twin?.key else {
+            return
+        }
+
+        for twin in layouts where twin.layoutKey == twinKey {
+            twin.adoptState(from: layout)
+            log.debug("\(twin.layoutName) takes over \(layout.layoutName)'s state")
+        }
+    }
+
     private func rememberCurrentLayout() {
         if let spaceUUID = space?.uuid, let currentLayoutKey = currentLayout?.layoutKey {
             previousLayoutKeyBySpaceUUID[spaceUUID] = currentLayoutKey
@@ -608,6 +621,10 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     private func setCurrentLayoutIndex(_ index: Int, changingSpace: Bool = false) {
         guard (0..<layouts.count).contains(index) else {
             return
+        }
+
+        if !changingSpace, index != currentLayoutIndex, let leaving = currentLayout {
+            shareStateWithTwin(of: leaving)
         }
 
         currentLayoutIndex = index

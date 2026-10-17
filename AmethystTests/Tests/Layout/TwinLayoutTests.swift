@@ -214,6 +214,54 @@ class TwinLayoutTests: QuickSpec {
             }
         }
 
+        describe("twin table") {
+            it("pairs every layout with main on one side with its mirror, both ways") {
+                let twins = LayoutType<TestWindow>.standardLayouts.compactMap { type in type.twin.map { (type.key, $0.key) } }
+
+                expect(twins.map { "\($0.0) ↔ \($0.1)" }).to(equal([
+                    "tall-left ↔ tall-right", "tall-right ↔ tall-left", "wide-top ↔ wide-bottom", "wide-bottom ↔ wide-top",
+                    "two-pane-a ↔ two-pane-b", "two-pane-b ↔ two-pane-a", "3column-left ↔ 3column-right",
+                    "3column-right ↔ 3column-left", "4column-left ↔ 4column-right", "4column-right ↔ 4column-left",
+                    "column-left ↔ column-right", "column-right ↔ column-left", "row-top ↔ row-bottom", "row-bottom ↔ row-top",
+                    "widescreen-tall-left ↔ widescreen-tall-right", "widescreen-tall-right ↔ widescreen-tall-left"
+                ]))
+            }
+
+            it("hands main count, ratio and pane sizes to the twin") {
+                let screen = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 1000))
+                TestScreen.availableScreens = [screen]
+                let original = ThreeColumnLeftLayout<TestWindow>(), twin = ThreeColumnRightLayout<TestWindow>()
+                original.applyWarp(PaneCounts([2, 1, 3]))
+                original.recommendMainPaneRawRatio(rawRatio: 0.4)
+
+                twin.adoptState(from: original)
+
+                expect(twin.mainPaneCount).to(equal(original.mainPaneCount))
+                expect(twin.mainPaneRatio).to(equal(0.4))
+                expect(twin.paneCounts).to(equal(PaneCounts([2, 1, 3])))
+                expect(frames(twin, windowCount: 6, on: screen))
+                    .to(equal(frames(original, windowCount: 6, on: screen).map { mirrored($0, .horizontal, in: screen.adjustedFrame()) }))
+            }
+
+            it("hands Two Pane, Column and Row their main count and ratio") {
+                let pairs: [(Layout<TestWindow>, Layout<TestWindow> & PanedLayout)] = [
+                    (TwoPaneLayout<TestWindow>(), TwoPaneRightLayout<TestWindow>()),
+                    (ColumnLayout<TestWindow>(), ColumnRightLayout<TestWindow>()),
+                    (RowLayout<TestWindow>(), RowBottomLayout<TestWindow>())
+                ]
+                for (original, twin) in pairs {
+                    let paned = original as! PanedLayout
+                    paned.increaseMainPaneCount()
+                    paned.recommendMainPaneRawRatio(rawRatio: 0.3)
+
+                    twin.adoptState(from: original)
+
+                    expect(twin.mainPaneCount).to(equal(paned.mainPaneCount))
+                    expect(twin.mainPaneRatio).to(equal(0.3))
+                }
+            }
+        }
+
         describe("keys") {
             it("names every layout by where main is") {
                 let keys = LayoutType<TestWindow>.standardLayouts.map { $0.key }

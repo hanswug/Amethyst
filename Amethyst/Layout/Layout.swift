@@ -49,6 +49,10 @@ class Layout<Window: WindowType>: Codable {
     /// The debug description of the layout.
     var layoutDescription: String { return "" }
 
+    /// Takes over its twin's state (`LayoutType.twin`): main count, ratio, pane sizes. A twin is the same layout mirrored, so
+    /// pane i is pane i and nothing needs translating. Layouts without such state ignore it.
+    func adoptState(from twin: Layout<Window>) {}
+
     required init() {}
 
     required init(from decoder: Decoder) throws {}
@@ -132,6 +136,16 @@ class PaneCountedLayout<Window: WindowType>: Layout<Window> {
         try container.encode(mainPaneCount, forKey: .mainPaneCount)
         try container.encode(mainPaneRatio, forKey: .mainPaneRatio)
         try container.encode(paneState.counts, forKey: .paneCounts)
+    }
+
+    override func adoptState(from twin: Layout<Window>) {
+        guard let twin = twin as? PaneCountedLayout<Window>, type(of: twin).paneCount == type(of: self).paneCount else {
+            return
+        }
+
+        mainPaneCount = twin.mainPaneCount
+        mainPaneRatio = twin.mainPaneRatio
+        paneState = twin.paneState
     }
 
     /// The pane sizes to lay out this many windows with: the stored ones, fitted if the window set differs from the last pass.
