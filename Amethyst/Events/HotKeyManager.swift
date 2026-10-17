@@ -129,6 +129,11 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
             Application.Window.currentlyFocused()?.focus()
         }
 
+        constructCommandWithCommandKey(CommandKey.flipTwin.rawValue) {
+            let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
+            screenManager?.flipToTwin()
+        }
+
         constructCommandWithCommandKey(CommandKey.shrinkMain.rawValue) {
             let screenManager: ScreenManager<WindowManager<Application>>? = windowManager.focusedScreenManager()
             screenManager?.updateCurrentLayout { layout in
@@ -554,6 +559,7 @@ class HotKeyManager<Application: ApplicationType>: NSObject {
 
         hotKeyNameToDefaultsKey.append(["Cycle layout forward", CommandKey.cycleLayoutForward.rawValue])
         hotKeyNameToDefaultsKey.append(["Toggle Fullscreen", CommandKey.toggleFullscreen.rawValue])
+        hotKeyNameToDefaultsKey.append(["Flip to twin", CommandKey.flipTwin.rawValue])
         hotKeyNameToDefaultsKey.append(["Cycle layout backwards", CommandKey.cycleLayoutBackward.rawValue])
         hotKeyNameToDefaultsKey.append(["Shrink main pane", CommandKey.shrinkMain.rawValue])
         hotKeyNameToDefaultsKey.append(["Expand main pane", CommandKey.expandMain.rawValue])

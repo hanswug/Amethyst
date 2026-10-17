@@ -32,6 +32,11 @@ class HotKeyManagerTests: QuickSpec {
                 expect(keys).to(contain([CommandKey.toggleFocusBorder.rawValue, CommandKey.cycleFocusBorderStyle.rawValue]))
             }
 
+            it("lists the flip commands") {
+                let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
+                expect(keys).to(contain([CommandKey.flipTwin.rawValue]))
+            }
+
             it("has no custom layout commands") {
                 let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
 

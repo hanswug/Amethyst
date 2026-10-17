@@ -390,6 +390,86 @@ class ScreenManagerTwinStateTests: XCTestCase {
         let otherSpaceRight = try XCTUnwrap(screenManager.currentLayout as? TallRightLayout<TestWindow>)
         XCTAssertEqual(otherSpaceRight.mainPaneCount, 1)
     }
+
+    // MARK: flip-twin
+
+    @MainActor func testFlipGoesToTheTwinsEntryWhenItIsListed() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top", "tall-right"])
+        let left = try XCTUnwrap(screenManager.currentLayout as? TallLayout<TestWindow>)
+        left.increaseMainPaneCount()
+
+        screenManager.flipToTwin()
+
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "tall-right")
+        XCTAssertEqual((screenManager.currentLayout as? TallRightLayout<TestWindow>)?.mainPaneCount, 2)
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-left", "wide-top", "tall-right"])
+
+        screenManager.flipToTwin()
+        XCTAssertTrue(screenManager.currentLayout === left)
+    }
+
+    @MainActor func testFlipTurnsTheEntryIntoAnUnlistedTwinInPlaceAndBack() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top"])
+        let left = try XCTUnwrap(screenManager.currentLayout as? TallLayout<TestWindow>)
+        left.increaseMainPaneCount()
+        left.recommendMainPaneRawRatio(rawRatio: 0.6)
+
+        screenManager.flipToTwin()
+        let right = try XCTUnwrap(screenManager.currentLayout as? TallRightLayout<TestWindow>)
+        XCTAssertEqual(right.mainPaneCount, 2)
+        XCTAssertEqual(right.mainPaneRatio, 0.6)
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-right", "wide-top"])
+
+        right.decreaseMainPaneCount()
+        screenManager.flipToTwin()
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "tall-left")
+        XCTAssertEqual((screenManager.currentLayout as? TallLayout<TestWindow>)?.mainPaneCount, 1)
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-left", "wide-top"])
+    }
+
+    @MainActor func testSelectingTheListedLayoutTurnsAFlippedEntryBack() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top"])
+        screenManager.flipToTwin()
+        screenManager.selectLayout("wide-top")
+
+        screenManager.selectLayout("tall-left")
+
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "tall-left")
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["tall-left", "wide-top"])
+    }
+
+    @MainActor func testAFlippedEntrySurvivesARelaunch() throws {
+        let screenManager = try screenManager(["tall-left", "wide-top"])
+        (screenManager.currentLayout as? TallLayout<TestWindow>)?.increaseMainPaneCount()
+        screenManager.flipToTwin()
+
+        let saved = try JSONEncoder().encode(screenManager)
+        let restored = try JSONDecoder().decode(ScreenManager<TestDelegate>.self, from: saved)
+        restored.updateSpace(to: spaceA)
+
+        XCTAssertEqual(restored.currentLayout?.layoutKey, "tall-right")
+        XCTAssertEqual((restored.currentLayout as? TallRightLayout<TestWindow>)?.mainPaneCount, 2)
+        XCTAssertEqual(restored.layoutsInfo.map { $0.key }, ["tall-right", "wide-top"])
+    }
+
+    @MainActor func testFlipDoesNothingWithoutATwin() throws {
+        for key in ["3column-middle", "bsp", "fullscreen", "floating"] {
+            let screenManager = try screenManager([key, "wide-top"])
+            screenManager.flipToTwin()
+            XCTAssertEqual(screenManager.currentLayout?.layoutKey, key)
+            XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, [key, "wide-top"])
+        }
+    }
+
+    @MainActor func testFlipFromAToggledFullscreenFlipsTheEntryBehindIt() throws {
+        let screenManager = try screenManager(["wide-top", "tall-left"])
+        screenManager.toggleFullscreen()
+
+        screenManager.flipToTwin()
+
+        XCTAssertEqual(screenManager.currentLayout?.layoutKey, "wide-bottom")
+        XCTAssertEqual(screenManager.layoutsInfo.map { $0.key }, ["wide-bottom", "tall-left"])
+    }
 }
 
 /// `toggle-fullscreen` and going back by selecting the current layout again, per Space.
