@@ -5,7 +5,7 @@
 #
 # One-time setup per Mac: create a self-signed "Code Signing" certificate named
 # $SIGNING_IDENTITY in Keychain Access and set it to "Always Trust" for code
-# signing. See docs/AMETHYST_FORK_HANDOFF.md §5.0.
+# signing. See docs/development.md.
 
 set -euo pipefail
 
