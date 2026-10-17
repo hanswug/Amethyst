@@ -237,6 +237,8 @@ if __name__ == "__main__":
             ("1/2/1", three_column(4, where="middle", counts=[2, 1, 1]), M),
             ("2/1/2", three_column(5, where="middle", counts=[1, 2, 2]), M),
             ("3/2/3", three_column(8, where="middle", counts=[2, 3, 3]), M)),
+        "my-heavy": side_by_side(
+            ("3/3/3 in full: heavy lifting", three_column(9, where="middle", counts=[3, 3, 3]), dict(width=40, height=9))),
         "my-browse": side_by_side(
             ("Fullscreen in 27 screen, on the 55\"", padded([(F(0), F(0), F(1), F(1), "browser")], left=640, right=640, top=720),
              dict(width=48, height=12))),

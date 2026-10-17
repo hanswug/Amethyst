@@ -19,7 +19,7 @@ A built-in display has room for one or two windows, so I keep it simple.
 
 My big screen is a 55" 4K. [Padding modes](features.md#padding-modes) decide how much of it the windows use, and I pick one for what I'm doing. ⌃⌥0 cycles them, and each Space keeps its own.
 
-- **`full`: entertainment** (a video, a game) or hard work, when I need the whole space.
+- **`full`: entertainment or heavy lifting.** The whole screen, for one big window (a video, a game), or for everything at once (3/3/3, below).
 - **`wide`: multitasking.** The top quarter left free, a 21:9 strip at eye level, so many windows stay in sight at once.
 - **`27 screen`: chill.** A centred 27" when I'm just browsing.
 
@@ -40,6 +40,10 @@ Main in the middle, right in front of me; the side columns grow and shrink as I 
 {{my-3column}}
 
 3/2/3 is 8 windows, about as many as I can keep track of at once: more than that, and I lose the picture.
+
+Heavy lifting is the one time I go past it: in `full`, 3/3/3 holds spreadsheets, terminals, a browser and docs all at once, and the whole screen makes room for 9.
+
+{{my-heavy}}
 
 ## Just browsing on the big screen
 
