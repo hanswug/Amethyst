@@ -28,22 +28,24 @@ Fullscreen                                   Two Pane A
 
 ## On the big screen
 
-My big screen is a 55" 4K. Used whole, it's a lot of screen to turn your head across, so [padding modes](features.md#padding-modes) shrink the tiled area: `full` uses the whole screen, `wide` drops the top quarter (a 21:9 strip at eye level), `27 screen` is a centred 27". ⌃⌥0 cycles them, and each Space keeps its own. The same video in Fullscreen, in each:
+My big screen is a 55" 4K. [Padding modes](features.md#padding-modes) decide how much of it the windows use, and I pick one for what I'm doing. ⌃⌥0 cycles them, and each Space keeps its own.
+
+- **`full`**: when I need the whole space: a video, a game, hard work.
+- **`wide`**: the top quarter left free, a 21:9 strip at eye level: many windows, all in my sight.
+- **`27 screen`**: a centred 27": chill, I'm just browsing.
 
 ```
-full                               wide                               27 screen
+full: the whole space              wide: many windows                 27 screen: browsing
 ┌─────────────────────────────┐    ┌─────────────────────────────┐    ┌─────────────────────────────┐
 │                             │    │                             │    │                             │
-│                             │    ├─────────────────────────────┤    │                             │
-│                             │    │                             │    │    ┌───────────────────┐    │
-│            video            │    │                             │    │    │                   │    │
-│                             │    │            video            │    │    │       video       │    │
-│                             │    │                             │    │    │                   │    │
-│                             │    │                             │    │    │                   │    │
-└─────────────────────────────┘    └─────────────────────────────┘    └────┴───────────────────┴────┘
+│                             │    ├───────┬─────────────┬───────┤    │                             │
+│                             │    │       │      1      │       │    │    ┌───────────────────┐    │
+│         video, game         │    │       │             │       │    │    │                   │    │
+│                             │    │   3   ├─────────────┤   4   │    │    │      browser      │    │
+│                             │    │       │      2      │       │    │    │                   │    │
+│                             │    │       │             │       │    │    │                   │    │
+└─────────────────────────────┘    └───────┴─────────────┴───────┘    └────┴───────────────────┴────┘
 ```
-
-For work I use `wide` or `full`, depending on the mood.
 
 ### Tall Left: one main thing
 
