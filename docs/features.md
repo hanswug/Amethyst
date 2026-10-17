@@ -2,7 +2,7 @@
 
 Everything Ametrine does, one section each. Settings and commands are described in full in [configuration-files.md](configuration-files.md); how layouts work, main first, in [layouts.md](layouts.md).
 
-- [One config file](#one-config-file) · [Layouts](#layouts) · [Move by direction](#move-by-direction) · [Flip](#flip) · [Command palette](#command-palette) · [Command URL](#command-url) · [Padding modes](#padding-modes) · [Floating secondary windows](#floating-secondary-windows) · [Window limit](#window-limit) · [The mouse](#the-mouse) · [Focus border](#focus-border) · [Fullscreen toggle](#fullscreen-toggle) · [Feedback](#feedback) · [Not included](#not-included)
+- [One config file](#one-config-file) · [Layouts](#layouts) · [Move by direction](#move-by-direction) · [Flip](#flip) · [Command palette](#command-palette) · [Shortcut sheet](#shortcut-sheet) · [Command URL](#command-url) · [Padding modes](#padding-modes) · [Floating secondary windows](#floating-secondary-windows) · [Window limit](#window-limit) · [The mouse](#the-mouse) · [Focus border](#focus-border) · [Fullscreen toggle](#fullscreen-toggle) · [Feedback](#feedback) · [Not included](#not-included)
 
 ## One config file
 
@@ -41,6 +41,10 @@ See [flip](layouts.md#flip).
 `show-command-palette` (Super+Y in the sample config) lists every command with its shortcut, plus current values such as the window max count and main pane count. Type to filter, ↑/↓ to select, Enter runs, Esc closes. It works like Spotlight: the app you're in stays in front.
 
 Commands that take a number (`set-window-max-count`, `set-main-pane-count`) turn the search field into a number field: pick the command, type the number, Enter.
+
+## Shortcut sheet
+
+Your own keys at a glance, display only: **Shortcuts…** in the menu bar, or `show-shortcuts`. On top, the direction grid: one row each for focus, warp and swap, one column per direction (plus main, counter-clockwise and clockwise), each row's modifiers shown once, so the "key = direction, modifier = verb" rule reads at a glance. Below, every other bound command in groups that follow the config's sections, and a line counting the commands without a key, which the palette runs. Esc, the same command again or a click elsewhere closes it.
 
 ## Command URL
 

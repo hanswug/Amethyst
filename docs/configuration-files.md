@@ -136,4 +136,5 @@ cycle-layout:
 | `cycle-padding-mode-backward` | Switch the current Space to the previous padding mode (wraps around). |
 | `select-<name>-padding-mode` | Switch the current Space to that padding mode, e.g. `select-wide-padding-mode`. |
 | `show-command-palette` | Open (or close) the command palette. |
+| `show-shortcuts` | Open (or close) the shortcut sheet: your bound keys at a glance, the focus/warp/swap grid on top and the rest grouped like the config. Also **Shortcuts…** in the menu bar. |
 | `relaunch-ametrine` | Quit and reopen Ametrine (also what Reload Config does). |

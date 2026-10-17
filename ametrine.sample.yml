@@ -12,7 +12,7 @@
 #           down, left, right, delete.
 # Reference: docs/configuration-files.md in the Ametrine repo.
 #
-# Sections:  1 Modifiers · 2 Command palette · 3 Layouts · 4 Main pane · 5 Moving between windows
+# Sections:  1 Modifiers · 2 Palette and shortcuts · 3 Layouts · 4 Main pane · 5 Moving between windows
 #            6 Screen space · 7 Which windows tile · 8 Window limit · 9 Mouse · 10 Focus border
 #            11 Feedback and app
 
@@ -27,10 +27,12 @@ mod3: [control, command]                   # ⌃⌘    swap
 mod4: [shift, control, option, command]    # ⇧⌃⌥⌘  "Super"
 
 
-# ─── 2 Command palette ─────────────────────────────────────────────────────────────────────────
-# Every command with its shortcut; type to filter, Enter runs, Esc closes. The first key to bind.
+# ─── 2 Palette and shortcuts ───────────────────────────────────────────────────────────────────
+# The palette: every command with its shortcut; type to filter, Enter runs, Esc closes. The first
+# key to bind. Shortcuts: your bound keys at a glance (also in the menu bar), Esc closes.
 
 show-command-palette: {mod: mod1, key: p}
+show-shortcuts:       {mod: <NONE>, key: <NONE>}
 
 
 # ─── 3 Layouts ─────────────────────────────────────────────────────────────────────────────────
