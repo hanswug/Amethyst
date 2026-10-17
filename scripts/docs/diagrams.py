@@ -181,6 +181,7 @@ def pair(name_a, name_b, tiles, mirror, **kw):
 
 if __name__ == "__main__":
     S = dict(width=16, height=6)
+    M = dict(width=24, height=8)
     sections = {
         "fill-3column": side_by_side(*[(f"{n} window{'s' if n > 1 else ''}", three_column(n), S) for n in (1, 2, 3)]) + "\n\n"
         + side_by_side(*[(f"{n} windows", three_column(n), S) for n in (4, 5, 6)]),
@@ -214,6 +215,19 @@ if __name__ == "__main__":
         "row-m2": pair("Row Top, main count 2", "Row Bottom, main count 2", row(5, 2), mirror_y, width=30, height=12),
         "fullscreen": side_by_side(("Fullscreen", fullscreen(5), {})),
         "bsp": side_by_side(("BSP, 5 windows opened in order", bsp(), dict(width=36, height=12))),
+        "flip-tall": side_by_side(
+            ("Tall Left", tall(5), M),
+            ("flip-twin: Tall Right", mirror_x(tall(5)), M),
+            ("flip-rows", rows(F(0), R, ["1"]) + rows(R, R, ["5", "4", "3", "2"]), M)),
+        "flip-wide": side_by_side(
+            ("Wide Top, main count 2", wide(5, 2), {}),
+            ("flip-columns", cols(F(0), R, ["2", "1"]) + cols(R, R, ["5", "4", "3"]), {})),
+        "flip-3column-middle": side_by_side(
+            ("3Column Middle", three_column(4, where="middle"), {}),
+            ("flip-twin: sides swapped", rows(F(1, 4), R, ["1"]) + rows(F(0), F(1, 4), ["4"]) + rows(F(3, 4), F(1, 4), ["2", "3"]), {})),
+        "flip-bsp": side_by_side(
+            ("BSP", bsp(), dict(width=36, height=12)),
+            ("flip-columns", mirror_x(bsp()), dict(width=36, height=12))),
     }
     for name, text in sections.items():
         print(f"## {name}\n```\n{text}\n```\n")

@@ -221,6 +221,22 @@ toggle-fullscreen:
   mod: mod1
   key: z
 
+# Show the layout's mirror image: switch to its twin (Tall Left <-> Tall Right, ...) with main count, ratio and pane sizes.
+# A twin in layouts is selected; otherwise this entry becomes the twin in place. 3Column Middle swaps its side columns.
+flip-twin:
+  mod: <NONE>
+  key: <NONE>
+
+# Reverse the order inside every pane whose windows stack as rows; panes don't move. Again to undo.
+flip-rows:
+  mod: <NONE>
+  key: <NONE>
+
+# Reverse the order inside every pane whose windows sit side by side; panes don't move. Again to undo.
+flip-columns:
+  mod: <NONE>
+  key: <NONE>
+
 # Select two-pane-a layout
 select-two-pane-a-layout:
   mod: mod1
