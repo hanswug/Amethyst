@@ -2,7 +2,7 @@
 //  TwinLayoutTests.swift
 //  AmethystTests
 //
-//  The twins added for flip (Wide Bottom, Column Right, Row Bottom) and the layout keys.
+//  Every twin is its original mirrored (Hans, 2026-10-17), and the layout keys.
 //
 
 @testable import Amethyst
@@ -55,7 +55,33 @@ class TwinLayoutTests: QuickSpec {
                 let original = RowLayout<TestWindow>(), twin = RowBottomLayout<TestWindow>()
                 (1..<mainCount).forEach { _ in original.increaseMainPaneCount(); twin.increaseMainPaneCount() }
                 return (original, twin)
+            }),
+            ("Tall Right", .horizontal, { mainCount in
+                let original = TallLayout<TestWindow>(), twin = TallRightLayout<TestWindow>()
+                original.setMainPaneCount(mainCount); twin.setMainPaneCount(mainCount)
+                return (original, twin)
+            }),
+            ("3Column Right", .horizontal, { mainCount in
+                let original = ThreeColumnLeftLayout<TestWindow>(), twin = ThreeColumnRightLayout<TestWindow>()
+                original.setMainPaneCount(mainCount); twin.setMainPaneCount(mainCount)
+                return (original, twin)
+            }),
+            ("4Column Right", .horizontal, { mainCount in
+                let original = FourColumnLeftLayout<TestWindow>(), twin = FourColumnRightLayout<TestWindow>()
+                original.setMainPaneCount(mainCount); twin.setMainPaneCount(mainCount)
+                return (original, twin)
+            }),
+            ("Widescreen Tall Right", .horizontal, { mainCount in
+                let original = WidescreenTallLayoutLeft<TestWindow>(), twin = WidescreenTallLayoutRight<TestWindow>()
+                original.setMainPaneCount(mainCount); twin.setMainPaneCount(mainCount)
+                return (original, twin)
             })
+        ]
+
+        // Column twins with the same stored pane sizes on both sides (as warp leaves them).
+        let columnPairs: [(name: String, make: () -> (PaneCountedLayout<TestWindow>, PaneCountedLayout<TestWindow>))] = [
+            ("3Column", { (ThreeColumnLeftLayout<TestWindow>(), ThreeColumnRightLayout<TestWindow>()) }),
+            ("4Column", { (FourColumnLeftLayout<TestWindow>(), FourColumnRightLayout<TestWindow>()) })
         ]
 
         describe("twins") {
@@ -65,7 +91,7 @@ class TwinLayoutTests: QuickSpec {
                     TestScreen.availableScreens = [screen]
 
                     for mainCount in [1, 2] {
-                        for windowCount in [1, 2, 4] {
+                        for windowCount in [1, 2, 4, 7] {
                             let (original, twin) = pair.make(mainCount)
                             let expected = frames(original, windowCount: windowCount, on: screen).map {
                                 mirrored($0, pair.axis, in: screen.adjustedFrame())
@@ -75,6 +101,59 @@ class TwinLayoutTests: QuickSpec {
                         }
                     }
                 }
+            }
+
+            for pair in columnPairs {
+                it("mirrors \(pair.name) Left with stored pane sizes, empty columns included") {
+                    let screen = TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000))
+                    TestScreen.availableScreens = [screen]
+                    let paneCount = type(of: pair.make().0).paneCount
+
+                    // Uneven sides (1/1/3, 1/1/1/3) and a full main with an empty far column (3/1/0, 3/1/1/0).
+                    let uneven = [1] + Array(repeating: 1, count: paneCount - 2) + [3]
+                    let emptyFar = [3] + Array(repeating: 1, count: paneCount - 2) + [0]
+                    for counts in [uneven, emptyFar] {
+                        let (original, twin) = pair.make()
+                        original.applyWarp(PaneCounts(counts))
+                        twin.applyWarp(PaneCounts(counts))
+                        let windowCount = counts.reduce(0, +)
+                        let screenFrame = screen.adjustedFrame()
+
+                        expect(frames(twin, windowCount: windowCount, on: screen))
+                            .to(equal(frames(original, windowCount: windowCount, on: screen).map { mirrored($0, .horizontal, in: screenFrame) }))
+                        expect(twin.emptyPaneFrames(windowCount: windowCount, on: screen))
+                            .to(equal(original.emptyPaneFrames(windowCount: windowCount, on: screen).mapValues { mirrored($0, .horizontal, in: screenFrame) }))
+                    }
+                }
+            }
+
+            it("fills Tall Right's stack from the top, like Tall Left's") {
+                let screen = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 900))
+                TestScreen.availableScreens = [screen]
+
+                expect(frames(TallRightLayout<TestWindow>(), windowCount: 4, on: screen)).to(equal([
+                    CGRect(x: 1000, y: 0, width: 1000, height: 900),
+                    CGRect(x: 0, y: 0, width: 1000, height: 300),
+                    CGRect(x: 0, y: 300, width: 1000, height: 300),
+                    CGRect(x: 0, y: 600, width: 1000, height: 300)
+                ]))
+            }
+
+            it("puts 3Column Right's first side column next to main") {
+                let screen = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 1000))
+                TestScreen.availableScreens = [screen]
+
+                // 1 main, then 2 side windows in the middle column and 1 at the far left.
+                expect(frames(ThreeColumnRightLayout<TestWindow>(), windowCount: 4, on: screen).map { $0.minX }).to(equal([1000, 500, 500, 0]))
+            }
+
+            it("puts Widescreen Tall Right's first main window at the right edge") {
+                let screen = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 1000))
+                TestScreen.availableScreens = [screen]
+                let layout = WidescreenTallLayoutRight<TestWindow>()
+                layout.setMainPaneCount(2)
+
+                expect(frames(layout, windowCount: 3, on: screen).map { $0.minX }).to(equal([1500, 1000, 0]))
             }
 
             it("mirrors Two Pane A along the screen's long side for Two Pane B") {

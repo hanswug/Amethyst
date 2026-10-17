@@ -9,8 +9,8 @@
 import Silica
 
 class TallLayout<Window: WindowType>: PaneCountedLayout<Window>, PanedLayout {
-    override static var layoutName: String { return "Tall Left" }
-    override static var layoutKey: String { return "tall-left" }
+    override class var layoutName: String { return "Tall Left" }
+    override class var layoutKey: String { return "tall-left" }
 
     override class var paneCount: Int { return 2 }
 

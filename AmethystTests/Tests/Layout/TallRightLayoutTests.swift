@@ -48,9 +48,9 @@ class TallRightLayoutTests: QuickSpec {
                     CGRect(x: 1000, y: 0, width: 1000, height: 1000)
                 ])
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 500, width: 1000, height: 500),
-                    CGRect(x: 0, y: 0, width: 1000, height: 500)
-                ])
+                    CGRect(x: 0, y: 0, width: 1000, height: 500),
+                    CGRect(x: 0, y: 500, width: 1000, height: 500)
+                ], inOrder: true)
             }
 
             it("handles non-origin screens") {
@@ -83,9 +83,9 @@ class TallRightLayoutTests: QuickSpec {
                     CGRect(x: 1100, y: 100, width: 1000, height: 1000)
                 ])
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 100, y: 600, width: 1000, height: 500),
-                    CGRect(x: 100, y: 100, width: 1000, height: 500)
-                ])
+                    CGRect(x: 100, y: 100, width: 1000, height: 500),
+                    CGRect(x: 100, y: 600, width: 1000, height: 500)
+                ], inOrder: true)
             }
 
             it("increases and decreases windows in the main pane") {
@@ -120,10 +120,10 @@ class TallRightLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 666, width: 1000, height: 333),
+                    CGRect(x: 0, y: 0, width: 1000, height: 333),
                     CGRect(x: 0, y: 333, width: 1000, height: 333),
-                    CGRect(x: 0, y: 0, width: 1000, height: 333)
-                ])
+                    CGRect(x: 0, y: 666, width: 1000, height: 333)
+                ], inOrder: true)
 
                 layout.increaseMainPaneCount()
                 expect(layout.mainPaneCount).to(equal(2))
@@ -138,9 +138,9 @@ class TallRightLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 500, width: 1000, height: 500),
-                    CGRect(x: 0, y: 0, width: 1000, height: 500)
-                ])
+                    CGRect(x: 0, y: 0, width: 1000, height: 500),
+                    CGRect(x: 0, y: 500, width: 1000, height: 500)
+                ], inOrder: true)
 
                 layout.increaseMainPaneCount()
                 expect(layout.mainPaneCount).to(equal(3))
@@ -157,7 +157,7 @@ class TallRightLayoutTests: QuickSpec {
 
                 secondaryAssignments.verify(frames: [
                     CGRect(x: 0, y: 0, width: 1000, height: 1000)
-                ])
+                ], inOrder: true)
             }
 
             it("changes distribution based on pane ratio") {
@@ -191,9 +191,9 @@ class TallRightLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 500, width: 1000, height: 500),
-                    CGRect(x: 0, y: 0, width: 1000, height: 500)
-                ])
+                    CGRect(x: 0, y: 0, width: 1000, height: 500),
+                    CGRect(x: 0, y: 500, width: 1000, height: 500)
+                ], inOrder: true)
 
                 layout.recommendMainPaneRatio(0.75)
                 expect(layout.mainPaneRatio).to(equal(0.75))
@@ -207,9 +207,9 @@ class TallRightLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 500, width: 500, height: 500),
-                    CGRect(x: 0, y: 0, width: 500, height: 500)
-                ])
+                    CGRect(x: 0, y: 0, width: 500, height: 500),
+                    CGRect(x: 0, y: 500, width: 500, height: 500)
+                ], inOrder: true)
 
                 layout.recommendMainPaneRatio(0.25)
                 expect(layout.mainPaneRatio).to(equal(0.25))
@@ -223,9 +223,9 @@ class TallRightLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 500, width: 1500, height: 500),
-                    CGRect(x: 0, y: 0, width: 1500, height: 500)
-                ])
+                    CGRect(x: 0, y: 0, width: 1500, height: 500),
+                    CGRect(x: 0, y: 500, width: 1500, height: 500)
+                ], inOrder: true)
             }
         }
 

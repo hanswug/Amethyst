@@ -9,8 +9,6 @@
 import Silica
 
 class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
-    class var isRight: Bool { fatalError("Must be implemented by subclass") }
-
     override class var paneCount: Int { return 2 }
 
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
@@ -45,9 +43,6 @@ class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
             if isMain {
                 scaleFactor = CGFloat(screenFrame.size.width / mainPaneWindowWidth) / CGFloat(mainPaneCount)
                 windowFrame.origin.x = screenFrame.origin.x + mainPaneWindowWidth * CGFloat(windowIndex)
-                if type(of: self).isRight {
-                    windowFrame.origin.x += secondaryPaneWindowWidth
-                }
                 windowFrame.origin.y = screenFrame.origin.y
                 windowFrame.size.width = mainPaneWindowWidth
                 windowFrame.size.height = mainPaneWindowHeight
@@ -57,9 +52,6 @@ class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
                 windowFrame.origin.y = screenFrame.origin.y + (secondaryPaneWindowHeight * CGFloat(windowIndex - mainPaneCount))
                 windowFrame.size.width = secondaryPaneWindowWidth
                 windowFrame.size.height = secondaryPaneWindowHeight
-                if type(of: self).isRight {
-                    windowFrame.origin.x = screenFrame.origin.x
-                }
             }
 
             let resizeRules = ResizeRules(isMain: isMain, unconstrainedDimension: .horizontal, scaleFactor: scaleFactor)
@@ -80,13 +72,16 @@ class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
 extension WidescreenTallLayout: PanedLayout {}
 
 class WidescreenTallLayoutLeft<Window: WindowType>: WidescreenTallLayout<Window> {
-    override class var isRight: Bool { return false }
     override static var layoutName: String { return "Widescreen Tall Left" }
     override static var layoutKey: String { return "widescreen-tall-left" }
 }
 
+/// Widescreen Tall Left's twin, mirrored: the stack on the left, the first main window at the right edge.
 class WidescreenTallLayoutRight<Window: WindowType>: WidescreenTallLayout<Window> {
-    override class var isRight: Bool { return true }
     override static var layoutName: String { return "Widescreen Tall Right" }
     override static var layoutKey: String { return "widescreen-tall-right" }
+
+    override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
+        return super.frameAssignments(windowSet, on: screen)?.map { $0.mirrored(.horizontal) }
+    }
 }

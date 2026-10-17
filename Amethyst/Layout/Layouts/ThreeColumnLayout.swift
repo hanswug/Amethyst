@@ -72,7 +72,7 @@ struct TriplePaneArrangement {
             switch mainPane {
             case .left:   return [.main: .left, .secondary: .middle, .tertiary: .right]
             case .middle: return [.main: .middle, .secondary: .left, .tertiary: .right]
-            case .right:  return [.main: .right, .secondary: .left, .tertiary: .middle]
+            case .right:  return [.main: .right, .secondary: .middle, .tertiary: .left]
             }
         }()
         // swap keys and values for reverse lookup

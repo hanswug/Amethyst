@@ -591,9 +591,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                     CGRect(x: 1000, y: 0, width: 1000, height: 1000)
                 ])
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 500, height: 1000),
-                    CGRect(x: 500, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 500, y: 0, width: 500, height: 1000),
+                    CGRect(x: 0, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
             }
 
             it("separates into a main pane and two secondary panes") {
@@ -626,9 +626,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                     CGRect(x: 1100, y: 100, width: 1000, height: 1000)
                 ])
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 100, y: 100, width: 500, height: 1000),
-                    CGRect(x: 600, y: 100, width: 500, height: 1000)
-                ])
+                    CGRect(x: 600, y: 100, width: 500, height: 1000),
+                    CGRect(x: 100, y: 100, width: 500, height: 1000)
+                ], inOrder: true)
             }
 
             it("increases and decreases windows in the main pane") {
@@ -663,10 +663,10 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 500, height: 500),
-                    CGRect(x: 0, y: 500, width: 500, height: 500),
-                    CGRect(x: 500, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 500, y: 0, width: 500, height: 500),
+                    CGRect(x: 500, y: 500, width: 500, height: 500),
+                    CGRect(x: 0, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
 
                 layout.increaseMainPaneCount()
                 expect(layout.mainPaneCount).to(equal(2))
@@ -681,9 +681,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 500, height: 1000),
-                    CGRect(x: 500, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 500, y: 0, width: 500, height: 1000),
+                    CGRect(x: 0, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
 
                 layout.increaseMainPaneCount()
                 expect(layout.mainPaneCount).to(equal(3))
@@ -699,8 +699,8 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 500, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
             }
 
             it("changes distribution based on pane ratio") {
@@ -734,9 +734,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 500, height: 1000),
-                    CGRect(x: 500, y: 0, width: 500, height: 1000)
-                ])
+                    CGRect(x: 500, y: 0, width: 500, height: 1000),
+                    CGRect(x: 0, y: 0, width: 500, height: 1000)
+                ], inOrder: true)
 
                 layout.recommendMainPaneRatio(0.75)
                 expect(layout.mainPaneRatio).to(equal(0.75))
@@ -750,9 +750,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 250, height: 1000),
-                    CGRect(x: 250, y: 0, width: 250, height: 1000)
-                ])
+                    CGRect(x: 250, y: 0, width: 250, height: 1000),
+                    CGRect(x: 0, y: 0, width: 250, height: 1000)
+                ], inOrder: true)
 
                 layout.recommendMainPaneRatio(0.25)
                 expect(layout.mainPaneRatio).to(equal(0.25))
@@ -766,9 +766,9 @@ class ThreeColumnLayoutTests: QuickSpec {
                 ])
 
                 secondaryAssignments.verify(frames: [
-                    CGRect(x: 0, y: 0, width: 750, height: 1000),
-                    CGRect(x: 750, y: 0, width: 750, height: 1000)
-                ])
+                    CGRect(x: 750, y: 0, width: 750, height: 1000),
+                    CGRect(x: 0, y: 0, width: 750, height: 1000)
+                ], inOrder: true)
             }
 
             describe("coding") {
