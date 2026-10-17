@@ -79,7 +79,7 @@ swap-east:   {mod: mod3, key: l}
 focus-cw: false           # unbound, same as leaving it out or <NONE>
 ```
 
-[ametrine.sample.yml](ametrine.sample.yml) is a complete, real config. Every setting and command is described in [configuration-files.md](docs/configuration-files.md).
+[ametrine.sample.yml](ametrine.sample.yml) is a complete, real config: every setting with its options and default, every command, in sections. Every setting and command is described in [configuration-files.md](docs/configuration-files.md).
 
 ## Layouts
 
@@ -115,7 +115,6 @@ Each pair is a twin: the same layout mirrored. **A word of advice:** don't use t
 - **Shortcut cheatsheet:** your own keys at a glance from the menu bar, with the h/j/k/l grid.
 - **Raycast extension** on top of the command URL.
 - **Agent integration (MCP):** tell your AI assistant "set up my coding space".
-- **A cleaner sample config:** a complete settings file in logical sections, so binding something needs no trip to the docs.
 
 ## Credits and licence
 
