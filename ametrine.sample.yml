@@ -1,10 +1,46 @@
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Ametrine configuration: the only source of settings and key bindings.
-# Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml).
-# Menu: Edit Config… opens this file; Reload Config relaunches to apply changes.
-# A command is bound only if this file binds it. Settings left out get built-in defaults.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Location: ~/.config/ametrine/ametrine.yml (or ~/.ametrine.yml). Menu: Edit Config… opens this
+# file; Reload Config applies it (Ametrine relaunches).
+#
+# Settings: a setting left out gets its default (shown in each comment).
+# Keys:     a command is bound only here, as {mod: mod1, key: h}. {mod: <NONE>, key: <NONE>},
+#           false, or leaving it out = unbound. Unbound commands still run from the command
+#           palette or with: open -g "ametrine://command/<command>".
+#           key: a character (quote digits and symbols: "0", '.', ','), or space, enter, up,
+#           down, left, right, delete.
 # Reference: docs/configuration-files.md in the Ametrine repo.
+#
+# Sections:  1 Modifiers · 2 Command palette · 3 Layouts · 4 Main pane · 5 Moving between windows
+#            6 Screen space · 7 Which windows tile · 8 Window limit · 9 Mouse · 10 Focus border
+#            11 Feedback and app
 
-# layouts - Ordered list of layouts to use by layout key (default tall-left, wide-top, fullscreen, and column-left).
+
+# ─── 1 Modifiers ───────────────────────────────────────────────────────────────────────────────
+# Each is a list of shift, control, option, command. mod1 and mod2 are required.
+# h/j/k/l = direction, modifier = verb: mod1 focuses, mod2 warps, mod3 swaps.
+
+mod1: [control, option]                    # ⌃⌥    everyday: focus, layouts
+mod2: [control, option, command]           # ⌃⌥⌘   warp, main count
+mod3: [control, command]                   # ⌃⌘    swap
+mod4: [shift, control, option, command]    # ⇧⌃⌥⌘  "Super"
+
+
+# ─── 2 Command palette ─────────────────────────────────────────────────────────────────────────
+# Every command with its shortcut; type to filter, Enter runs, Esc closes. The first key to bind.
+
+show-command-palette: {mod: mod1, key: p}
+
+
+# ─── 3 Layouts ─────────────────────────────────────────────────────────────────────────────────
+# How layouts work, main first: docs/layouts.md.
+
+# The layouts the Layouts menu shows, the palette offers and cycle-layout steps through, in order.
+# Keys: fullscreen, floating, tall-left, tall-right, wide-top, wide-bottom, two-pane-a,
+# two-pane-b, 3column-left, 3column-middle, 3column-right, 4column-left, 4column-right,
+# column-left, column-right, row-top, row-bottom, widescreen-tall-left, widescreen-tall-right,
+# bsp. Default: tall-left, wide-top, fullscreen, column-left.
 layouts:
   - fullscreen
   - floating
@@ -27,8 +63,8 @@ layouts:
   - widescreen-tall-right
   - bsp
 
-# layout-names - The name shown for each layout (menu bar, HUD, Layouts menu, palette), by layout key.
-# A layout left out, or with an empty name, shows its key.
+# The name shown for a layout (menu bar, HUD, Layouts menu, palette), by key; quote it.
+# A layout left out, or with an empty name, shows its key. Default: none (every layout shows its key).
 layout-names:
   fullscreen: "Fullscreen"
   floating: "Floating"
@@ -51,456 +87,110 @@ layout-names:
   widescreen-tall-right: "Widescreen Tall Right"
   bsp: "Binary Space Partitioning"
 
-# First mod (default control + option). Every day commands
-mod1:
-  # - shift
-  - control
-  - option
-  # - command
-
-# Second mod (default option + control + command). Warps
-mod2:
-  # - shift
-  - control
-  - option
-  - command
-
-# Third mod: (default control + command). Swaps
-mod3:
-  # - shift
-  - control
-  # - option
-  - command
-  
-# Fourth mod: (default shift + control + option + command). Super
-mod4:
-  - shift
-  - control
-  - option
-  - command
-
-# Commands:
-# special key values
-# space
-# enter
-# up
-# right
-# down
-# left
-# delete
-
-# special characters require quotes
-# '.'
-# ','
-
-# Move to the next layout in the list.
-cycle-layout:
-  mod: mod1
-  key: '.'
-
-# Move to the previous layout in the list.
-cycle-layout-backward:
-  mod: mod1
-  key: ','
-
-# Shrink the main pane by a percentage of the screen dimension as defined by window-resize-step. Note that not all layouts respond to this command.
-shrink-main:
-  mod: mod1
-  key: '-'
-
-# Expand the main pane by a percentage of the screen dimension as defined by window-resize-step. Note that not all layouts respond to this command.
-expand-main:
- mod: mod1
- key: '='
-
-# Increase the number of windows in the main pane. Note that not all layouts respond to this command.
-increase-main:
- mod: mod2
- key: '='
-
-# Decrease the number of windows in the main pane. Note that not all layouts respond to this command.
-decrease-main:
-  mod: mod2
-  key: '-'
-
-# Previous/next retired for directional focus and swap (an Alt-Tab app covers previous/next).
-# Focus the next window in the list going counter-clockwise.
-focus-ccw:
-  mod: mod1
-  key: left
-
-# Focus the next window in the list going clockwise.
-focus-cw:
-  mod: mod1
-  key: right
-
-# Focus the main window in the list.
-focus-main:
-  mod: mod1
-  key: m
-
-# Swap the position of the currently focused window with the next window in the list going counter-clockwise.
-swap-ccw:
-  mod: mod3
-  key: left
-
-# Swap the position of the currently focused window with the next window in the list going clockwise.
-swap-cw:
-  mod: mod3
-  key: right
-
-# Swap the position of the currently focused window with the main window in the list.
-swap-main:
-  mod: mod3
-  key: m
-
-# Focus the tiled window in that direction (only visible windows; Fullscreen: west/east cycle).
-focus-west:
-  mod: mod1
-  key: h
-
-focus-south:
-  mod: mod1
-  key: j
-
-focus-north:
-  mod: mod1
-  key: k
-
-focus-east:
-  mod: mod1
-  key: l
-
-# Swap the focused window with the tiled window in that direction.
-swap-west:
-  mod: mod3
-  key: h
-
-swap-south:
-  mod: mod3
-  key: j
-
-swap-north:
-  mod: mod3
-  key: k
-
-swap-east:
-  mod: mod3
-  key: l
-
-# Warp the focused window into the pane in that direction (joins it; swaps within a pane).
-warp-west:
-  mod: mod2
-  key: h
-
-warp-south:
-  mod: mod2
-  key: j
-
-warp-north:
-  mod: mod2
-  key: k
-
-warp-east:
-  mod: mod2
-  key: l
-
-# Warp the focused window into main from wherever it is (swaps with main's top window from a pane's last window).
-warp-main:
-  mod: mod2
-  key: m
-
-# Select fullscreen layout
-select-fullscreen-layout:
-  mod: mod1
-  key: '1'
-
-# Switch this Space between its layout and Fullscreen: the focused window comes to the front (it doesn't become main),
-# and going back puts every window in the tile it had. Works whether or not fullscreen is in layouts.
-toggle-fullscreen:
-  mod: mod1
-  key: z
-
-# Show the layout's mirror image: switch to its twin (Tall Left <-> Tall Right, ...) with main count, ratio and pane sizes.
-# A twin in layouts is selected; otherwise this entry becomes the twin in place. 3Column Middle swaps its side columns.
-flip-twin:
-  mod: <NONE>
-  key: <NONE>
-
-# Reverse the order inside every pane whose windows stack as rows; panes don't move. Again to undo.
-flip-rows:
-  mod: <NONE>
-  key: <NONE>
-
-# Reverse the order inside every pane whose windows sit side by side; panes don't move. Again to undo.
-flip-columns:
-  mod: <NONE>
-  key: <NONE>
-
-# Select two-pane-a layout
-select-two-pane-a-layout:
-  mod: mod1
-  key: '2'
-
-# Select 3column-middle layout
-select-3column-middle-layout:
-  mod: mod1
-  key: '3'
-
-# The following commands used to be bound by built-in defaults and were never chosen explicitly,
-# so they are unbound (<NONE>). Ametrine binds only what this file binds; set mod/key to bind one.
-
-# Select 3column-left layout
-select-3column-left-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Select tall-left layout
-select-tall-left-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Select wide-top layout.
-select-wide-top-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Select column-left layout.
-select-column-left-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Select bsp layout.
-select-bsp-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Toggle the floating state of the currently focused window; i.e., if it was floating make it tiled and if it was tiled make it floating.
-toggle-float:
-  mod: mod2
-  key: t
-
-# Show in a HUD whether the focused window is tiled, floating or not managed, and why.
-explain-window:
-  mod: <NONE>
-  key: <NONE>
-
-# Turn the focus border on or off until Reload Config.
-toggle-focus-border:
-  mod: <NONE>
-  key: <NONE>
-
-# Switch the focus border style (glow, solid, gradient) until Reload Config.
-cycle-focus-border-style:
-  mod: <NONE>
-  key: <NONE>
-
-# Switch main-arrival-position between first and last until Reload Config.
-toggle-main-arrival-position:
-  mod: <NONE>
-  key: <NONE>
-
-# Turn snap-back-windows on or off until Reload Config.
-toggle-snap-back-windows:
-  mod: <NONE>
-  key: <NONE>
-
-# Display the layout HUD with the current layout on each screen.
-display-current-layout:
-  mod: <NONE>
-  key: <NONE>
-
-# Turn on or off tiling entirely.
-toggle-tiling:
- mod: <NONE>
- key: <NONE>
-
-# Turn on tiling.
-enable-tiling:
-  mod: <NONE>
-  key: <NONE>
-
-# Turn off tiling.
-disable-tiling:
-  mod: <NONE>
-  key: <NONE>
-
-# Rerun the current layout's algorithm.
-reevaluate-windows:
-  mod: mod2
-  key: r
-
-# Turn on or off focus-follows-mouse.
-toggle-focus-follows-mouse:
- mod: <NONE>
- key: <NONE>
-
-# Automatically quit and reopen Ametrine.
-relaunch-ametrine:
- mod: <NONE>
- key: <NONE>
-
-# disable screen padding on builtin display
-disable-padding-on-builtin-display: true
-
-# Boolean flag for whether or not to add margins between windows (default false).
-window-margins: true
-
-# Boolean flag for whether or not to set window margins if there is only one window on the screen, assuming window margins are enabled (default false).
-smart-window-margins: false
-
-# # Add 10px margin between windows
-# window-margins: true
-# window-margin-size: 5
-# The size of the margins between windows (in px, default 0).
-window-margin-size: 8
-
-# The max number of windows that may be visible on a screen at one time before
-# additional windows are minimized or float (see window-overflow). A value of 0 disables the feature.
-window-max-count: 0
-
-# What happens to windows over window-max-count: minimize (the oldest window outside the main pane
-# is minimised) or float (the newest windows float, centred, and the tiles stay as they are) (default minimize).
-window-overflow: float
-
-# The size of a window floated over the limit: reasonable (the share of the screen below) or
-# fixed (window-overflow-width x window-overflow-height) (default reasonable).
-window-overflow-size: reasonable
-
-# The reasonable size, in percent of the screen's usable width and height (1-100, defaults 60 and 60).
-window-overflow-reasonable-width: 60
-window-overflow-reasonable-height: 60
-
-# The fixed size in points, never bigger than the screen (0 = not set; fixed then uses reasonable).
-window-overflow-width: 1025
-window-overflow-height: 900
-
-# Switch window-overflow between minimize and float until Reload Config.
-toggle-window-overflow:
-  mod: mod2
-  key: o
-
-# Switch window-overflow-size between reasonable and fixed until Reload Config.
-toggle-window-overflow-size:
-  mod: <NONE>
-  key: <NONE>
-
-# set-window-max-count and set-main-pane-count take a number and have no key: run them from the
-# command palette or with ametrine://command/set-window-max-count?value=<n>.
-
-# true to show the new window max count (and window-overflow settings) on screen after changing them (default false).
-enables-window-count-hud: true
-
-# true to show a short message when a tiled window stays bigger than its tile (an app's minimum size),
-# once per window and tile size (default true).
-enables-refused-tile-hud: true
-
-# A border around the focused window (default false). Hidden for tiled windows in Fullscreen and in native full screen.
-focus-border: true
-# glow (soft, like the macOS focus ring), solid or gradient (default glow). cycle-focus-border-style switches live.
-focus-border-style: glow
-# Points: the ring width for solid and gradient, how far the glow reaches (default 5).
-focus-border-width: 2
-# accent (the system accent colour), "#RRGGBB" or "#AARRGGBB" (default accent). JankyBorders used "#FF453A".
-focus-border-color: accent
-# The two gradient colours, top left to bottom right (default purple to gold).
-focus-border-gradient: ["#9B5DE5", "#F4B942"]
-# Corner radius in points (default 12), when the window server doesn't report the window's own; normally each window's own is used.
-focus-border-radius: 12
-
-# The smallest height that a window can be sized to regardless of its layout frame (in px, default 0).
-window-minimum-height: 0
-
-# The smallest width that a window can be sized to regardless of its layout frame (in px, default 0)
-window-minimum-width: 0
-
-# List of bundle identifiers for applications to either be automatically floating or automatically tiled based on floating-is-blacklist (default []).
-floating: [
-  "com.apple.calculator",
-  "org.hammerspoon.Hammerspoon",
-  "net.duoziwei.KeepTop",
-  "com.aone.keka",
-  "com.hegenberg.KeyboardCleanTool",
-  "com.raycast.macos",
-  "com.knollsoft.Hookshot",
-  "cc.ffitch.shottr",
-  "pro.betterdisplay.BetterDisplay",
-  "com.apple.systempreferences",
-  "com.apple.finder",
-  "com.apple.ActivityMonitor",
-  {id: "*", window-titles: ["^(Open|Save)$"]}]
-
-# Boolean flag determining behavior of the floating list. true if the applications should be floating and all others tiled. false if the applications should be tiled and all others floating (default true).
-floating-is-blacklist: true
-
-# Ametrine: apps whose first window on a space tiles (the "anchor") while
-# their other windows (Settings, plugin browsers, Open dialogs…) float.
-floating-secondary-windows:
-  - md.obsidian
-  - dev.zed.Zed
-
-# true to lay windows out over the whole screen, menu bar and Dock area included (default false).
-ignore-menu-bar: false
-
-# true if menu bar icon should be hidden, along with the current layout's name next to it (default false).
-hide-menu-bar-icon: false
-
-# true if windows smaller than the small-window-size threshold should be floating by default (default true)
-# Off here: it was a workaround for secondary windows that Electron and similar apps draw as normal windows,
-# which floating-secondary-windows now handles. Still a valid option on its own.
-float-small-windows: false
-
-# Pixel threshold for float-small-windows. Windows with both width and height below this value are considered small (in px, default 500).
-small-window-size: 500
-
-# true if the mouse should move position to the center of a window when it becomes focused (default false). Note that this is largely incompatible with focus-follows-mouse.
-mouse-follows-focus: true
-
-# true if the windows underneath the mouse should become focused as the mouse moves (default false). Note that this is largely incompatible with mouse-follows-focus
-focus-follows-mouse: false
-
-# true if dragging and dropping windows on to each other should swap their positions (default false).
-mouse-swaps-windows: true
-
-# true if changing the frame of a window with the mouse should update the layout to accommodate the change (default false). Note that not all layouts will be able to respond to the change.
-mouse-resizes-windows: true
-
-# true if holding Shift (alone) while dropping a dragged window warps it into the pane under the cursor instead of swapping (default false).
-mouse-warps-windows: true
-
-# true to keep tiled windows on their tiles (default true): a mouse drag or resize the layout doesn't take goes back on release, and a move or resize by another app (Raycast, a script) goes back right after.
-snap-back-windows: true
-
-# true to display the name of the layout when a new layout is selected (default true).
-enables-layout-hud: true
-
-# true to display the name of the layout when moving to a new space (default true).
-enables-layout-hud-on-space-change: true
-
-# Where a window arriving in the main pane goes (default last).
-# first: on top of main (left when main's windows are side by side); with main full, its last window moves out.
-# last: at the end; it joins main only while main has room, so main stays as it is.
+# Keep each Space's layout, main count, ratio and pane sizes across restarts: true | false (default true).
+restore-layouts-on-launch: true
+
+# Next / previous layout in the list.
+cycle-layout:          {mod: mod1, key: '.'}
+cycle-layout-backward: {mod: mod1, key: ','}
+
+# Switch to a layout (only those in layouts). Selecting the current one again goes back to the previous.
+select-fullscreen-layout:            {mod: mod1, key: '1'}
+select-floating-layout:              {mod: <NONE>, key: <NONE>}
+select-tall-left-layout:             {mod: <NONE>, key: <NONE>}
+select-tall-right-layout:            {mod: <NONE>, key: <NONE>}
+select-wide-top-layout:              {mod: <NONE>, key: <NONE>}
+select-wide-bottom-layout:           {mod: <NONE>, key: <NONE>}
+select-two-pane-a-layout:            {mod: mod1, key: '2'}
+select-two-pane-b-layout:            {mod: <NONE>, key: <NONE>}
+select-3column-left-layout:          {mod: <NONE>, key: <NONE>}
+select-3column-middle-layout:        {mod: mod1, key: '3'}
+select-3column-right-layout:         {mod: <NONE>, key: <NONE>}
+select-4column-left-layout:          {mod: <NONE>, key: <NONE>}
+select-4column-right-layout:         {mod: <NONE>, key: <NONE>}
+select-column-left-layout:           {mod: <NONE>, key: <NONE>}
+select-column-right-layout:          {mod: <NONE>, key: <NONE>}
+select-row-top-layout:               {mod: <NONE>, key: <NONE>}
+select-row-bottom-layout:            {mod: <NONE>, key: <NONE>}
+select-widescreen-tall-left-layout:  {mod: <NONE>, key: <NONE>}
+select-widescreen-tall-right-layout: {mod: <NONE>, key: <NONE>}
+select-bsp-layout:                   {mod: <NONE>, key: <NONE>}
+
+# Switch this Space between its layout and Fullscreen, focused window in front (it doesn't become
+# main); back, every window is in its tile. Works whether or not fullscreen is in layouts.
+toggle-fullscreen: {mod: mod1, key: z}
+
+# Flip: flip-twin shows the mirror image (the twin, with main count, ratio and pane sizes; in
+# 3Column Middle the side columns swap); flip-rows / flip-columns reverse the order inside panes.
+# Panes don't move; flip again to undo.
+flip-twin:    {mod: <NONE>, key: <NONE>}
+flip-rows:    {mod: <NONE>, key: <NONE>}
+flip-columns: {mod: <NONE>, key: <NONE>}
+
+# Show the layout HUD with the current layout.
+display-current-layout: {mod: <NONE>, key: <NONE>}
+
+
+# ─── 4 Main pane ───────────────────────────────────────────────────────────────────────────────
+# Main count is a maximum ("x of y"): docs/layouts.md#main-count-is-a-maximum.
+
+# Where a window arriving in main goes: first (on top; with main full, its last window moves out)
+# | last (at the end; joins main only while main has room and the side panes are empty). Default last.
 main-arrival-position: last
 
-# The integer percentage of the screen dimension to increment and decrement main pane ratios by (default 5).
+# How much shrink-main / expand-main change main, in percent of the screen (default 5).
 window-resize-step: 5
 
-# Padding to apply between windows and the left edge of the screen (in px, default 0).
-screen-padding-left: 0
+# Main's size (5-95 % of the screen) and its maximum number of windows. Not every layout responds.
+shrink-main:    {mod: mod1, key: '-'}
+expand-main:    {mod: mod1, key: '='}
+decrease-main:  {mod: mod2, key: '-'}
+increase-main:  {mod: mod2, key: '='}
 
-# Padding to apply between windows and the right edge of the screen (in px, default 0).
-screen-padding-right: 0
+# The main window: focus it, swap the focused window with it, or move the focused window into main.
+focus-main: {mod: mod1, key: m}
+swap-main:  {mod: mod3, key: m}
+warp-main:  {mod: mod2, key: m}
 
-# Padding to apply between windows and the top edge of the screen (in px, default 0).
-screen-padding-top: 0   # padding modes below replace the old 540
+# Switch main-arrival-position between first and last until Reload Config.
+toggle-main-arrival-position: {mod: <NONE>, key: <NONE>}
 
-# Padding to apply between windows and the bottom edge of the screen (in px, default 0).
-screen-padding-bottom: 0
+# set-main-pane-count takes a number (1-99) and has no key: run it from the palette,
+# or open -g "ametrine://command/set-main-pane-count?value=<n>".
 
-# --- Ametrine: padding modes (virtual monitors on the Ark, anchored to the bottom) ---
-# Super+0 cycles full → wide → 27 on the current Space. Each Space keeps
-# its own mode, which survives restarts; padding-mode is where a Space
-# starts until a mode has been picked there.
+
+# ─── 5 Moving between windows ──────────────────────────────────────────────────────────────────
+# By direction: docs/directional-navigation.md. Only visible tiled windows count; ties go to the
+# window used most recently. Focus moves focus, warp moves the window into the pane in that
+# direction, swap trades places with the window there.
+
+focus-west:  {mod: mod1, key: h}
+focus-south: {mod: mod1, key: j}
+focus-north: {mod: mod1, key: k}
+focus-east:  {mod: mod1, key: l}
+
+warp-west:   {mod: mod2, key: h}
+warp-south:  {mod: mod2, key: j}
+warp-north:  {mod: mod2, key: k}
+warp-east:   {mod: mod2, key: l}
+
+swap-west:   {mod: mod3, key: h}
+swap-south:  {mod: mod3, key: j}
+swap-north:  {mod: mod3, key: k}
+swap-east:   {mod: mod3, key: l}
+
+# By order: the next window counter-clockwise / clockwise.
+focus-ccw: {mod: mod1, key: left}
+focus-cw:  {mod: mod1, key: right}
+swap-ccw:  {mod: mod3, key: left}
+swap-cw:   {mod: mod3, key: right}
+
+
+# ─── 6 Screen space ────────────────────────────────────────────────────────────────────────────
+
+# Padding modes: named virtual monitors, e.g. a centred 27" on a big display. Each sets top, left,
+# right, bottom in px (left out = 0). Each Space keeps the mode picked on it, across restarts.
+# Default: none.
 padding-modes:
   - name: full
   - name: wide
@@ -509,19 +199,194 @@ padding-modes:
     left: 640
     right: 640
     top: 720
+
+# The mode a Space starts on until you pick one there: a name from padding-modes (default none).
 padding-mode: wide
-cycle-padding-mode:
-  mod: mod1
-  key: "0"
 
-# --- Ametrine: command palette ---
-# Super+Y lists every command with its shortcut; type to filter, Enter runs, Esc closes.
-show-command-palette:
-  mod: mod1
-  key: p
+# No screen padding on a built-in display: true | false (default false).
+disable-padding-on-builtin-display: true
 
-# true to maintain layout state across application executions (default true).
-restore-layouts-on-launch: true
+# Padding when no padding mode is active, in px (default 0 each).
+screen-padding-left: 0
+screen-padding-right: 0
+screen-padding-top: 0
+screen-padding-bottom: 0
 
-# true to display some optional debug information in the layout HUD (default false).
+# Margins between and around windows: true | false (default false).
+window-margins: true
+
+# Drop the margins when only one window is on the screen: true | false (default false).
+smart-window-margins: false
+
+# Margin size in px (default 0).
+window-margin-size: 8
+
+# Lay windows out over the whole screen, menu bar and Dock area included: true | false (default false).
+ignore-menu-bar: false
+
+# Next / previous padding mode on the current Space (wraps around), or a given one.
+cycle-padding-mode:          {mod: mod1, key: "0"}
+cycle-padding-mode-backward: {mod: <NONE>, key: <NONE>}
+select-full-padding-mode:    {mod: <NONE>, key: <NONE>}
+select-wide-padding-mode:    {mod: <NONE>, key: <NONE>}
+"select-27 screen-padding-mode": {mod: <NONE>, key: <NONE>}
+
+
+# ─── 7 Which windows tile ──────────────────────────────────────────────────────────────────────
+# explain-window says why a window tiles or floats.
+
+# Apps that float (or tile, see floating-is-blacklist), by bundle id. An entry is an id (exact, or a
+# * glob) or {id: ..., window-titles: [...]} with case-sensitive regexes (use ^…$, (?i)). The first
+# match wins. Default [].
+floating:
+  - com.apple.calculator
+  - org.hammerspoon.Hammerspoon
+  - net.duoziwei.KeepTop
+  - com.aone.keka
+  - com.hegenberg.KeyboardCleanTool
+  - com.raycast.macos
+  - com.knollsoft.Hookshot
+  - cc.ffitch.shottr
+  - pro.betterdisplay.BetterDisplay
+  - com.apple.systempreferences
+  - com.apple.finder
+  - com.apple.ActivityMonitor
+  - {id: "*", window-titles: ["^(Open|Save)$"]}
+
+# true: the apps in floating float, all others tile | false: the opposite (default true).
+floating-is-blacklist: true
+
+# Apps whose first window on a Space tiles while their other windows (Settings, dialogs, Open
+# panels) float. Ids match like floating. Default [].
+floating-secondary-windows:
+  - md.obsidian
+  - dev.zed.Zed
+
+# Float windows smaller than small-window-size: true | false (default true).
+float-small-windows: false
+
+# The size below which a window is small, width and height, in px (default 500).
+small-window-size: 500
+
+# The smallest a window is sized to, whatever its tile, in px (default 0 each).
+window-minimum-width: 0
+window-minimum-height: 0
+
+# Float or tile the focused window; say why a window tiles or floats; lay everything out again.
+toggle-float:       {mod: mod2, key: t}
+explain-window:     {mod: <NONE>, key: <NONE>}
+reevaluate-windows: {mod: mod2, key: r}
+
+
+# ─── 8 Window limit ────────────────────────────────────────────────────────────────────────────
+# docs/window-limit.md
+
+# The most windows tiled on a screen at once: 0 (no limit) or a number (default 0).
+window-max-count: 0
+
+# A window over the limit: minimize (the oldest outside main) | float (the newest floats, centred,
+# the tiles stay). Default minimize.
+window-overflow: float
+
+# The size of a window floated over the limit: reasonable (the percentages below) | fixed (the
+# points below). Default reasonable.
+window-overflow-size: reasonable
+
+# reasonable: percent of the screen's usable width and height, 1-100 (default 60 and 70).
+window-overflow-reasonable-width: 60
+window-overflow-reasonable-height: 60
+
+# fixed: points, never bigger than the screen; 0 = not set, fixed then uses reasonable (default 0).
+window-overflow-width: 1025
+window-overflow-height: 900
+
+# Show the new window max count and overflow settings after changing them: true | false (default false).
+enables-window-count-hud: true
+
+# Say so when a tiled window stays bigger than its tile (an app's minimum size), once per window and
+# tile size: true | false (default true).
+enables-refused-tile-hud: true
+
+# Change the limit by one, or switch the overflow and its size, until Reload Config.
+increase-window-max-count:   {mod: <NONE>, key: <NONE>}
+decrease-window-max-count:   {mod: <NONE>, key: <NONE>}
+toggle-window-overflow:      {mod: mod2, key: o}
+toggle-window-overflow-size: {mod: <NONE>, key: <NONE>}
+
+# set-window-max-count takes a number (0-99, 0 = no limit) and has no key: run it from the palette,
+# or open -g "ametrine://command/set-window-max-count?value=<n>".
+
+
+# ─── 9 Mouse ───────────────────────────────────────────────────────────────────────────────────
+
+# Move the mouse to the centre of a window when it gets focus: true | false (default false).
+# Largely incompatible with focus-follows-mouse.
+mouse-follows-focus: true
+
+# Focus the window under the mouse as it moves: true | false (default false).
+focus-follows-mouse: false
+
+# Drag a window onto another to swap them: true | false (default false).
+mouse-swaps-windows: true
+
+# Hold Shift (alone) as you drop a dragged window to warp it into the pane under the cursor instead:
+# true | false (default false).
+mouse-warps-windows: true
+
+# Resizing a window with the mouse updates the layout (main's size): true | false (default false).
+mouse-resizes-windows: true
+
+# Keep tiled windows on their tiles: a drag or resize the layout doesn't take goes back on release,
+# and so does a move or resize by another app: true | false (default true).
+snap-back-windows: true
+
+# Switch snap-back-windows or focus-follows-mouse until Reload Config.
+toggle-snap-back-windows:   {mod: <NONE>, key: <NONE>}
+toggle-focus-follows-mouse: {mod: <NONE>, key: <NONE>}
+
+
+# ─── 10 Focus border ───────────────────────────────────────────────────────────────────────────
+
+# A ring just outside the focused window: true | false (default false). None for tiled windows in
+# the Fullscreen layout or in native full screen.
+focus-border: true
+
+# glow (soft, like the macOS focus ring) | solid | gradient. Default glow.
+focus-border-style: glow
+
+# Points: the ring width for solid and gradient, how far the glow reaches (default 5).
+focus-border-width: 2
+
+# accent (the system accent colour) | "#RRGGBB" | "#AARRGGBB", quoted. Default accent.
+focus-border-color: accent
+
+# The gradient style's two colours, top left to bottom right (default ["#9B5DE5", "#F4B942"]).
+focus-border-gradient: ["#9B5DE5", "#F4B942"]
+
+# Corner radius in points, used when a window doesn't report its own (default 12).
+focus-border-radius: 12
+
+# Turn the border on or off, or switch its style, until Reload Config.
+toggle-focus-border:      {mod: <NONE>, key: <NONE>}
+cycle-focus-border-style: {mod: <NONE>, key: <NONE>}
+
+
+# ─── 11 Feedback and app ───────────────────────────────────────────────────────────────────────
+
+# Show a short message when the layout, padding mode or main count changes: true | false (default true).
+enables-layout-hud: true
+
+# Show the layout's name when moving to another Space: true | false (default true).
+enables-layout-hud-on-space-change: true
+
+# Hide the menu bar icon and the layout name next to it: true | false (default false).
+hide-menu-bar-icon: false
+
+# Debug information in the layout HUD: true | false (default false).
 debug-layout-info: false
+
+# Tiling on or off, and quit and reopen Ametrine (what Reload Config does).
+toggle-tiling:     {mod: <NONE>, key: <NONE>}
+enable-tiling:     {mod: <NONE>, key: <NONE>}
+disable-tiling:    {mod: <NONE>, key: <NONE>}
+relaunch-ametrine: {mod: <NONE>, key: <NONE>}
