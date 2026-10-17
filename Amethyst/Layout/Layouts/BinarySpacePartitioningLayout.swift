@@ -310,6 +310,41 @@ class BinarySpacePartitioningLayout<Window: WindowType>: StatefulLayout<Window> 
     }
 
     /**
+     `flip-columns` swaps the two halves of every side-by-side split, `flip-rows` of every split with one half above the
+     other, so the picture mirrors along that axis. A split's direction follows its area's shape, as in `frameAssignments`,
+     and both halves are equal, so no size changes.
+
+     - Returns: Whether the tree changed.
+     */
+    func flip(_ axis: FlipAxis, in frame: CGRect) -> Bool {
+        var changed = false
+        var nodes: [(node: TreeNode<Window>, frame: CGRect)] = [(rootNode, frame)]
+        while let (node, frame) = nodes.popLast() {
+            guard var first = node.left, var second = node.right else {
+                continue
+            }
+
+            let sideBySide = frame.width > frame.height
+            if sideBySide == (axis == .columns) {
+                swap(&first, &second)
+                node.left = first
+                node.right = second
+                changed = true
+            }
+
+            let halves = sideBySide ? frame.divided(atDistance: frame.width / 2, from: .minXEdge) : frame.divided(atDistance: frame.height / 2, from: .minYEdge)
+            nodes.append((first, halves.slice))
+            nodes.append((second, halves.remainder))
+        }
+        return changed
+    }
+
+    /// The windows in the tree's order, for the window list after a flip.
+    var orderedWindowIDs: [WindowID] {
+        return rootNode.orderedWindowIDs()
+    }
+
+    /**
      Warp: the window leaves its tile and splits the neighbour's, on the side it came from. Moving west or north it came
      from the right or below, so it takes the second half; moving east or south, the first. Which way the tile splits
      still follows the tile's shape.

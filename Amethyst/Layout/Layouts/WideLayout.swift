@@ -14,6 +14,10 @@ class WideLayout<Window: WindowType>: PaneCountedLayout<Window>, PanedLayout {
 
     override class var paneCount: Int { return 2 }
 
+    override class func axis(ofPane pane: Int) -> FlipAxis {
+        return .columns
+    }
+
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
         let windows = windowSet.windows
 

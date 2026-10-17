@@ -268,6 +268,23 @@ class ThreeColumnMiddleLayout<Window: WindowType>: ThreeColumnLayout<Window>, Pa
     override static var layoutName: String { return "3Column Middle" }
     override static var layoutKey: String { return "3column-middle" }
     override static var mainColumn: Column { return .middle }
+
+    /**
+     `flip-twin` for 3Column Middle, which has no twin (Hans, 2026-10-17): the left and right columns swap windows and sizes,
+     so the picture is its mirror image. Needs both side columns to hold windows: an empty side column can only be the right.
+
+     - Returns: The window order and pane sizes after the swap, or `nil` when it can't.
+     */
+    func sideSwap<ID>(of windowIDs: [ID]) -> (order: [ID], counts: PaneCounts)? {
+        let counts = fittedPaneCounts(windowCount: windowIDs.count).counts
+        let (main, left, right) = (counts[0], counts[1], counts[2])
+        guard left > 0, right > 0 else {
+            return nil
+        }
+
+        let order = Array(windowIDs[0 ..< main] + windowIDs[(main + left)...] + windowIDs[main ..< main + left])
+        return (order, PaneCounts([main, right, left]))
+    }
 }
 
 class ThreeColumnRightLayout<Window: WindowType>: ThreeColumnLayout<Window>, PanedLayout {

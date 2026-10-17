@@ -10,6 +10,28 @@ import Nimble
 import Quick
 import Silica
 
+private func frames(of windows: [TestWindow], in layout: Layout<TestWindow>, on screen: TestScreen) -> [String: CGRect] {
+    let windowSet = WindowSet<TestWindow>(
+        windows: windows.map { LayoutWindow<TestWindow>(id: $0.id(), frame: $0.frame(), isFocused: false) },
+        isWindowWithIDActive: { _ in return true },
+        isWindowWithIDFloating: { _ in return false },
+        windowForID: { id in return windows.first { $0.id() == id } }
+    )
+    let assignments = layout.frameAssignments(windowSet, on: screen)!
+    return Dictionary(uniqueKeysWithValues: assignments.map { ($0.frameAssignment.window.id, $0.frameAssignment.frame) })
+}
+
+private func mirrored(_ frame: CGRect, _ axis: MirrorAxis, in screenFrame: CGRect) -> CGRect {
+    var mirrored = frame
+    switch axis {
+    case .horizontal:
+        mirrored.origin.x = screenFrame.minX + screenFrame.maxX - frame.maxX
+    case .vertical:
+        mirrored.origin.y = screenFrame.minY + screenFrame.maxY - frame.maxY
+    }
+    return mirrored
+}
+
 class TwinLayoutTests: QuickSpec {
     override func spec() {
         afterEach {
@@ -26,17 +48,6 @@ class TwinLayoutTests: QuickSpec {
             )
             let assignments = layout.frameAssignments(windowSet, on: screen)!
             return windows.map { window in assignments.first { $0.frameAssignment.window.id == window.id() }!.frameAssignment.frame }
-        }
-
-        func mirrored(_ frame: CGRect, _ axis: MirrorAxis, in screenFrame: CGRect) -> CGRect {
-            var mirrored = frame
-            switch axis {
-            case .horizontal:
-                mirrored.origin.x = screenFrame.minX + screenFrame.maxX - frame.maxX
-            case .vertical:
-                mirrored.origin.y = screenFrame.minY + screenFrame.maxY - frame.maxY
-            }
-            return mirrored
         }
 
         // The original and its twin, with the same main pane count.
@@ -304,6 +315,96 @@ class TwinLayoutTests: QuickSpec {
             it("no longer knows the old keys") {
                 for oldKey in ["tall", "wide", "two-pane", "two-pane-right", "middle-wide", "widescreen-tall", "column", "row"] {
                     expect(LayoutType<TestWindow>.layoutForKey(oldKey)).to(beNil())
+                }
+            }
+        }
+    }
+}
+
+/// flip-rows, flip-columns, and flip-twin where there's no twin layout (Hans, 2026-10-17).
+class FlipLayoutTests: QuickSpec {
+    override func spec() {
+        afterEach {
+            TestScreen.availableScreens = []
+        }
+
+        describe("flip") {
+            func ranges(_ layout: Layout<TestWindow>, _ windowCount: Int, _ axis: FlipAxis) -> [Range<Int>] {
+                return layout.flipRanges(windowCount: windowCount, axis: axis)
+            }
+
+            it("reverses rows and columns inside panes, by how each pane's windows are arranged") {
+                let tall = TallRightLayout<TestWindow>(), wide = WideBottomLayout<TestWindow>()
+                let widescreen = WidescreenTallLayoutLeft<TestWindow>(), column = ColumnRightLayout<TestWindow>(), row = RowLayout<TestWindow>()
+
+                expect(ranges(tall, 5, .rows)).to(equal([1 ..< 5]))
+                expect(ranges(tall, 5, .columns)).to(beEmpty())
+                tall.setMainPaneCount(2)
+                expect(ranges(tall, 5, .rows)).to(equal([0 ..< 2, 2 ..< 5]))
+
+                wide.setMainPaneCount(2)
+                expect(ranges(wide, 5, .columns)).to(equal([0 ..< 2, 2 ..< 5]))
+                expect(ranges(wide, 5, .rows)).to(beEmpty())
+
+                widescreen.setMainPaneCount(2)
+                expect(ranges(widescreen, 5, .columns)).to(equal([0 ..< 2]))
+                expect(ranges(widescreen, 5, .rows)).to(equal([2 ..< 5]))
+
+                expect(ranges(ThreeColumnLeftLayout<TestWindow>(), 5, .rows)).to(equal([1 ..< 3, 3 ..< 5]))
+                expect(ranges(FourColumnRightLayout<TestWindow>(), 5, .rows)).to(equal([1 ..< 3]))
+
+                expect(ranges(column, 5, .columns)).to(equal([1 ..< 5]))
+                column.setMainPaneCount(2)
+                expect(ranges(column, 5, .columns)).to(equal([0 ..< 2, 2 ..< 5]))
+                expect(ranges(column, 5, .rows)).to(beEmpty())
+                expect(ranges(row, 5, .rows)).to(equal([1 ..< 5]))
+
+                for layout in [TwoPaneLayout<TestWindow>(), FullscreenLayout<TestWindow>(), FloatingLayout<TestWindow>()] as [Layout<TestWindow>] {
+                    expect(ranges(layout, 5, .rows) + ranges(layout, 5, .columns)).to(beEmpty())
+                }
+            }
+
+            it("swaps 3Column Middle's side columns into its mirror image") {
+                // An even width: on an odd one the side columns differ by 1 px, and that stays with the position, not the windows.
+                let screen = TestScreen(frame: CGRect(x: 0, y: 0, width: 2000, height: 1000))
+                TestScreen.availableScreens = [screen]
+                let windows = (0..<4).map { _ in TestWindow(element: nil)! }
+                let layout = ThreeColumnMiddleLayout<TestWindow>()
+                let before = frames(of: windows, in: layout, on: screen)
+                expect(layout.fittedPaneCounts(windowCount: 4)).to(equal(PaneCounts([1, 2, 1])))
+
+                let swap = layout.sideSwap(of: windows.map { $0.id() })!
+                layout.setPaneCounts(swap.counts)
+                let swapped = swap.order.map { id in windows.first { $0.id() == id }! }
+                let after = frames(of: swapped, in: layout, on: screen)
+
+                expect(swap.counts).to(equal(PaneCounts([1, 1, 2])))
+                for window in windows {
+                    expect(after[window.id()]).to(equal(before[window.id()].map { mirrored($0, .horizontal, in: screen.adjustedFrame()) }))
+                }
+            }
+
+            it("leaves 3Column Middle alone while a side column is empty") {
+                let layout = ThreeColumnMiddleLayout<TestWindow>()
+                expect(layout.sideSwap(of: ["a", "b"])).to(beNil())
+            }
+
+            it("mirrors BSP along the flipped axis, and back") {
+                let screen = TestScreen(frame: CGRect(x: 4, y: 42, width: 1702, height: 1007))
+                TestScreen.availableScreens = [screen]
+                let windows = (0..<5).map { _ in TestWindow(element: nil)! }
+                let layout = BinarySpacePartitioningLayout<TestWindow>()
+                let original = frames(of: windows, in: layout, on: screen)
+
+                for (axis, mirror) in [(FlipAxis.columns, MirrorAxis.horizontal), (.rows, .vertical)] {
+                    expect(layout.flip(axis, in: screen.adjustedFrame())).to(beTrue())
+                    let flipped = frames(of: windows, in: layout, on: screen)
+                    for window in windows {
+                        expect(flipped[window.id()]).to(equal(original[window.id()].map { mirrored($0, mirror, in: screen.adjustedFrame()) }))
+                    }
+
+                    expect(layout.flip(axis, in: screen.adjustedFrame())).to(beTrue())
+                    expect(frames(of: windows, in: layout, on: screen)).to(equal(original))
                 }
             }
         }

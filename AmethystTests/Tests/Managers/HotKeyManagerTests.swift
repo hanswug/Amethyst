@@ -34,7 +34,7 @@ class HotKeyManagerTests: QuickSpec {
 
             it("lists the flip commands") {
                 let keys = HotKeyManager<SIApplication>.hotKeyNameToDefaultsKey().map { $0[1] }
-                expect(keys).to(contain([CommandKey.flipTwin.rawValue]))
+                expect(keys).to(contain([CommandKey.flipTwin.rawValue, CommandKey.flipRows.rawValue, CommandKey.flipColumns.rawValue]))
             }
 
             it("has no custom layout commands") {

@@ -1645,6 +1645,75 @@ extension WindowManager {
     }
 
     /**
+     `flip-rows` / `flip-columns` (Hans, 2026-10-17): on the focused screen, reverses the window order inside each pane whose
+     windows stack as rows (or sit side by side). Panes don't move, and flipping again restores the order. BSP swaps the
+     halves of its splits along that axis. Focus stays on its window; the cursor follows it with `mouse-follows-focus`.
+     */
+    func flip(_ axis: FlipAxis) {
+        guard let screenManager = focusedScreenManager(), let screen = screenManager.screen, let layout = screenManager.currentLayout else {
+            return
+        }
+
+        let windowIDs = windows.windowSet(forActiveWindowsOnScreen: screen).windows.map(\.id)
+        let order: [Window.WindowID]
+        if let bspLayout = layout as? BinarySpacePartitioningLayout<Window> {
+            guard bspLayout.flip(axis, in: screen.adjustedFrame()) else {
+                return
+            }
+            // The list follows the tree, so focus-cw/ccw keep following the picture.
+            let tree = bspLayout.orderedWindowIDs
+            order = tree.filter { windowIDs.contains($0) } + windowIDs.filter { !tree.contains($0) }
+        } else {
+            let ranges = layout.flipRanges(windowCount: windowIDs.count, axis: axis)
+            guard !ranges.isEmpty else {
+                return
+            }
+            var reversed = windowIDs
+            for range in ranges {
+                reversed.replaceSubrange(range, with: windowIDs[range].reversed())
+            }
+            order = reversed
+        }
+
+        windows.reorder(order)
+        log.debug("Flip \(axis.rawValue): \(layout.layoutName)")
+        if let window = Window.currentlyFocused(), window.screen()?.screenID() == screen.screenID() {
+            followWithCursor(window, in: layout, on: screen)
+        }
+        markScreenForReflow(screen)
+    }
+
+    /**
+     `flip-twin`: the current layout's mirror image (Hans, 2026-10-17). A layout with a twin switches to it
+     (`ScreenManager.flipToTwin`). 3Column Middle has none: its left and right columns swap, windows and sizes, which needs
+     both to hold windows (an empty side column can only be the right one).
+     */
+    func flipTwin() {
+        guard let screenManager = focusedScreenManager() else {
+            return
+        }
+
+        guard let middle = screenManager.currentLayout as? ThreeColumnMiddleLayout<Window>, let screen = screenManager.screen else {
+            screenManager.flipToTwin()
+            return
+        }
+
+        let windowIDs = windows.windowSet(forActiveWindowsOnScreen: screen).windows.map(\.id)
+        let before = middle.paneCounts
+        guard let swap = middle.sideSwap(of: windowIDs) else {
+            return
+        }
+
+        windows.reorder(swap.order)
+        middle.setPaneCounts(swap.counts)
+        log.debug("Flip twin: 3Column Middle swaps its side columns, panes \(before) → \(swap.counts)")
+        if let window = Window.currentlyFocused(), window.screen()?.screenID() == screen.screenID() {
+            followWithCursor(window, in: middle, on: screen)
+        }
+        markScreenForReflow(screen)
+    }
+
+    /**
      `warp-main`: the window joins main from wherever it is (agreed 2026-10-14).
 
      - Layouts with stored pane sizes: `PaneCounts.warpIntoMain`; the last window of a side pane swaps with main's top window.

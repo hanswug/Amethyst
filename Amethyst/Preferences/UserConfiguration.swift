@@ -171,6 +171,8 @@ enum CommandKey: String {
     case displayCurrentLayout = "display-current-layout"
     case toggleFullscreen = "toggle-fullscreen"
     case flipTwin = "flip-twin"
+    case flipRows = "flip-rows"
+    case flipColumns = "flip-columns"
     case toggleTiling = "toggle-tiling"
     case enableTiling = "enable-tiling"
     case disableTiling = "disable-tiling"

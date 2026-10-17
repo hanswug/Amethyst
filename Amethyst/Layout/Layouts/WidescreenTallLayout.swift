@@ -11,6 +11,11 @@ import Silica
 class WidescreenTallLayout<Window: WindowType>: PaneCountedLayout<Window> {
     override class var paneCount: Int { return 2 }
 
+    /// Main's windows sit side by side; the stack's are rows.
+    override class func axis(ofPane pane: Int) -> FlipAxis {
+        return pane == 0 ? .columns : .rows
+    }
+
     override func frameAssignments(_ windowSet: WindowSet<Window>, on screen: Screen) -> [FrameAssignmentOperation<Window>]? {
         let windows = windowSet.windows
 
