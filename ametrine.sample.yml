@@ -123,9 +123,9 @@ toggle-fullscreen: {mod: mod1, key: z}
 # Flip: flip-twin shows the mirror image (the twin, with main count, ratio and pane sizes; in
 # 3Column Middle the side columns swap); flip-rows / flip-columns reverse the order inside panes.
 # Panes don't move; flip again to undo.
-flip-twin:    {mod: <NONE>, key: <NONE>}
-flip-rows:    {mod: <NONE>, key: <NONE>}
-flip-columns: {mod: <NONE>, key: <NONE>}
+flip-twin:    {mod: mod4, key: f}
+flip-rows:    {mod: mod4, key: x}
+flip-columns: {mod: mod4, key: y}
 
 # Show the layout HUD with the current layout.
 display-current-layout: {mod: <NONE>, key: <NONE>}
