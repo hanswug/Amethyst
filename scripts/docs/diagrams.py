@@ -118,6 +118,15 @@ def bsp():
     ]
 
 
+def padded(tiles, left=0, right=0, top=0, bottom=0, screen=(3840, 2160)):
+    """The screen's outline with `tiles` laid out in the area a padding mode leaves (padding in points)."""
+    width, height = screen
+    x0, y0 = F(left, width), F(top, height)
+    w, h = F(width - left - right, width), F(height - top - bottom, height)
+    inner = [(x0 + x * w, y0 + y * h, tw * w, th * h, label) for x, y, tw, th, label in tiles]
+    return [(F(0), F(0), F(1), F(1), "")] + inner
+
+
 def mirror_x(tiles):
     return [(1 - x - w, y, w, h, s) for x, y, w, h, s in tiles]
 
@@ -182,6 +191,7 @@ def pair(name_a, name_b, tiles, mirror, **kw):
 if __name__ == "__main__":
     S = dict(width=16, height=6)
     M = dict(width=24, height=8)
+    P = dict(width=30, height=8)
     sections = {
         "fill-3column": side_by_side(*[(f"{n} window{'s' if n > 1 else ''}", three_column(n), S) for n in (1, 2, 3)]) + "\n\n"
         + side_by_side(*[(f"{n} windows", three_column(n), S) for n in (4, 5, 6)]),
@@ -215,6 +225,21 @@ if __name__ == "__main__":
         "row-m2": pair("Row Top, main count 2", "Row Bottom, main count 2", row(5, 2), mirror_y, width=30, height=12),
         "fullscreen": side_by_side(("Fullscreen", fullscreen(5), {})),
         "bsp": side_by_side(("BSP, 5 windows opened in order", bsp(), dict(width=36, height=12))),
+        # docs/my-setup.md: Hans's padding modes on his 55" 4K (3840 x 2160 points).
+        "my-laptop": side_by_side(("Fullscreen", fullscreen(4), {}), ("Two Pane A", two_pane(4), {})),
+        "my-padding": side_by_side(
+            ("full", padded([(F(0), F(0), F(1), F(1), "video")]), P),
+            ("wide", padded([(F(0), F(0), F(1), F(1), "video")], top=540), P),
+            ("27 screen", padded([(F(0), F(0), F(1), F(1), "video")], left=640, right=640, top=720), P)),
+        "my-tall": side_by_side(
+            ("1/3", tall(4), M), ("1/2", tall(3), M), ("2/2", tall(4, 2), M)),
+        "my-3column": side_by_side(
+            ("1/2/1", three_column(4, where="middle", counts=[2, 1, 1]), M),
+            ("2/1/2", three_column(5, where="middle", counts=[1, 2, 2]), M),
+            ("3/2/3", three_column(8, where="middle", counts=[2, 3, 3]), M)),
+        "my-browse": side_by_side(
+            ("Fullscreen in 27 screen, on the 55\"", padded([(F(0), F(0), F(1), F(1), "browser")], left=640, right=640, top=720),
+             dict(width=48, height=12))),
         "flip-tall": side_by_side(
             ("Tall Left", tall(5), M),
             ("flip-twin: Tall Right", mirror_x(tall(5)), M),

@@ -98,11 +98,12 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Floating | `floating` | Nothing is tiled |
 | BSP | `bsp` | Each new window splits the focused one in half |
 
-Each pair is a twin: the same layout mirrored. **A word of advice:** don't use them all. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun! How they work, with a diagram of each: [docs/layouts.md](docs/layouts.md).
+Each pair is a twin: the same layout mirrored. **A word of advice:** don't use them all. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun! I personally don't have them all bound: [my setup](docs/my-setup.md) shows my favourites, and when I use them. How they work, with a diagram of each: [docs/layouts.md](docs/layouts.md).
 
 ## Documentation
 
 - [Layouts](docs/layouts.md): how main works, and every layout with diagrams
+- [My setup](docs/my-setup.md): the layouts I use, and when
 - [Features](docs/features.md): everything Ametrine does
 - [Configuration file](docs/configuration-files.md): every setting and command
 - [Directional focus, swap and warp](docs/directional-navigation.md)
