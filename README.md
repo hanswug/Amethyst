@@ -2,9 +2,9 @@
 
 A tiling window manager for macOS, built on [Amethyst](https://github.com/ianyh/Amethyst) by Ian Ynda-Hummel, and designed around the **main pane**: the window you're working in gets the big tile, and everything else lines up beside it.
 
-It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide, and to stay simple on the go: on a laptop's built-in display, a full-screen stack or two panes side by side is all it takes.
+It was born out of the need to handle many windows on large displays, such as a 4K 55" screen or an ultrawide, and to stay simple on a standard one, a single 27" 5K or a laptop's built-in display, where a full-screen stack or two panes side by side is all it takes. That range is where its flexibility comes from: the same setup works from a huge display to a standard one, and padding modes can even make the huge one behave like a smaller screen.
 
-> **There are no public releases.** Builds are signed with a self-signed certificate, not notarised (that needs a paid Apple Developer ID). You can [build it yourself](#getting-started) in a few minutes, or take any of the ideas for your own setup.
+> **There are no public releases.** Builds are signed with a self-signed certificate, not notarised (that needs a paid Apple Developer ID). You can [build it yourself](#getting-started) in a few minutes.
 
 ## Highlights
 
@@ -13,6 +13,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - **Flip.** Mirror the layout, or reverse the rows or columns, to bring the windows at the far end closer. → [Flip](docs/layouts.md#flip)
 - **Padding modes.** Virtual monitors on a big display, such as a centred 27" or a 21:9 strip, picked per Space. → [Padding modes](docs/features.md#padding-modes)
 - **Command palette and URL.** Every command, searchable, with its key; and `ametrine://command/<key>` for scripts and launchers. → [Palette](docs/features.md#command-palette)
+- **Shortcut sheet.** Your own keys at a glance, with the direction grid that shows the modifier rule. → [Shortcut sheet](docs/features.md#shortcut-sheet)
 - **Calm windows.** Settings and dialogs float on their own, a window limit keeps the tiles readable, and windows snap back to their tiles. → [Features](docs/features.md)
 - **Focus border.** A soft glow around the focused window that follows its corners. → [Focus border](docs/features.md#focus-border)
 - **One config file.** No preferences window and no built-in keys: the file binds what you use. → [Configuration](docs/configuration-files.md)
@@ -112,7 +113,6 @@ Each pair is a twin: the same layout mirrored. **A word of advice:** don't use t
 
 ## Roadmap
 
-- **Shortcut cheatsheet:** your own keys at a glance from the menu bar, with the h/j/k/l grid.
 - **Raycast extension** on top of the command URL.
 - **Agent integration (MCP):** tell your AI assistant "set up my coding space".
 
