@@ -71,7 +71,7 @@ enum ShortcutSheet {
         ]),
         ("Window limit", [
             ("increase-window-max-count", "Raise limit"), ("decrease-window-max-count", "Lower limit"),
-            ("toggle-window-overflow", "Overflow minimize/float"), ("toggle-window-overflow-size", "Overflow size")
+            ("toggle-window-overflow", "Overflow mode"), ("toggle-window-overflow-size", "Overflow size")
         ]),
         ("Mouse", [
             ("toggle-snap-back-windows", "Snap-back on/off"), ("toggle-focus-follows-mouse", "Focus follows mouse")
@@ -262,17 +262,22 @@ class ShortcutSheetController: NSObject {
         content.orientation = .vertical
         content.alignment = .leading
         content.spacing = 18
-        content.edgeInsets = NSEdgeInsets(top: 20, left: 24, bottom: 20, right: 24)
         content.translatesAutoresizingMaskIntoConstraints = false
         background.addSubview(content)
+
+        // Margins as constraints, not the stack's edge insets: a leading-aligned stack leaves its right inset out of its
+        // fitting size, which cut off the last column.
+        let margin = NSEdgeInsets(top: 20, left: 24, bottom: 20, right: 24)
         NSLayoutConstraint.activate([
-            content.topAnchor.constraint(equalTo: background.topAnchor),
-            content.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            content.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            content.bottomAnchor.constraint(equalTo: background.bottomAnchor)
+            content.topAnchor.constraint(equalTo: background.topAnchor, constant: margin.top),
+            content.leadingAnchor.constraint(equalTo: background.leadingAnchor, constant: margin.left),
+            content.trailingAnchor.constraint(equalTo: background.trailingAnchor, constant: -margin.right),
+            content.bottomAnchor.constraint(equalTo: background.bottomAnchor, constant: -margin.bottom)
         ])
 
-        panel.setContentSize(content.fittingSize)
+        content.layoutSubtreeIfNeeded()
+        let size = content.fittingSize
+        panel.setContentSize(NSSize(width: ceil(size.width) + margin.left + margin.right, height: ceil(size.height) + margin.top + margin.bottom))
         panel.center()
         panel.makeKeyAndOrderFront(nil)
     }
@@ -287,18 +292,7 @@ class ShortcutSheetController: NSObject {
             views.append(gridView(grid))
         }
         if !sheet.groups.isEmpty {
-            let columns = ShortcutSheet.columns(of: sheet.groups, count: 3).map { groups -> NSView in
-                let stack = NSStackView(views: groups.map(groupView))
-                stack.orientation = .vertical
-                stack.alignment = .leading
-                stack.spacing = 14
-                return stack
-            }
-            let row = NSStackView(views: columns)
-            row.orientation = .horizontal
-            row.alignment = .top
-            row.spacing = 32
-            views.append(row)
+            views.append(groupsView(ShortcutSheet.columns(of: sheet.groups, count: 3)))
         }
         if sheet.grid == nil && sheet.groups.isEmpty {
             views.append(label("No keys bound yet. Bind commands in the config file.", size: 13, color: .secondaryLabelColor))
@@ -322,24 +316,66 @@ class ShortcutSheetController: NSObject {
         let gridView = NSGridView(views: [header] + rows)
         gridView.rowSpacing = 6
         gridView.columnSpacing = 18
+        // The modifiers sit right next to their verb.
+        gridView.column(at: 0).xPlacement = .trailing
+        gridView.column(at: 1).trailingPadding = 6
         for column in 2 ..< gridView.numberOfColumns {
             gridView.column(at: column).xPlacement = .center
         }
+        hug(gridView)
         return gridView
     }
 
-    private func groupView(_ group: ShortcutSheet.Group) -> NSView {
-        let rows = group.entries.map { [label($0.name, size: 13), label($0.shortcut, size: 13, color: .secondaryLabelColor)] }
-        let gridView = NSGridView(views: rows)
-        gridView.rowSpacing = 4
-        gridView.columnSpacing = 16
-        gridView.column(at: 1).xPlacement = .trailing
+    /// Keeps a grid at its content's size: a grid has no size of its own, so without this Auto Layout stretches it to
+    /// fill the panel.
+    private func hug(_ gridView: NSGridView) {
+        gridView.setContentHuggingPriority(.required, for: .horizontal)
+        gridView.setContentHuggingPriority(.required, for: .vertical)
+    }
 
-        let stack = NSStackView(views: [label(group.title.uppercased(), size: 11, weight: .semibold, color: .secondaryLabelColor), gridView])
-        stack.orientation = .vertical
-        stack.alignment = .leading
-        stack.spacing = 6
-        return stack
+    /// All groups in one grid: a name and a shortcut column per sheet column, filled line by line (a group's title, its
+    /// entries, a blank line), so every column lines up and the grid sizes itself.
+    private func groupsView(_ columns: [[ShortcutSheet.Group]]) -> NSView {
+        let lines = columns.map { groups -> [[NSView]] in
+            var lines: [[NSView]] = []
+            for (index, group) in groups.enumerated() {
+                if index > 0 {
+                    lines.append([NSGridCell.emptyContentView, NSGridCell.emptyContentView])
+                }
+                lines.append([label(group.title.uppercased(), size: 11, weight: .semibold, color: .secondaryLabelColor), NSGridCell.emptyContentView])
+                lines += group.entries.map { [label($0.name, size: 13), label($0.shortcut, size: 13, color: .secondaryLabelColor)] }
+            }
+            return lines
+        }
+
+        // Columns: name, shortcut, then a spacer before the next pair (its width counts when the panel is sized,
+        // where column padding doesn't).
+        let height = lines.map(\.count).max() ?? 0
+        let rows = (0 ..< height).map { row -> [NSView] in
+            var cells: [NSView] = []
+            for (index, column) in lines.enumerated() {
+                if index > 0 {
+                    cells.append(NSGridCell.emptyContentView)
+                }
+                cells += row < column.count ? column[row] : [NSGridCell.emptyContentView, NSGridCell.emptyContentView]
+            }
+            return cells
+        }
+        let gridView = NSGridView(views: rows)
+        gridView.rowSpacing = 5
+        gridView.columnSpacing = 14
+        for column in 0 ..< gridView.numberOfColumns {
+            switch column % 3 {
+            case 1:
+                gridView.column(at: column).xPlacement = .trailing
+            case 2:
+                gridView.column(at: column).width = 8
+            default:
+                break
+            }
+        }
+        hug(gridView)
+        return gridView
     }
 
     private func label(_ text: String, size: CGFloat, weight: NSFont.Weight = .regular, color: NSColor = .labelColor) -> NSTextField {
