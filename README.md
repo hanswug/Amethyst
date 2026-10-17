@@ -39,7 +39,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Command URL
 - [x] Config file only: no preferences window, no built-in keys, layout name in the menu bar
 - [x] Command palette, with current counts and count HUDs
-- [x] BSP fixes (see [Layouts](#bsp-in-ametrine))
+- [x] BSP fixes (see [BSP](docs/layouts.md#bsp))
 - [x] Renamed from hw-Amethyst to Ametrine (3.0.0), with a purple-to-gold icon
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [x] Warp (4.2.0): `warp-<direction>` and `warp-main` move a window into the neighbouring pane, or into main, in every tiled layout (swaps in Two Pane, Column and Row; splits the neighbour's tile in BSP), into an empty column too; pane sizes are remembered and the main pane count is a maximum
@@ -114,6 +114,8 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 
 ## Layouts
 
+How layouts work, main first, with a diagram of each: [docs/layouts.md](docs/layouts.md).
+
 | Layout | Key | What it does |
 |---|---|---|
 | Tall Left / Right | `tall-left`, `tall-right` | Main pane on the left (or right), the rest stacked in rows beside it |
@@ -131,17 +133,6 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 Each name says where main is. The pairs are twins: the same layout mirrored, every window on its mirror spot, sharing main count, ratio and pane sizes, so switching to the twin by select or cycle shows the same arrangement on the other side. The flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
 
 **A word of advice:** I strongly suggest not using all the available layouts. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun!
-
-### BSP in Ametrine
-
-Binary Space Partitioning keeps a tree of windows: a new window splits the focused one in half, and a closed window's space goes to the window it was split from. Sizes follow the order windows were opened in; nothing rebalances. Ametrine fixes a few ways it strayed from that design:
-
-- **The tree follows the windows actually on screen.** Hidden, closed or moved windows no longer leave an empty tile, and a window the tree missed still gets one. A hidden app's windows come back at the focused window, not at their old spot.
-- **A new window splits the window you last focused**, also when you got there by clicking into another app.
-- **Closing one of the first windows no longer reshuffles the layout:** the windows next to it take over its space.
-- **Quitting an app frees all its tiles**, including windows opened after Ametrine started. This applies to every layout.
-
-Layouts in the config are cycled with `cycle-layout` / `cycle-layout-backward` or selected with `select-<key>-layout`. Commands that change the main pane (`shrink-main`, `expand-main`, `increase-main`, `decrease-main`) work in layouts that have one. The main pane count is a maximum: `increase-main` moves nothing, and main fills by warp or by windows arriving at `main-arrival-position: first`. When a window leaves view (closed, quit, hidden, minimised, moved to another Space, floated), only its own pane shrinks; a window coming back arrives at `main-arrival-position`.
 
 ## Build and install
 
