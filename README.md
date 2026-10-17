@@ -98,7 +98,7 @@ focus-cw: false           # unbound, same as leaving it out or <NONE>
 | Floating | `floating` | Nothing is tiled |
 | BSP | `bsp` | Each new window splits the focused one in half |
 
-Each pair is a twin: the same layout mirrored. **A word of advice:** don't use them all. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun! I personally don't have them all bound: [my setup](docs/my-setup.md) shows my favourites, and when I use them. How they work, with a diagram of each: [docs/layouts.md](docs/layouts.md).
+Each pair is a twin: the same layout mirrored. **A word of advice:** don't use them all. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun! You'll likely need only 3 or 4 of them: I use four, plus Floating. [My setup](docs/my-setup.md) shows which, and when. How they work, with a diagram of each: [docs/layouts.md](docs/layouts.md).
 
 ## Documentation
 

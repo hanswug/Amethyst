@@ -2,7 +2,7 @@
 
 # My setup
 
-I personally don't have every layout bound. These are my favourites, and when I use them: one example of how layouts, main counts and padding modes fit together. Your screen and keys will differ.
+I personally don't have every layout bound. **You'll likely need only 3 or 4 of them, as I do:** Fullscreen, Two Pane A, Tall Left and 3Column Middle, plus Floating for when I don't want tiling at all. This page shows when I use each: one example of how layouts, main counts and padding modes fit together. Your screen and keys will differ.
 
 The keys are mine (from [ametrine.sample.yml](../ametrine.sample.yml), which is my config): ⌃⌥ for everyday commands and focus, ⌃⌥⌘ to warp, ⌃⌘ to swap. Numbers in the diagrams are the window order (see [layouts](layouts.md)); "1/3" means 1 window in main and 3 beside it, read left to right.
 
