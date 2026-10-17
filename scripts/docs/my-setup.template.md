@@ -2,7 +2,7 @@
 
 # My setup
 
-I personally don't have every layout bound. **You'll likely need only 3 or 4 of them, as I do:** Fullscreen, Two Pane A, Tall Left and 3Column Middle, plus Floating for when I don't want tiling at all. This page shows when I use each: one example of how layouts, main counts and padding modes fit together. Your screen and keys will differ.
+I personally don't have every layout bound. **You'll likely need only 3 or 4 of them, as I do:** Fullscreen, Two Pane A, Tall Left and 3Column Middle, plus Floating for windows that need free placement. This page shows when I use each: one example of how layouts, main counts and padding modes fit together. Your screen and keys will differ.
 
 The keys are mine (from [ametrine.sample.yml](../ametrine.sample.yml), which is my config): ⌃⌥ for everyday commands and focus, ⌃⌥⌘ to warp, ⌃⌘ to swap. Numbers in the diagrams are the window order (see [layouts](layouts.md)); "1/3" means 1 window in main and 3 beside it, read left to right.
 
@@ -50,6 +50,10 @@ Heavy lifting is the one time I go past it: in `full`, 3/3/3 holds spreadsheets,
 Fullscreen (⌃⌥1) in `27 screen`: a centred 27" for reading and videos, without the whole 55" in my face.
 
 {{my-browse}}
+
+## Floating: free placement
+
+Some windows need to sit exactly where I put them. In Floating nothing is tiled, and [snap-back](features.md#the-mouse) leaves windows alone. I move and size them with Raycast's window management: Ametrine doesn't try to be the all-in-one, and dedicated apps do that part well.
 
 ## Always at hand
 
