@@ -85,19 +85,26 @@ class TwinLayoutTests: QuickSpec {
         ]
 
         describe("twins") {
+            // An even screen, and an odd one where widths round (1702 wide, like Hans's 4K with padding).
+            let screens = [
+                TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000)),
+                TestScreen(frame: CGRect(x: 4, y: 42, width: 1702, height: 1007))
+            ]
+
             for pair in pairs {
                 it("\(pair.name) mirrors its original") {
-                    let screen = TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000))
-                    TestScreen.availableScreens = [screen]
+                    for screen in screens {
+                        TestScreen.availableScreens = [screen]
 
-                    for mainCount in [1, 2] {
-                        for windowCount in [1, 2, 4, 7] {
-                            let (original, twin) = pair.make(mainCount)
-                            let expected = frames(original, windowCount: windowCount, on: screen).map {
-                                mirrored($0, pair.axis, in: screen.adjustedFrame())
+                        for mainCount in [1, 2] {
+                            for windowCount in [1, 2, 4, 7] {
+                                let (original, twin) = pair.make(mainCount)
+                                let expected = frames(original, windowCount: windowCount, on: screen).map {
+                                    mirrored($0, pair.axis, in: screen.adjustedFrame())
+                                }
+
+                                expect(frames(twin, windowCount: windowCount, on: screen)).to(equal(expected))
                             }
-
-                            expect(frames(twin, windowCount: windowCount, on: screen)).to(equal(expected))
                         }
                     }
                 }
@@ -105,24 +112,25 @@ class TwinLayoutTests: QuickSpec {
 
             for pair in columnPairs {
                 it("mirrors \(pair.name) Left with stored pane sizes, empty columns included") {
-                    let screen = TestScreen(frame: CGRect(x: 100, y: 100, width: 2000, height: 1000))
-                    TestScreen.availableScreens = [screen]
-                    let paneCount = type(of: pair.make().0).paneCount
+                    for screen in screens {
+                        TestScreen.availableScreens = [screen]
+                        let paneCount = type(of: pair.make().0).paneCount
 
-                    // Uneven sides (1/1/3, 1/1/1/3) and a full main with an empty far column (3/1/0, 3/1/1/0).
-                    let uneven = [1] + Array(repeating: 1, count: paneCount - 2) + [3]
-                    let emptyFar = [3] + Array(repeating: 1, count: paneCount - 2) + [0]
-                    for counts in [uneven, emptyFar] {
-                        let (original, twin) = pair.make()
-                        original.applyWarp(PaneCounts(counts))
-                        twin.applyWarp(PaneCounts(counts))
-                        let windowCount = counts.reduce(0, +)
-                        let screenFrame = screen.adjustedFrame()
+                        // Uneven sides (1/1/3, 1/1/1/3) and a full main with an empty far column (3/1/0, 3/1/1/0).
+                        let uneven = [1] + Array(repeating: 1, count: paneCount - 2) + [3]
+                        let emptyFar = [3] + Array(repeating: 1, count: paneCount - 2) + [0]
+                        for counts in [uneven, emptyFar] {
+                            let (original, twin) = pair.make()
+                            original.applyWarp(PaneCounts(counts))
+                            twin.applyWarp(PaneCounts(counts))
+                            let windowCount = counts.reduce(0, +)
+                            let screenFrame = screen.adjustedFrame()
 
-                        expect(frames(twin, windowCount: windowCount, on: screen))
-                            .to(equal(frames(original, windowCount: windowCount, on: screen).map { mirrored($0, .horizontal, in: screenFrame) }))
-                        expect(twin.emptyPaneFrames(windowCount: windowCount, on: screen))
-                            .to(equal(original.emptyPaneFrames(windowCount: windowCount, on: screen).mapValues { mirrored($0, .horizontal, in: screenFrame) }))
+                            expect(frames(twin, windowCount: windowCount, on: screen))
+                                .to(equal(frames(original, windowCount: windowCount, on: screen).map { mirrored($0, .horizontal, in: screenFrame) }))
+                            expect(twin.emptyPaneFrames(windowCount: windowCount, on: screen))
+                                .to(equal(original.emptyPaneFrames(windowCount: windowCount, on: screen).mapValues { mirrored($0, .horizontal, in: screenFrame) }))
+                        }
                     }
                 }
             }

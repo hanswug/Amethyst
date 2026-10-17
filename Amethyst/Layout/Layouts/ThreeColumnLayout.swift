@@ -94,11 +94,12 @@ struct TriplePaneArrangement {
         // calculate widths
         let screenWidth = screenSize.width
         let mainWindowWidth = secondaryPaneCount == 0 ? screenWidth : round(screenWidth * mainPaneRatio)
-        let nonMainWindowWidth = round((screenWidth - mainWindowWidth) / 2)
+        // The last side column takes the rounding remainder, so the columns fill the screen exactly and twins mirror to the pixel.
+        let secondaryWindowWidth = round((screenWidth - mainWindowWidth) / 2)
         self.paneWindowWidth = [
             .main: mainWindowWidth,
-            .secondary: nonMainWindowWidth,
-            .tertiary: nonMainWindowWidth
+            .secondary: secondaryWindowWidth,
+            .tertiary: screenWidth - mainWindowWidth - secondaryWindowWidth
         ]
    }
 

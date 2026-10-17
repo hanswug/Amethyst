@@ -90,11 +90,12 @@ struct QuadruplePaneArrangement {
         let screenWidth = screenSize.width
         let mainWindowWidth = round(screenWidth / 4)
         let nonMainWindowWidth = round(screenWidth / 4)
+        // The last side column takes the rounding remainder, so the columns fill the screen exactly and twins mirror to the pixel.
         self.paneWindowWidth = [
             .main: mainWindowWidth,
             .secondary: nonMainWindowWidth,
             .tertiary: nonMainWindowWidth,
-            .quaternary: nonMainWindowWidth
+            .quaternary: screenWidth - mainWindowWidth - 2 * nonMainWindowWidth
         ]
    }
 
