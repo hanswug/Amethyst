@@ -44,7 +44,7 @@ It was born out of the need to handle many windows on large displays, such as a 
 - [x] Directional focus and swap (3.1.0): `focus-west/east/north/south`, `swap-west/east/north/south` (only visible windows; Fullscreen cycles west/east). See [docs/directional-navigation.md](docs/directional-navigation.md)
 - [x] Warp (4.2.0): `warp-<direction>` and `warp-main` move a window into the neighbouring pane, or into main, in every tiled layout (swaps in Two Pane, Column and Row; splits the neighbour's tile in BSP), into an empty column too; pane sizes are remembered and the main pane count is a maximum
 - [x] Custom (JavaScript) layouts removed (6.0.0): they gave little beyond the built-in layouts, needed code, and skipped warp, remembered pane sizes and flip
-- [ ] Flip: `flip-left-right` and `flip-top-bottom`. One switches to the layout's twin (Tall Left ↔ Tall Right, …), the other reverses the rows or columns; the main pane is kept
+- [x] Flip: `flip-twin` shows the layout's mirror image (its twin, or 3Column Middle's side columns swapped), `flip-rows` and `flip-columns` reverse the order inside panes; see [flip](docs/layouts.md#flip)
   - [x] Step 1 (5.0.0): every layout named by where main is (`tall-left`, `wide-top`, `two-pane-a`, `3column-middle`, `column-left`, `row-top`, …), the missing twins Wide Bottom, Column Right and Row Bottom, and `layout-names` for your own names
   - [x] Twins (6.2.0): every twin is its layout's exact mirror image (Tall Right, 3Column Right and Widescreen Tall Right fixed), and a layout and its twin share main count, ratio and pane sizes
 - [x] Focus border: a soft glow (or a solid or gradient ring) around the focused window, in the accent colour or your own; `toggle-focus-border`, `cycle-focus-border-style`; hidden in Fullscreen
@@ -130,7 +130,7 @@ How layouts work, main first, with a diagram of each: [docs/layouts.md](docs/lay
 | Floating | `floating` | Nothing is tiled |
 | Binary Space Partitioning | `bsp` | Each new window splits the focused pane along its longer side |
 
-Each name says where main is. The pairs are twins: the same layout mirrored, every window on its mirror spot, sharing main count, ratio and pane sizes, so switching to the twin by select or cycle shows the same arrangement on the other side. The flip commands (coming) switch between them. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
+Each name says where main is. The pairs are twins: the same layout mirrored, every window on its mirror spot, sharing main count, ratio and pane sizes, so switching to the twin by select or cycle shows the same arrangement on the other side. `flip-twin` switches between them, whether or not the twin is in your `layouts`. `layout-names` gives each layout the name you see, e.g. `tall-left: "Coding"`; without one, a layout shows its key.
 
 **A word of advice:** I strongly suggest not using all the available layouts. Bind only the ones you are really going to use, learn their behaviour thoroughly, and have fun!
 

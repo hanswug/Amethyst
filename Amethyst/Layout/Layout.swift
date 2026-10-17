@@ -22,6 +22,12 @@ import Silica
  - Note:
  Usage of a layout object requires specifying a `WindowType` parameter.
  */
+/// What `flip-rows` and `flip-columns` reverse: windows stacked as rows, or side by side as columns (Hans, 2026-10-17).
+enum FlipAxis: String {
+    case rows
+    case columns
+}
+
 class Layout<Window: WindowType>: Codable {
     typealias Screen = Window.Screen
 
@@ -52,6 +58,12 @@ class Layout<Window: WindowType>: Codable {
     /// Takes over its twin's state (`LayoutType.twin`): main count, ratio, pane sizes. A twin is the same layout mirrored, so
     /// pane i is pane i and nothing needs translating. Layouts without such state ignore it.
     func adoptState(from twin: Layout<Window>) {}
+
+    /// The runs of the window order to reverse for `flip-rows` / `flip-columns`: each pane whose windows stack as rows
+    /// (or sit side by side), among `windowCount` windows. Panes themselves never move. None by default.
+    func flipRanges(windowCount: Int, axis: FlipAxis) -> [Range<Int>] {
+        return []
+    }
 
     required init() {}
 
@@ -179,6 +191,28 @@ class PaneCountedLayout<Window: WindowType>: Layout<Window> {
 
     /// Takes the sizes after a warp moved a window. A warp into a full main raises the maximum to match; a warp out of
     /// main lowers it by one (Hans, 2026-10-14), so the maximum follows how main is arranged instead of only growing.
+    /// How the windows of `pane` are arranged: stacked as rows (the default: Tall, 3Column, 4Column) or side by side.
+    class func axis(ofPane pane: Int) -> FlipAxis {
+        return .rows
+    }
+
+    override func flipRanges(windowCount: Int, axis: FlipAxis) -> [Range<Int>] {
+        var ranges: [Range<Int>] = []
+        var start = 0
+        for (pane, count) in fittedPaneCounts(windowCount: windowCount).counts.enumerated() {
+            if count > 1 && type(of: self).axis(ofPane: pane) == axis {
+                ranges.append(start ..< start + count)
+            }
+            start += count
+        }
+        return ranges
+    }
+
+    /// Takes pane sizes a reordering decided (3Column Middle's column swap), without touching main's maximum.
+    func setPaneCounts(_ counts: PaneCounts) {
+        paneState.setCounts(counts)
+    }
+
     func applyWarp(_ counts: PaneCounts) {
         let mainBefore = fittedPaneCounts(windowCount: counts.total).main
         paneState.setCounts(counts)

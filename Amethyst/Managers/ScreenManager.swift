@@ -131,12 +131,18 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         return layouts[currentLayoutIndex]
     }
 
-    /// Returns layout info for all layouts in this screen manager, including selection state
+    /// The Layouts menu lists `layouts:` as configured (Hans, 2026-10-17): an entry flipped to its twin in place still shows
+    /// its own layout, checked; the menu bar title says what's live.
     var layoutsInfo: [LayoutMenuItemInfo] {
+        let configuredKeys = Set(userConfiguration.layoutKeys())
         return layouts.enumerated().map { index, layout in
-            LayoutMenuItemInfo(
-                key: layout.layoutKey,
-                name: layout.displayName,
+            var key = layout.layoutKey
+            if !configuredKeys.contains(key), let twinKey = LayoutType<Window>.from(key: key)?.twin?.key, configuredKeys.contains(twinKey) {
+                key = twinKey
+            }
+            return LayoutMenuItemInfo(
+                key: key,
+                name: userConfiguration.layoutDisplayName(forKey: key),
                 isSelected: index == currentLayoutIndex
             )
         }
@@ -202,12 +208,19 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         }
 
         // Yes this is quadratic, but if your layout list is long enough for that to be significant what are you even doing?
+        // An entry flipped to its twin in place was saved under the twin's key (when the twin isn't listed itself).
+        let configuredKeys = Set(layouts.map { $0.layoutKey })
         return layouts.map { layout -> Layout<Window> in
-            guard let decodedLayoutIndex = decodedLayouts.firstIndex(where: { $0.layoutKey == layout.layoutKey }) else {
+            if let decodedLayoutIndex = decodedLayouts.firstIndex(where: { $0.layoutKey == layout.layoutKey }) {
+                return decodedLayouts.remove(at: decodedLayoutIndex)
+            }
+
+            guard let twinKey = LayoutType<Window>.from(key: layout.layoutKey)?.twin?.key, !configuredKeys.contains(twinKey),
+                  let twinIndex = decodedLayouts.firstIndex(where: { $0.layoutKey == twinKey }) else {
                 return layout
             }
 
-            return decodedLayouts.remove(at: decodedLayoutIndex)
+            return decodedLayouts.remove(at: twinIndex)
         }
     }
 
@@ -536,7 +549,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
         let nextLayoutKey = currentLayoutKey == layoutString ? previousLayoutKeyBySpaceUUID[spaceUUID] : layoutString
 
-        guard let layoutIndex = layouts.firstIndex(where: { $0.layoutKey == nextLayoutKey }) else {
+        guard let nextLayoutKey, let layoutIndex = layoutIndex(showing: nextLayoutKey) else {
             if endedToggle {
                 setCurrentLayoutIndex(currentLayoutIndex)
                 setNeedsReflow()
@@ -544,9 +557,61 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             return
         }
 
+        if layouts[layoutIndex].layoutKey != nextLayoutKey {
+            showInPlace(nextLayoutKey, at: layoutIndex)
+        }
         setCurrentLayoutIndex(layoutIndex)
         setNeedsReflow()
         previousLayoutKeyBySpaceUUID[spaceUUID] = currentLayoutKey
+    }
+
+    /**
+     Shows the current layout's twin, its mirror image (`LayoutType.twin`), with the same main count, ratio and pane sizes.
+     `layouts:` only decides what's shown and cycled (Hans, 2026-10-17): a twin in it is selected; otherwise this entry
+     becomes the twin in place, and flipping again (or selecting the original) brings the original back.
+     */
+    func flipToTwin() {
+        let endedToggle = endFullscreenToggle()
+
+        guard let current = currentLayout, let twinKey = LayoutType<Window>.from(key: current.layoutKey)?.twin?.key else {
+            if endedToggle {
+                setCurrentLayoutIndex(currentLayoutIndex)
+                setNeedsReflow()
+            }
+            return
+        }
+
+        rememberCurrentLayout()
+        if let twinIndex = layouts.firstIndex(where: { $0.layoutKey == twinKey }) {
+            setCurrentLayoutIndex(twinIndex)
+        } else {
+            showInPlace(twinKey, at: currentLayoutIndex)
+            setCurrentLayoutIndex(currentLayoutIndex)
+        }
+        setNeedsReflow()
+    }
+
+    /// The entry that shows `key`, or else an entry showing its twin in place (one whose own key isn't in `layouts:`).
+    private func layoutIndex(showing key: String) -> Int? {
+        if let index = layouts.firstIndex(where: { $0.layoutKey == key }) {
+            return index
+        }
+
+        let configuredKeys = Set(userConfiguration.layoutKeys())
+        return layouts.firstIndex { layout in
+            !configuredKeys.contains(layout.layoutKey) && LayoutType<Window>.from(key: layout.layoutKey)?.twin?.key == key
+        }
+    }
+
+    /// Turns the entry at `index` into the layout `key` (its twin), handing over main count, ratio and pane sizes.
+    private func showInPlace(_ key: String, at index: Int) {
+        guard layouts.indices.contains(index), let layout = LayoutType<Window>.layoutForKey(key) else {
+            return
+        }
+
+        layout.adoptState(from: layouts[index])
+        log.debug("\(layouts[index].layoutName) becomes \(layout.layoutName) in place")
+        replaceLayout(at: index, with: layout)
     }
 
     /**

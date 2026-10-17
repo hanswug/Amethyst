@@ -11,7 +11,7 @@ Part 1 explains the ideas every layout shares, main first. Part 2 shows each lay
 **Reading the diagrams:** each box is a window's tile and its number is the window's place in the window order: 1 is the first window. `·` is a column without a window. Unless a diagram says otherwise, it shows 5 windows, main count 1 and a ratio of 50 %, on a landscape screen.
 
 - [Part 1: how main works](#part-1-how-main-works)
-  - [The window order](#the-window-order) · [The main pane](#the-main-pane) · [Main count is a maximum](#main-count-is-a-maximum) · [The ratio](#the-ratio) · [Side panes](#side-panes) · [Windows arriving and leaving](#windows-arriving-and-leaving) · [Twins](#twins)
+  - [The window order](#the-window-order) · [The main pane](#the-main-pane) · [Main count is a maximum](#main-count-is-a-maximum) · [The ratio](#the-ratio) · [Side panes](#side-panes) · [Windows arriving and leaving](#windows-arriving-and-leaving) · [Twins](#twins) · [Flip](#flip)
 - [Part 2: the layouts](#part-2-the-layouts)
   - [Tall](#tall-left--right) · [Wide](#wide-top--bottom) · [Two Pane](#two-pane-a--b) · [3Column](#3column-left--right--middle) · [4Column](#4column-left--right) · [Widescreen Tall](#widescreen-tall-left--right) · [Column](#column-left--right) · [Row](#row-top--bottom) · [Fullscreen](#fullscreen) · [Floating](#floating) · [BSP](#bsp)
 - [Part 3: quick reference](#part-3-quick-reference)
@@ -109,7 +109,31 @@ A layout and its twin **share their state**: switching from one to the other (by
 | Column Left ↔ Column Right | left ↔ right |
 | Row Top ↔ Row Bottom | top ↔ bottom |
 
-3Column Middle, Fullscreen, Floating and BSP have no twin. The flip commands (coming) will switch a layout to its twin in place.
+3Column Middle, Fullscreen, Floating and BSP have no twin.
+
+### Flip
+
+Three commands rearrange the screen without touching a layout's settings. Each means one thing in every layout:
+
+- **`flip-twin`** shows the layout's mirror image: it switches to the twin, handing over main count, ratio and pane sizes. If the twin is in your `layouts:`, it goes to that entry. If not, the current entry becomes the twin in place: the menu bar title shows the twin, the Layouts menu still lists your `layouts:`, and flipping again (or selecting the listed layout) brings the original back. `layouts:` decides what's shown and cycled, not what exists. 3Column Middle has no twin: there, `flip-twin` swaps the left and right columns, windows and sizes, which needs a window in each.
+- **`flip-rows`** reverses the order inside every pane whose windows stack as rows.
+- **`flip-columns`** reverses the order inside every pane whose windows sit side by side.
+
+Rows and columns never move a pane, only the windows inside it, and flipping again restores the order. They change the window order itself, so in Tall with main count 2, `flip-rows` makes main's bottom window the first. In BSP they swap the halves of every split along that axis, which mirrors the picture.
+
+Tall Left, its twin, and `flip-rows`:
+
+{{flip-tall}}
+
+Wide Top with main count 2, then `flip-columns`:
+
+{{flip-wide}}
+
+3Column Middle and its `flip-twin`:
+
+{{flip-3column-middle}}
+
+The flip commands have no keys until you bind them; the palette lists them as Flip to twin, Flip rows and Flip columns.
 
 ## Part 2: the layouts
 
@@ -123,7 +147,7 @@ With main count 2, main's windows stack in rows too:
 
 {{tall-m2}}
 
-Main count: a maximum. Ratio: main's width. Warp: between main and the stack.
+Main count: a maximum. Ratio: main's width. Warp: between main and the stack. Flip: rows, in main and in the stack.
 
 ### Wide Top / Bottom
 
@@ -135,7 +159,7 @@ With main count 2, main's windows sit side by side:
 
 {{wide-m2}}
 
-Main count: a maximum. Ratio: main's height. Warp: between the two rows.
+Main count: a maximum. Ratio: main's height. Warp: between the two rows. Flip: columns, in both rows.
 
 ### Two Pane A / B
 
@@ -147,7 +171,7 @@ On a landscape screen the tiles sit side by side; on a portrait screen one is ab
 
 {{two-pane-portrait}}
 
-Main count: always 1. Ratio: main's share. Warp: swaps, as there's no third place to go.
+Main count: always 1. Ratio: main's share. Warp: swaps, as there's no third place to go. Flip: twin only.
 
 ### 3Column Left / Right / Middle
 
@@ -161,7 +185,7 @@ The first side column is the one next to main; it gets a new window when both ha
 
 3Column Middle has no twin: its mirror image would put the first side column on the right, which is no layout of its own.
 
-Main count: a maximum (main's windows stack in rows). Ratio: main's width. Warp: between columns, into an empty column too. A side column without windows keeps its width (see [side panes](#side-panes)).
+Main count: a maximum (main's windows stack in rows). Ratio: main's width. Warp: between columns, into an empty column too. A side column without windows keeps its width (see [side panes](#side-panes)). Flip: rows, in every column; in 3Column Middle, `flip-twin` swaps the side columns.
 
 ### 4Column Left / Right
 
@@ -173,7 +197,7 @@ Every column is always a quarter of the screen, even without windows, so the ord
 
 {{4column-fill}}
 
-Main count: a maximum. Ratio: none, the columns are always quarters. Warp: between columns, into an empty column too.
+Main count: a maximum. Ratio: none, the columns are always quarters. Warp: between columns, into an empty column too. Flip: rows, in every column.
 
 ### Widescreen Tall Left / Right
 
@@ -185,7 +209,7 @@ With main count 2. In the Right twin, main's first window is at the right edge, 
 
 {{widescreen-m2}}
 
-Main count: a maximum. Ratio: main's width, shared by main's windows. Warp: between main and the stack.
+Main count: a maximum. Ratio: main's width, shared by main's windows. Warp: between main and the stack. Flip: columns in main, rows in the stack.
 
 ### Column Left / Right
 
@@ -199,7 +223,7 @@ With main count 2:
 
 Every window gets its own column, so with many windows they get narrow; a [window limit](window-limit.md) helps.
 
-Main count: the number of main columns. Ratio: main's share. Warp: swaps.
+Main count: the number of main columns. Ratio: main's share. Warp: swaps. Flip: columns, main's and the others'.
 
 ### Row Top / Bottom
 
@@ -211,7 +235,7 @@ With main count 2:
 
 {{row-m2}}
 
-Main count: the number of main rows. Ratio: main's share. Warp: swaps.
+Main count: the number of main rows. Ratio: main's share. Warp: swaps. Flip: rows, main's and the others'.
 
 ### Fullscreen
 
@@ -233,6 +257,10 @@ Main count: the number of main rows. Ratio: main's share. Warp: swaps.
 
 BSP has no main pane: main count and ratio don't apply, and a mouse resize doesn't stick (with `snap-back-windows`, the window goes back). A warp moves the window out of its tile and splits the neighbour's.
 
+`flip-columns` swaps the two halves of every side-by-side split, `flip-rows` of every split with one half above the other, so the picture mirrors along that axis. BSP has no twin.
+
+{{flip-bsp}}
+
 Ametrine fixes a few ways BSP strayed from that design:
 
 - **The tree follows the windows actually on screen.** Hidden, closed or moved windows no longer leave an empty tile, and a window the tree missed still gets one. A hidden app's windows come back at the focused window, not at their old spot.
@@ -241,19 +269,19 @@ Ametrine fixes a few ways BSP strayed from that design:
 
 ## Part 3: quick reference
 
-| Layout | Main count | Ratio | Warp | Twin |
-|---|---|---|---|---|
-| Tall Left / Right | maximum | main's width | main ↔ stack | each other |
-| Wide Top / Bottom | maximum | main's height | between the rows | each other |
-| Two Pane A / B | always 1 | main's share | swaps | each other |
-| 3Column Left / Right | maximum | main's width | between columns, into an empty one | each other |
-| 3Column Middle | maximum | main's width | between columns, into an empty one | none |
-| 4Column Left / Right | maximum | none (quarters) | between columns, into an empty one | each other |
-| Widescreen Tall Left / Right | maximum | main's width | main ↔ stack | each other |
-| Column Left / Right | number of main columns | main's share | swaps | each other |
-| Row Top / Bottom | number of main rows | main's share | swaps | each other |
-| Fullscreen | none | none | none | none |
-| Floating | none | none | none | none |
-| BSP | none | none | splits the neighbour's tile | none |
+| Layout | Main count | Ratio | Warp | `flip-twin` | `flip-rows` | `flip-columns` |
+|---|---|---|---|---|---|---|
+| Tall Left / Right | maximum | main's width | main ↔ stack | each other | main, stack | — |
+| Wide Top / Bottom | maximum | main's height | between the rows | each other | — | both rows |
+| Two Pane A / B | always 1 | main's share | swaps | each other | — | — |
+| 3Column Left / Right | maximum | main's width | between columns, into an empty one | each other | every column | — |
+| 3Column Middle | maximum | main's width | between columns, into an empty one | swaps the side columns | every column | — |
+| 4Column Left / Right | maximum | none (quarters) | between columns, into an empty one | each other | every column | — |
+| Widescreen Tall Left / Right | maximum | main's width | main ↔ stack | each other | stack | main |
+| Column Left / Right | number of main columns | main's share | swaps | each other | — | main, the others |
+| Row Top / Bottom | number of main rows | main's share | swaps | each other | main, the others | — |
+| Fullscreen | none | none | none | — | — | — |
+| Floating | none | none | none | — | — | — |
+| BSP | none | none | splits the neighbour's tile | — | top/bottom splits | side-by-side splits |
 
 Commands and settings are described in [configuration-files.md](configuration-files.md); focus, swap and warp in [directional-navigation.md](directional-navigation.md).

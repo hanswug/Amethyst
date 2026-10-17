@@ -46,6 +46,15 @@ class RowLayout<Window: WindowType>: Layout<Window>, PanedLayout {
         mainPaneRatio = twin.mainPaneRatio
     }
 
+    override func flipRanges(windowCount: Int, axis: FlipAxis) -> [Range<Int>] {
+        guard axis == .rows else {
+            return []
+        }
+
+        let mainCount = min(windowCount, mainPaneCount)
+        return [0 ..< mainCount, mainCount ..< windowCount].filter { $0.count > 1 }
+    }
+
     func recommendMainPaneRawRatio(rawRatio: CGFloat) {
         mainPaneRatio = rawRatio
     }
